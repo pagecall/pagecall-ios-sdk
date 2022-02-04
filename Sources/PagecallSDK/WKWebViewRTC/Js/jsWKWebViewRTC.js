@@ -4984,6 +4984,9 @@ function registerGlobals(doNotRestoreCallbacksSupport) {
 			return drawImage.apply(context, args);
 		}
 	};
+    
+    // TODO: remove me, this is to avoid type error from pagecall app interface
+    window.cordova = { platformId: 'ios', plugins: {} };
 }
 
 function dump() {
