@@ -9,7 +9,7 @@
 ## Usage
 - It is not suppored to instantiate from a storyboard, because a required `WKWebViewConfiguration` cannot be applied with it.
 
-### Programatically create a PagecallWebView
+### 1. Programatically create a PagecallWebView
 ```swift
 import UIKit
 import WebKit
@@ -40,21 +40,28 @@ class ViewController: UIViewController, WKUIDelegate {
 }
 ```
 
-## Tips
-- You may not want to ask for permission everytime an user enters the meeting room. From iOS 15.0, you can opt in not to ask again.
-    ```swift
-    class ViewController: UIViewController, WKUIDelegate {
-        override func viewDidLoad() {
-            // Wherever a PagecallWebView is created
-            webView.uiDelegate = self
-        }
-
-        @available(iOS 15.0, *)
-        func webView(_ webView: WKWebView, requestMediaCapturePermissionFor origin: WKSecurityOrigin, initiatedByFrame frame: WKFrameInfo, type: WKMediaCaptureType, decisionHandler: @escaping (WKPermissionDecision) -> Void) {
-            decisionHandler(.grant)
-        }
+### 2. Handle delegate
+This SDK uses a native bridge for WebRTC before iOS 15.0, and WKWebView-native WebRTC on iOS 15.0 and after.
+WKWebView-native WebRTC asks for permission permission everytime an user enters the meeting room, unless you apply changes bloew.
+```swift
+class ViewController: UIViewController, WKUIDelegate {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        let webView = PagecallWebView(frame: CGRect.zero)
++       webView.uiDelegate = self
+        // ...
     }
-    ```
+    
+    ...
+
++   @available(iOS 15.0, *)
++   func webView(_ webView: WKWebView, requestMediaCapturePermissionFor origin: WKSecurityOrigin, initiatedByFrame frame: WKFrameInfo, type: WKMediaCaptureType, decisionHandler: @escaping (WKPermissionDecision) -> Void) {
++       decisionHandler(.grant)
++   }
+}
+```
+    
+## Tips
 - If you want something to happen on a webview closing, you need to handle it in your view controller.
     ```swift
     class ViewController: UIViewController, WKUIDelegate {
