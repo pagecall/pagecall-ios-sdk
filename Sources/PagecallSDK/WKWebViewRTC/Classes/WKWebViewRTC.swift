@@ -50,7 +50,7 @@ public class WKWebViewRTC : NSObject {
 
         setWebView(webview: wkwebview)
         
-        if let path = Bundle(for: type(of: self)).path(forResource: "jsWKWebViewRTC", ofType: "js") {
+        if let path = Bundle.module.path(forResource: "jsWKWebViewRTC", ofType: "js") {
             if let bindingJS = try? String(contentsOfFile: path, encoding: .utf8) {
                 let script = WKUserScript(source: bindingJS, injectionTime: .atDocumentStart, forMainFrameOnly: false)
                 self.userContentController?.addUserScript(script)
