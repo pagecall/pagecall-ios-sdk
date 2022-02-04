@@ -734,6 +734,12 @@ public class WKWebViewRTC : NSObject {
 
 		if self.pluginMediaStreams[streamId] == nil {
 			let rtcMediaStream : RTCMediaStream = self.rtcPeerConnectionFactory.mediaStream(withStreamId: streamId)
+
+            /* Prevent being heard before ready */
+            rtcMediaStream.audioTracks.forEach { track in
+                track.isEnabled = false
+            }
+
 			let pluginMediaStream = iMediaStream(rtcMediaStream: rtcMediaStream, streamId: streamId)
 			pluginMediaStream.run()
 
