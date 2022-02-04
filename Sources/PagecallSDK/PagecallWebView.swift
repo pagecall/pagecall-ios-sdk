@@ -34,7 +34,7 @@ public class PagecallWebView: WKWebView {
         }
     }
     
-    func dispose() {
+    public func dispose() {
         self.webViewRTC?.dispose()
     }
 }
