@@ -4,7 +4,7 @@ public class PagecallWebView: WKWebView {
     var webViewRTC: WKWebViewRTC?;
     
     required init?(coder: NSCoder) {
-        super.init(coder: coder);
+        fatalError("PagecallSDK: PagecallWebView cannot be instantiated from a storyboard")
     }
     
     override init(frame: CGRect, configuration: WKWebViewConfiguration) {
