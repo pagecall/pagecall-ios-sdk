@@ -30,7 +30,6 @@ public class PagecallWebView: WKWebView {
             let osVersion = UIDevice.current.systemVersion
             self.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/\(osVersion) Safari/605.1.15"
         } else {
-            self.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15 iOS15Below"
             self.webViewRTC = WKWebViewRTC(wkwebview: self, contentController: self.configuration.userContentController);
         }
     }
