@@ -15,12 +15,28 @@ class iRTCAudioController {
 	
 	static private var audioCategory : AVAudioSession.Category = AVAudioSession.Category.playAndRecord
 
-	static private var audioCategoryOptions : AVAudioSession.CategoryOptions = [
-		AVAudioSession.CategoryOptions.mixWithOthers,
-		AVAudioSession.CategoryOptions.allowBluetooth,
-		AVAudioSession.CategoryOptions.allowAirPlay,
-		AVAudioSession.CategoryOptions.allowBluetoothA2DP
-	]
+    static private var audioCategoryOptions : AVAudioSession.CategoryOptions {
+        if #available(iOS 14.5, *) {
+            return [
+                AVAudioSession.CategoryOptions.mixWithOthers,
+                AVAudioSession.CategoryOptions.allowBluetooth,
+                AVAudioSession.CategoryOptions.allowAirPlay,
+                AVAudioSession.CategoryOptions.allowBluetoothA2DP,
+                // overrideMutedMicrophoneInterruption 추가 하지 않으면 interruption 자주 발생
+                AVAudioSession.CategoryOptions.overrideMutedMicrophoneInterruption,
+                AVAudioSession.CategoryOptions.interruptSpokenAudioAndMixWithOthers,
+                AVAudioSession.CategoryOptions.defaultToSpeaker
+            ]
+        } else {
+            return [
+                AVAudioSession.CategoryOptions.mixWithOthers,
+                AVAudioSession.CategoryOptions.allowBluetooth,
+                AVAudioSession.CategoryOptions.allowAirPlay,
+                AVAudioSession.CategoryOptions.allowBluetoothA2DP,
+                AVAudioSession.CategoryOptions.defaultToSpeaker
+            ]
+        }
+    }
 
 	/*
 	 This mode is intended for Voice over IP (VoIP) apps and can only be used with the playAndRecord category. When this mode is used, the device’s tonal equalization is optimized for voice and the set of allowable audio routes is reduced to only those appropriate for voice chat.
