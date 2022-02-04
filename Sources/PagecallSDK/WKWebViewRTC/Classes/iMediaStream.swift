@@ -28,17 +28,20 @@ class iMediaStream : NSObject {
 
 		self.rtcMediaStream = rtcMediaStream;
 
-		if (streamId == nil) {
-			// Handle possible duplicate remote trackId with  janus or short duplicate name
-			// See: https://github.com/cordova-rtc/cordova-plugin-iosrtc/issues/432
-			if (rtcMediaStream.streamId.count < 36) {
-				self.id = rtcMediaStream.streamId + "_" + UUID().uuidString;
-			} else {
-				self.id = rtcMediaStream.streamId;
-			}
-		} else {
-			self.id = streamId!;
-		}
+        // shpark PCA 2.0에서 failed consumer 에러 발생
+//		if (streamId == nil) {
+//			// Handle possible duplicate remote trackId with  janus or short duplicate name
+//			// See: https://github.com/cordova-rtc/cordova-plugin-iosrtc/issues/432
+//			if (rtcMediaStream.streamId.count < 36) {
+//				self.id = rtcMediaStream.streamId + "_" + UUID().uuidString;
+//			} else {
+//				self.id = rtcMediaStream.streamId;
+//			}
+//		} else {
+//			self.id = streamId!;
+//		}
+        
+        self.id = rtcMediaStream.streamId;
 
 		for track: RTCMediaStreamTrack in (self.rtcMediaStream.audioTracks as Array<RTCMediaStreamTrack>) {
 			let pluginMediaStreamTrack = iMediaStreamTrack(rtcMediaStreamTrack: track)

@@ -24,18 +24,20 @@ class iMediaStreamTrack : NSObject {
 
 		self.rtcMediaStreamTrack = rtcMediaStreamTrack
 
-		if (trackId == nil) {
-			// Handle possible duplicate remote trackId with  janus or short duplicate name
-			// See: https://github.com/cordova-rtc/cordova-plugin-iosrtc/issues/432
-			if (rtcMediaStreamTrack.trackId.count<36) {
-				self.id = rtcMediaStreamTrack.trackId + "_" + UUID().uuidString;
-			} else {
-				self.id = rtcMediaStreamTrack.trackId;
-			}
-		} else {
-			self.id = trackId!;
-		}
+        // shpark PCA 2.0에서 failed consumer 에러 발생
+//		if (trackId == nil) {
+//			// Handle possible duplicate remote trackId with  janus or short duplicate name
+//			// See: https://github.com/cordova-rtc/cordova-plugin-iosrtc/issues/432
+//			if (rtcMediaStreamTrack.trackId.count<36) {
+//				self.id = rtcMediaStreamTrack.trackId + "_" + UUID().uuidString;
+//			} else {
+//				self.id = rtcMediaStreamTrack.trackId;
+//			}
+//		} else {
+//			self.id = trackId!;
+//		}
 
+        self.id = rtcMediaStreamTrack.trackId;
 		self.kind = rtcMediaStreamTrack.kind
 		self.renders = [:]
 	}
