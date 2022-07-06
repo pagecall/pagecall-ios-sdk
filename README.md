@@ -42,7 +42,7 @@ class ViewController: UIViewController, WKUIDelegate {
 
 ### 2. Handle delegate
 This SDK uses a native bridge for WebRTC before iOS 15.0, and WKWebView-native WebRTC on iOS 15.0 and after.
-WKWebView-native WebRTC asks for permission permission everytime an user enters the meeting room, unless you apply changes bloew.
+WKWebView-native WebRTC asks for permission permission everytime an user enters the meeting room, unless you apply changes below.
 ```swift
 class ViewController: UIViewController, WKUIDelegate {
     override func viewDidLoad() {
