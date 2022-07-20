@@ -1,0 +1,18 @@
+{
+  "name": "pagecall-native",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@pagecall/common": "^0.4.19-hotfix.0",
+    "browserify": "^17.0.0",
+    "tsify": "^5.0.4",
+    "typescript": "^4.7.4",
+    "watchify": "^4.0.0"
+  },
+  "scripts": {
+    "build": "browserify PagecallNative.ts -p [ tsify --noImplicitAny ] -o ../PagecallSDK/PagecallNative.js",
+    "dev": "watchify PagecallNative.ts -p [ tsify --noImplicitAny ] -o ../PagecallSDK/PagecallNative.js"
+  },
+  "dependencies": {}
+}
