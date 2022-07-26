@@ -1,6 +1,9 @@
 import WebKit
 
-public class PagecallWebView: WKWebView {
+public class PagecallWebView: WKWebView, WKScriptMessageHandler {
+    var nativeBridge: NativeBridge = .init()
+    var controllerName = "pagecall"
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("PagecallSDK: PagecallWebView cannot be instantiated from a storyboard")
@@ -39,6 +42,21 @@ public class PagecallWebView: WKWebView {
         } else {
             NSLog("Failed to add PagecallNative script")
             return
+        }
+        
+        contentController.add(self, name: self.controllerName)
+    }
+    
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        switch message.name {
+        case self.controllerName:
+            if let body = message.body as? String {
+                self.nativeBridge.messageHandler(message: body) {
+                    self.evaluateJavaScript($0)
+                }
+            }
+        default:
+            break
         }
     }
     
