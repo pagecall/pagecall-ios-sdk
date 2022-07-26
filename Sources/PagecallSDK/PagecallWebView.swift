@@ -1,7 +1,7 @@
 import WebKit
 
 public class PagecallWebView: WKWebView, WKScriptMessageHandler {
-    var nativeBridge: NativeBridge = .init()
+    var nativeBridge: NativeBridge?
     var controllerName = "pagecall"
     
     @available(*, unavailable)
@@ -26,6 +26,7 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
             configuration.limitsNavigationsToAppBoundDomains = true
         }
         super.init(frame: frame, configuration: configuration)
+        self.nativeBridge = .init(webview: self)
         
         self.allowsBackForwardNavigationGestures = false
         
@@ -51,9 +52,7 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
         switch message.name {
         case self.controllerName:
             if let body = message.body as? String {
-                self.nativeBridge.messageHandler(message: body) {
-                    self.evaluateJavaScript($0)
-                }
+                self.nativeBridge?.messageHandler(message: body)
             }
         default:
             break
