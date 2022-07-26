@@ -46,11 +46,8 @@ interface PagecallNativePublic {
 }
 
 interface PagecallNativePrivate {
-  emit<T extends NativeEvent>(
-    eventName: T,
-    payload: PayloadByNativeEvent[T]
-  ): void;
-  response(requestId: string, payload: unknown): void;
+  emit<T extends NativeEvent>(eventName: T, payload: string): void;
+  response(requestId: string, payload: string): void;
 }
 
 export type PagecallNativeBridge = PagecallNativePublic & PagecallNativePrivate;
@@ -116,11 +113,19 @@ function registerGlobals() {
 
   const pagecallNativePrivate: Partial<PagecallNativePrivate> = {
     emit: (eventName, payload) => {
-      listenerController.emit(eventName, payload);
+      try {
+        listenerController.emit(eventName, JSON.parse(payload));
+      } catch (e) {
+        console.error(e);
+      }
     },
 
     response: (requestId, payload) => {
-      requestController.response(requestId, payload);
+      try {
+        requestController.response(requestId, JSON.parse(payload));
+      } catch (e) {
+        console.error(e);
+      }
     },
   };
 
