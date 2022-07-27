@@ -13,17 +13,54 @@ class NativeBridge {
 
     init(webview: WKWebView) { self.webview = webview }
 
+    func emit(eventName: String) {
+        self.webview.evaluateJavaScript("window.PagecallNative.emit('\(eventName)')") { _, error in
+            if let error = error {
+                NSLog("Failed to PagecallNative.emit \(error)")
+            }
+        }
+    }
+
     func emit(eventName: String, data: Data) {
+        if let string = String(data: data, encoding: .utf8) {
+            self.webview.evaluateJavaScript("window.PagecallNative.emit('\(eventName)','\(string)')") { _, error in
+                if let error = error {
+                    NSLog("Failed to PagecallNative.emit \(error)")
+                }
+            }
+        }
+    }
+
+    func response(requestId: String?) {
+        guard let requestId = requestId else {
+            return
+        }
+
+        self.webview.evaluateJavaScript("window.PagecallNative.response('\(requestId)')") { _, error in
+            if let error = error {
+                NSLog("Failed to PagecallNative.response \(error)")
+            }
+        }
+    }
+
+    func response(requestId: String?, data: Data) {
+        guard let requestId = requestId else {
+            return
+        }
+
         let string = String(data: data, encoding: .utf8)
         if let string = string {
-            self.webview.evaluateJavaScript("window.PagecallNative.emit('\(eventName)','\(string)')")
+            self.webview.evaluateJavaScript("window.PagecallNative.response('\(requestId)','\(string)')") { _, error in
+                if let error = error {
+                    NSLog("Failed to PagecallNative.response \(error)")
+                }
+            }
         }
     }
 
     func messageHandler(message: String) {
-        let data = message.data(using: .utf8)!
-
         do {
+            let data = message.data(using: .utf8)!
             guard let jsonArray = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
             else {
                 NSLog("Failed to JSONSerialization")
@@ -31,16 +68,6 @@ class NativeBridge {
             }
             guard let action = jsonArray["action"] as? String, let requestId = jsonArray["requestId"] as? String? else {
                 return
-            }
-
-            func response(data: Data) {
-                guard let requestId = requestId else {
-                    return
-                }
-                let string = String(data: data, encoding: .utf8)
-                if let string = string {
-                    self.webview.evaluateJavaScript("window.PagecallNative.response('\(requestId)','\(string)')")
-                }
             }
 
             switch action {
@@ -53,11 +80,10 @@ class NativeBridge {
             case "getAudioDevices":
                 print("get audio devices")
                 let data = try JSONSerialization.data(withJSONObject: [])
-                response(data: data)
+                self.response(requestId: requestId, data: data)
             default:
                 break
             }
-
         } catch let error as NSError {
             print(error)
         }
