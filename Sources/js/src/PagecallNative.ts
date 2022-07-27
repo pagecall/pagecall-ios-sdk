@@ -90,6 +90,16 @@ function registerGlobals() {
       listenerController.removeListener(eventName, listener);
     },
 
+    connect: (configuration: ChimeMeetingSessionConfiguration) => {
+      return new Promise<void>((resolve) => {
+        postMessage(
+          { action: "connect", payload: JSON.stringify(configuration) },
+          () => {
+            resolve();
+          }
+        );
+      });
+    },
     pauseAudio: () => {
       postMessage({ action: "pauseAudio" });
     },
