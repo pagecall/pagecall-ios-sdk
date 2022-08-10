@@ -10,6 +10,7 @@ import WebKit
 
 class NativeBridge {
     let webview: WKWebView
+    let ChimeController: ChimeController = .init()
 
     init(webview: WKWebView) { self.webview = webview }
 
@@ -66,11 +67,16 @@ class NativeBridge {
                 NSLog("Failed to JSONSerialization")
                 return
             }
-            guard let action = jsonArray["action"] as? String, let requestId = jsonArray["requestId"] as? String? else {
+            guard let action = jsonArray["action"] as? String, let requestId = jsonArray["requestId"] as? String?, let payload = jsonArray["payload"] as? String? else {
                 return
             }
 
             switch action {
+            case "connect":
+                print("connect")
+                if let payloadData = payload?.data(using: .utf8) {
+                    self.ChimeController.connect(joinMeetingData: payloadData)
+                }
             case "pauseAudio":
                 print("pause audio")
             case "resumeAudio":
