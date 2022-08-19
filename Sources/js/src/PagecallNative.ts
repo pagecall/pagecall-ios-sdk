@@ -10,7 +10,7 @@ interface ChimeMeetingSessionConfiguration {
 type PayloadByNativeEvent = {
   audioDevices: MediaDeviceInfo[];
   audioVolume: number;
-  remoteAudioStatus: { sessionId: string; muted: boolean };
+  audioStatus: { sessionId: string; muted: boolean };
   mediaStat: MediaStat;
   audioEnded: void;
   videoEnded: void;
@@ -38,7 +38,7 @@ interface PagecallNativePublic {
 
   pauseAudio: () => void;
   resumeAudio: () => void;
-  setAudioDevice: (deviceId: number) => void;
+  setAudioDevice: (deviceId: string) => void;
   getAudioDevices: () => Promise<MediaDeviceInfo[]>;
 
   startScreenshare: () => void;
@@ -57,7 +57,7 @@ function registerGlobals() {
   const listenerController = new ListenerController<PayloadByNativeEvent>();
 
   const postMessage = (
-    data: { action: string; payload?: any },
+    data: { action: string; payload?: string },
     callback?: Callback
   ) => {
     const { action, payload } = data;
@@ -106,8 +106,11 @@ function registerGlobals() {
     resumeAudio: () => {
       postMessage({ action: "resumeAudio" });
     },
-    setAudioDevice: (deviceId: number) => {
-      postMessage({ action: "setAudioDevice", payload: { deviceId } });
+    setAudioDevice: (deviceId: string) => {
+      postMessage({
+        action: "setAudioDevice",
+        payload: JSON.stringify({ deviceId }),
+      });
     },
     getAudioDevices: () => {
       return new Promise<MediaDeviceInfo[]>((resolve, reject) => {

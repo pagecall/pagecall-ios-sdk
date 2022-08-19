@@ -8,13 +8,14 @@
 import Foundation
 import WebKit
 
-class NativeBridge {
+enum BridgeEvent: String, Codable {
+    case audioDevices, audioVolume, audioStatus, mediaStat, audioEnded, videoEnded, screenshareEnded, meetingEnded, error
+}
+
+class WebViewEmitter {
     let webview: WKWebView
-    let ChimeController: ChimeController = .init()
 
-    init(webview: WKWebView) { self.webview = webview }
-
-    func emit(eventName: String) {
+    func emit(eventName: BridgeEvent) {
         self.webview.evaluateJavaScript("window.PagecallNative.emit('\(eventName)')") { _, error in
             if let error = error {
                 NSLog("Failed to PagecallNative.emit \(error)")
@@ -22,14 +23,34 @@ class NativeBridge {
         }
     }
 
-    func emit(eventName: String, data: Data) {
-        if let string = String(data: data, encoding: .utf8) {
-            self.webview.evaluateJavaScript("window.PagecallNative.emit('\(eventName)','\(string)')") { _, error in
-                if let error = error {
-                    NSLog("Failed to PagecallNative.emit \(error)")
-                }
+    func emit(eventName: BridgeEvent, message: String) {
+        self.webview.evaluateJavaScript("window.PagecallNative.emit('\(eventName)','\(message)')") { _, error in
+            if let error = error {
+                NSLog("Failed to PagecallNative.emit \(error)")
             }
         }
+    }
+
+    func emit(eventName: BridgeEvent, data: Data) {
+        if let string = String(data: data, encoding: .utf8) {
+            self.emit(eventName: eventName, message: string)
+        }
+    }
+
+    init(webView: WKWebView) {
+        self.webview = webView
+    }
+}
+
+class NativeBridge {
+    let webview: WKWebView
+    let emitter: WebViewEmitter
+    let chimeController: ChimeController
+
+    init(webview: WKWebView) {
+        self.webview = webview
+        self.emitter = .init(webView: self.webview)
+        self.chimeController = .init(emitter: self.emitter)
     }
 
     func response(requestId: String?) {
@@ -73,20 +94,42 @@ class NativeBridge {
 
             switch action {
             case "connect":
-                print("connect")
+                print("Bridge: connect")
                 if let payloadData = payload?.data(using: .utf8) {
-                    self.ChimeController.connect(joinMeetingData: payloadData)
+                    self.chimeController.connect(joinMeetingData: payloadData) { (error: Error?) in
+                        if let error = error { print(error.localizedDescription) }
+                        else {
+                            self.response(requestId: requestId)
+                        }
+                    }
                 }
             case "pauseAudio":
-                print("pause audio")
+                print("Bridge: pauseAudio")
+                self.chimeController.pauseAudio { (error: Error?) in
+                    if let error = error { print(error.localizedDescription) }
+                }
             case "resumeAudio":
-                print("resume audio")
+                print("Bridge: resumeAudio")
+                self.chimeController.resumeAudio { (error: Error?) in
+                    if let error = error { print(error.localizedDescription) }
+                }
             case "setAudioDevice":
-                print("set audio device")
+                print("Bridge: setAudioDevice")
+                if let payloadData = payload?.data(using: .utf8) {
+                    self.chimeController.setAudioDevice(deviceData: payloadData) { (error: Error?) in
+                        if let error = error { print(error.localizedDescription) }
+                    }
+                }
             case "getAudioDevices":
-                print("get audio devices")
-                let data = try JSONSerialization.data(withJSONObject: [])
-                self.response(requestId: requestId, data: data)
+                print("Bridge: getAudioDevices")
+                let mediaDeviceInfoList = self.chimeController.getAudioDevices()
+                do {
+                    let data = try JSONEncoder().encode(mediaDeviceInfoList)
+                    self.response(requestId: requestId, data: data)
+                } catch {
+                    print("failed to getAudioDevices")
+                }
+
             default:
                 break
             }
