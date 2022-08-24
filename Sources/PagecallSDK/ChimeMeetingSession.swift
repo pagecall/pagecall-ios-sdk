@@ -16,12 +16,21 @@ class ChimeMeetingSession {
         self.meetingSession = meetingSession
 
         meetingSession.audioVideo.addRealtimeObserver(observer: ChimeRealtimeObserver(emitter: emitter, myAttendeeId: meetingSession.configuration.credentials.attendeeId))
+        meetingSession.audioVideo.addAudioVideoObserver(observer: ChimeAudioVideoObserver(emitter: emitter))
+    }
 
-        do { try meetingSession.audioVideo.start()
-            print("succeed")
+    func start(callback: (Error?) -> Void) {
+        do {
+            try meetingSession.audioVideo.start()
+            callback(nil)
         } catch {
             print(error)
+            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to start audioVideo"]))
         }
+    }
+
+    func stop() {
+        meetingSession.audioVideo.stop()
     }
 
     func pauseAudio() -> Bool {
@@ -29,7 +38,7 @@ class ChimeMeetingSession {
     }
 
     func resumeAudio() -> Bool {
-        return meetingSession.audioVideo.realtimeLocalMute()
+        return meetingSession.audioVideo.realtimeLocalUnmute()
     }
 
     func setAudioDevice(label: String) {
@@ -47,5 +56,9 @@ class ChimeMeetingSession {
 
     func getAudioDevices() -> [MediaDevice] {
         return meetingSession.audioVideo.listAudioDevices()
+    }
+
+    func dispose() {
+        meetingSession.audioVideo.stop()
     }
 }

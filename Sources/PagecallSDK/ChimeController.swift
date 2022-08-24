@@ -25,7 +25,7 @@ class ChimeController {
         }
     }
 
-    func connect(joinMeetingData: Data, callback: (Error?) -> Void) {
+    func createMeetingSession(joinMeetingData: Data, callback: (Error?) -> Void) {
         let logger = ConsoleLogger(name: "DefaultMeetingSession", level: LogLevel.INFO)
 
         let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: joinMeetingData)
@@ -34,14 +34,40 @@ class ChimeController {
             callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to parse joinMeetingData"]))
             return
         }
+        if let prevChimeMeetingSession = self.chimeMeetingSession {
+            prevChimeMeetingSession.dispose()
+        }
 
-        self.chimeMeetingSession = ChimeMeetingSession(configuration: meetingSessionConfiguration, logger: logger, emitter: self.emitter)
-
+        let chimeMeetingSession = ChimeMeetingSession(configuration: meetingSessionConfiguration, logger: logger, emitter: emitter)
+        self.chimeMeetingSession = chimeMeetingSession
         callback(nil)
     }
 
+    func start(callback: (Error?) -> Void) {
+        if let chimeMeetingSession = chimeMeetingSession {
+            chimeMeetingSession.start { (error: Error?) in
+                if error != nil {
+                    callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to start session"]))
+                } else {
+                    callback(nil)
+                }
+            }
+        } else {
+            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ChimeMeetingSession not exist"]))
+        }
+    }
+
+    func stop(callback: (Error?) -> Void) {
+        if let chimeMeetingSession = chimeMeetingSession {
+            chimeMeetingSession.stop()
+            callback(nil)
+        } else {
+            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ChimeMeetingSession not exist"]))
+        }
+    }
+
     func pauseAudio(callback: (Error?) -> Void) {
-        if let chimeMeetingSession = self.chimeMeetingSession {
+        if let chimeMeetingSession = chimeMeetingSession {
             let isSucceed = chimeMeetingSession.pauseAudio()
             if isSucceed {
                 callback(nil)
@@ -54,7 +80,7 @@ class ChimeController {
     }
 
     func resumeAudio(callback: (Error?) -> Void) {
-        if let chimeMeetingSession = self.chimeMeetingSession {
+        if let chimeMeetingSession = chimeMeetingSession {
             let isSucceed = chimeMeetingSession.resumeAudio()
             if isSucceed {
                 callback(nil)
@@ -78,7 +104,7 @@ class ChimeController {
             return
         }
 
-        guard let chimeMeetingSession = self.chimeMeetingSession else {
+        guard let chimeMeetingSession = chimeMeetingSession else {
             callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ChimeMeetingSession not exist"]))
             return
         }
@@ -88,16 +114,14 @@ class ChimeController {
     }
 
     func getAudioDevices() -> [MediaDeviceInfo] {
-        let audioDevices = self.chimeMeetingSession?.getAudioDevices()
-
-        guard let audioDevices = audioDevices else {
+        guard let chimeMeetingSession = chimeMeetingSession else {
             return []
         }
 
-        let audioDeviceInfoList = audioDevices.map { mediaDevice in
+        let audioDevices = chimeMeetingSession.getAudioDevices()
+
+        return audioDevices.map { mediaDevice in
             MediaDeviceInfo(deviceId: mediaDevice.label, groupId: "DefaultGroupId", kind: .audioinput, label: mediaDevice.label)
         }
-
-        return audioDeviceInfoList
     }
 }
