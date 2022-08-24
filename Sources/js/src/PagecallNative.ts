@@ -33,8 +33,11 @@ interface PagecallNativePublic {
     listener: (payload: PayloadByNativeEvent[T]) => void
   ): void;
 
-  connect: (configuration: ChimeMeetingSessionConfiguration) => Promise<void>;
-  disconnect: () => Promise<void>;
+  createSession: (
+    configuration: ChimeMeetingSessionConfiguration
+  ) => Promise<void>;
+  start: () => void;
+  stop: () => void;
 
   pauseAudio: () => void;
   resumeAudio: () => void;
@@ -90,16 +93,23 @@ function registerGlobals() {
       listenerController.removeListener(eventName, listener);
     },
 
-    connect: (configuration: ChimeMeetingSessionConfiguration) => {
+    createSession: (configuration: ChimeMeetingSessionConfiguration) => {
       return new Promise<void>((resolve) => {
         postMessage(
-          { action: "connect", payload: JSON.stringify(configuration) },
+          { action: "createSession", payload: JSON.stringify(configuration) },
           () => {
             resolve();
           }
         );
       });
     },
+    start: () => {
+      postMessage({ action: "start" });
+    },
+    stop: () => {
+      postMessage({ action: "stop" });
+    },
+
     pauseAudio: () => {
       postMessage({ action: "pauseAudio" });
     },

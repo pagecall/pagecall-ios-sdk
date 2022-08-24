@@ -9,7 +9,7 @@ import Foundation
 import WebKit
 
 enum BridgeEvent: String, Codable {
-    case audioDevices, audioVolume, audioStatus, mediaStat, audioEnded, videoEnded, screenshareEnded, meetingEnded, error
+    case audioDevices, audioVolume, audioStatus, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, meetingEnded, error
 }
 
 class WebViewEmitter {
@@ -92,42 +92,53 @@ class NativeBridge {
                 return
             }
 
+            print("Bridge Action: \(action)")
+
             switch action {
-            case "connect":
-                print("Bridge: connect")
+            case "createSession":
                 if let payloadData = payload?.data(using: .utf8) {
-                    self.chimeController.connect(joinMeetingData: payloadData) { (error: Error?) in
-                        if let error = error { print(error.localizedDescription) }
+                    self.chimeController.createMeetingSession(joinMeetingData: payloadData) { (error: Error?) in
+                        if let error = error { print("Failed to createMeetingSession: \(error.localizedDescription)") }
                         else {
                             self.response(requestId: requestId)
                         }
                     }
                 }
+            case "start":
+                self.chimeController.start { (error: Error?) in
+                    if let error = error { print("Failed to start: \(error.localizedDescription)") }
+                    else {
+                        self.response(requestId: requestId)
+                    }
+                }
+            case "stop":
+                self.chimeController.stop { (error: Error?) in
+                    if let error = error { print("Failed to stop: \(error.localizedDescription)") }
+                    else {
+                        self.response(requestId: requestId)
+                    }
+                }
             case "pauseAudio":
-                print("Bridge: pauseAudio")
                 self.chimeController.pauseAudio { (error: Error?) in
-                    if let error = error { print(error.localizedDescription) }
+                    if let error = error { print("Failed to pauseAudio: \(error.localizedDescription)") }
                 }
             case "resumeAudio":
-                print("Bridge: resumeAudio")
                 self.chimeController.resumeAudio { (error: Error?) in
-                    if let error = error { print(error.localizedDescription) }
+                    if let error = error { print("Failed to resumeAudio: \(error.localizedDescription)") }
                 }
             case "setAudioDevice":
-                print("Bridge: setAudioDevice")
                 if let payloadData = payload?.data(using: .utf8) {
                     self.chimeController.setAudioDevice(deviceData: payloadData) { (error: Error?) in
-                        if let error = error { print(error.localizedDescription) }
+                        if let error = error { print("Failed to setAudioDevice: \(error.localizedDescription)") }
                     }
                 }
             case "getAudioDevices":
-                print("Bridge: getAudioDevices")
                 let mediaDeviceInfoList = self.chimeController.getAudioDevices()
                 do {
                     let data = try JSONEncoder().encode(mediaDeviceInfoList)
                     self.response(requestId: requestId, data: data)
                 } catch {
-                    print("failed to getAudioDevices")
+                    print("Failed to getAudioDevices")
                 }
 
             default:
