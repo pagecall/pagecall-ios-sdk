@@ -9,7 +9,7 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
         fatalError("PagecallSDK: PagecallWebView cannot be instantiated from a storyboard")
     }
     
-    override init(frame: CGRect, configuration: WKWebViewConfiguration) {
+    override public init(frame: CGRect, configuration: WKWebViewConfiguration) {
         let contentController = WKUserContentController()
         
         configuration.mediaTypesRequiringUserActionForPlayback = []
