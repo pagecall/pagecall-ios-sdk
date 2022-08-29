@@ -19,8 +19,9 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "PagecallSDK",
+            path: "Sources/PagecallSDK",
             resources: [
-                .copy("Sources/PagecallSDK/PagecallNative.js")
+                .process("PagecallNative.js")
             ]),
         .binaryTarget(
             name: "AmazonChimeSDK",

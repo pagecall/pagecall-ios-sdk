@@ -35,7 +35,7 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
             self.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/\(osVersion) Safari/605.1.15"
         }
         
-        if let path = Bundle(for: type(of: self)).path(forResource: "PagecallNative", ofType: "js") {
+        if let path = Bundle.module.path(forResource: "PagecallNative", ofType: "js") {
             if let bindingJS = try? String(contentsOfFile: path, encoding: .utf8) {
                 let script = WKUserScript(source: bindingJS, injectionTime: .atDocumentStart, forMainFrameOnly: false)
                 contentController.addUserScript(script)
