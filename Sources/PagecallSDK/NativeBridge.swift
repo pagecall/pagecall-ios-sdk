@@ -13,7 +13,7 @@ enum BridgeEvent: String, Codable {
 }
 
 enum BridgeAction: String, Codable {
-    case createSession, start, stop, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice
+    case createSession, start, stop, getPermissions, requestPermissions, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice
 }
 
 class WebViewEmitter {
