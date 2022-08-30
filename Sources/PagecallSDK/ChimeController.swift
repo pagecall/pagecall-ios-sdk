@@ -85,7 +85,7 @@ class ChimeController {
             if isSucceed {
                 callback(nil)
             } else {
-                callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed at chimeMeetingSession.pauseAudio"]))
+                callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed at chimeMeetingSession.resumeAudio"]))
                 return
             }
         } else {
