@@ -42,7 +42,7 @@ interface PagecallNativePublic {
   getPermissions: (constraints: {
     video: boolean;
     audio: boolean;
-  }) => Promise<{ video?: boolean | null; audio?: boolean | null }>;
+  }) => Promise<{ video?: boolean; audio?: boolean }>;
   requestPermissions: (constraints: {
     video: boolean;
     audio: boolean;
