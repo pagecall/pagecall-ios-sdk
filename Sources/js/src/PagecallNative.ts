@@ -60,6 +60,7 @@ interface PagecallNativePublic {
 interface PagecallNativePrivate {
   emit<T extends NativeEvent>(eventName: T, payload?: string): void;
   response(requestId: string, payload?: string): void;
+  throw(requestId: string, message?: string): void;
 }
 
 export type PagecallNativeBridge = PagecallNativePublic & PagecallNativePrivate;
@@ -70,11 +71,11 @@ function registerGlobals() {
 
   const postMessage = (
     data: { action: string; payload?: string },
-    callback?: Callback
+    callback?: { resolve: Callback; reject: Callback }
   ) => {
     const { action, payload } = data;
     const requestId = callback
-      ? requestController.request(callback)
+      ? requestController.request(callback.resolve, callback.reject)
       : undefined;
     window.webkit.messageHandlers.pagecall.postMessage(
       JSON.stringify({ action, payload, requestId })
@@ -103,12 +104,10 @@ function registerGlobals() {
     },
 
     createSession: (configuration: ChimeMeetingSessionConfiguration) => {
-      return new Promise<void>((resolve) => {
+      return new Promise((resolve, reject) => {
         postMessage(
           { action: "createSession", payload: JSON.stringify(configuration) },
-          () => {
-            resolve();
-          }
+          { resolve, reject }
         );
       });
     },
@@ -120,25 +119,21 @@ function registerGlobals() {
     },
 
     getPermissions: (constraints: { video: boolean; audio: boolean }) => {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         postMessage(
           { action: "getPermissions", payload: JSON.stringify(constraints) },
-          (response: { video?: boolean | null; audio?: boolean | null }) => {
-            resolve(response);
-          }
+          { resolve, reject }
         );
       });
     },
     requestPermissions: (constraints: { video: boolean; audio: boolean }) => {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         postMessage(
           {
             action: "requestPermissions",
             payload: JSON.stringify(constraints),
           },
-          (response: { video?: boolean; audio?: boolean }) => {
-            resolve(response);
-          }
+          { resolve, reject }
         );
       });
     },
@@ -156,13 +151,8 @@ function registerGlobals() {
       });
     },
     getAudioDevices: () => {
-      return new Promise((resolve) => {
-        postMessage(
-          { action: "getAudioDevices" },
-          (response: MediaDeviceInfo[]) => {
-            resolve(response);
-          }
-        );
+      return new Promise((resolve, reject) => {
+        postMessage({ action: "getAudioDevices" }, { resolve, reject });
       });
     },
   };
@@ -176,6 +166,10 @@ function registerGlobals() {
     response: (requestId, payload) => {
       const parsedPayload = payload ? JSON.parse(payload) : undefined;
       requestController.response(requestId, parsedPayload);
+    },
+
+    throw: (requestId, message) => {
+      requestController.throw(requestId, message);
     },
   };
 
