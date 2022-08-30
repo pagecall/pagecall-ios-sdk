@@ -136,6 +136,18 @@ class NativeBridge {
                         self.response(requestId: requestId)
                     }
                 }
+            case .getPermissions:
+                if let payloadData = payload?.data(using: .utf8) {
+                    if let permissions = self.chimeController.getPermissions(constraint: payloadData, callback: { (error: Error?) in
+                        if let error = error {
+                            print("Failed to getPermissions: \(error.localizedDescription)")
+                            self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                        }
+                    }) {
+                        self.response(requestId: requestId, data: permissions)
+                    }
+                }
+                self.response(requestId: requestId, data: data)
             case .pauseAudio:
                 self.chimeController.pauseAudio { (error: Error?) in
                     if let error = error { print("Failed to pauseAudio: \(error.localizedDescription)") }

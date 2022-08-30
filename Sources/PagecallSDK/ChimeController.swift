@@ -66,6 +66,52 @@ class ChimeController {
         }
     }
 
+    func getPermissions(constraint: Data, callback: (Error?) -> Void) -> Data? {
+        struct MediaType: Codable {
+            var audio: Bool?
+            var video: Bool?
+        }
+
+        guard let mediaType = try? JSONDecoder().decode(MediaType.self, from: constraint) else {
+            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wrong Constraint"]))
+            return nil
+        }
+
+        func getAudioStatus() -> Bool? {
+            if let audio = mediaType.audio {
+                if !audio { return nil }
+                let status = AVCaptureDevice.authorizationStatus(for: .audio)
+                switch status {
+                    case .notDetermined: return nil
+                    case .restricted: return false
+                    case .denied: return false
+                    case .authorized: return true
+                    default: return nil
+                }
+            } else { return nil }
+        }
+        func getVideoStatus() -> Bool? {
+            if let video = mediaType.video {
+                if !video { return nil }
+                let status = AVCaptureDevice.authorizationStatus(for: .video)
+                switch status {
+                    case .notDetermined: return nil
+                    case .restricted: return false
+                    case .denied: return false
+                    case .authorized: return true
+                    default: return nil
+                }
+            } else { return nil }
+        }
+
+        if let data = try? JSONEncoder().encode(MediaType(audio: getAudioStatus(), video: getVideoStatus())) {
+            return data
+        } else {
+            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to getPermissions"]))
+            return nil
+        }
+    }
+
     func pauseAudio(callback: (Error?) -> Void) {
         if let chimeMeetingSession = chimeMeetingSession {
             let isSucceed = chimeMeetingSession.pauseAudio()
@@ -94,12 +140,11 @@ class ChimeController {
     }
 
     func setAudioDevice(deviceData: Data, callback: (Error?) -> Void) {
-        let jsonDecoder = JSONDecoder()
         struct DeviceId: Codable {
             var deviceId: String
         }
 
-        guard let deviceId = try? jsonDecoder.decode(DeviceId.self, from: deviceData) else {
+        guard let deviceId = try? JSONDecoder().decode(DeviceId.self, from: deviceData) else {
             callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "DeviceId not exist"]))
             return
         }
