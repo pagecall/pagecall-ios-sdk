@@ -12,6 +12,10 @@ enum BridgeEvent: String, Codable {
     case audioDevices, audioVolume, audioStatus, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, meetingEnded, error
 }
 
+enum BridgeAction: String, Codable {
+    case createSession, start, stop, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice
+}
+
 class WebViewEmitter {
     let webview: WKWebView
 
@@ -88,14 +92,14 @@ class NativeBridge {
                 NSLog("Failed to JSONSerialization")
                 return
             }
-            guard let action = jsonArray["action"] as? String, let requestId = jsonArray["requestId"] as? String?, let payload = jsonArray["payload"] as? String? else {
+            guard let action = jsonArray["action"] as? BridgeAction, let requestId = jsonArray["requestId"] as? String?, let payload = jsonArray["payload"] as? String? else {
                 return
             }
 
             print("Bridge Action: \(action)")
 
             switch action {
-            case "createSession":
+            case .createSession:
                 if let payloadData = payload?.data(using: .utf8) {
                     self.chimeController.createMeetingSession(joinMeetingData: payloadData) { (error: Error?) in
                         if let error = error { print("Failed to createMeetingSession: \(error.localizedDescription)") }
@@ -104,35 +108,35 @@ class NativeBridge {
                         }
                     }
                 }
-            case "start":
+            case .start:
                 self.chimeController.start { (error: Error?) in
                     if let error = error { print("Failed to start: \(error.localizedDescription)") }
                     else {
                         self.response(requestId: requestId)
                     }
                 }
-            case "stop":
+            case .stop:
                 self.chimeController.stop { (error: Error?) in
                     if let error = error { print("Failed to stop: \(error.localizedDescription)") }
                     else {
                         self.response(requestId: requestId)
                     }
                 }
-            case "pauseAudio":
+            case .pauseAudio:
                 self.chimeController.pauseAudio { (error: Error?) in
                     if let error = error { print("Failed to pauseAudio: \(error.localizedDescription)") }
                 }
-            case "resumeAudio":
+            case .resumeAudio:
                 self.chimeController.resumeAudio { (error: Error?) in
                     if let error = error { print("Failed to resumeAudio: \(error.localizedDescription)") }
                 }
-            case "setAudioDevice":
+            case .setAudioDevice:
                 if let payloadData = payload?.data(using: .utf8) {
                     self.chimeController.setAudioDevice(deviceData: payloadData) { (error: Error?) in
                         if let error = error { print("Failed to setAudioDevice: \(error.localizedDescription)") }
                     }
                 }
-            case "getAudioDevices":
+            case .getAudioDevices:
                 let mediaDeviceInfoList = self.chimeController.getAudioDevices()
                 do {
                     let data = try JSONEncoder().encode(mediaDeviceInfoList)
