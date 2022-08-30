@@ -84,6 +84,18 @@ class NativeBridge {
         }
     }
 
+    func response(requestId: String?, errorMessage: String) {
+        guard let requestId = requestId else {
+            return
+        }
+
+        self.webview.evaluateJavaScript("window.PagecallNative.throw('\(requestId)','\(errorMessage)')") { _, error in
+            if let error = error {
+                NSLog("Failed to PagecallNative.response \(error)")
+            }
+        }
+    }
+
     func messageHandler(message: String) {
         do {
             let data = message.data(using: .utf8)!
@@ -92,13 +104,13 @@ class NativeBridge {
                 NSLog("Failed to JSONSerialization")
                 return
             }
-            guard let action = jsonArray["action"] as? BridgeAction, let requestId = jsonArray["requestId"] as? String?, let payload = jsonArray["payload"] as? String? else {
+            guard let action = jsonArray["action"] as? String, let bridgeAction = BridgeAction(rawValue: action), let requestId = jsonArray["requestId"] as? String?, let payload = jsonArray["payload"] as? String? else {
                 return
             }
 
-            print("Bridge Action: \(action)")
+            print("Bridge Action: \(bridgeAction)")
 
-            switch action {
+            switch bridgeAction {
             case .createSession:
                 if let payloadData = payload?.data(using: .utf8) {
                     self.chimeController.createMeetingSession(joinMeetingData: payloadData) { (error: Error?) in
@@ -117,8 +129,10 @@ class NativeBridge {
                 }
             case .stop:
                 self.chimeController.stop { (error: Error?) in
-                    if let error = error { print("Failed to stop: \(error.localizedDescription)") }
-                    else {
+                    if let error = error {
+                        print("Failed to stop: \(error.localizedDescription)")
+                        self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                    } else {
                         self.response(requestId: requestId)
                     }
                 }
@@ -143,6 +157,7 @@ class NativeBridge {
                     self.response(requestId: requestId, data: data)
                 } catch {
                     print("Failed to getAudioDevices")
+                    self.response(requestId: requestId, errorMessage: error.localizedDescription)
                 }
 
             default:
