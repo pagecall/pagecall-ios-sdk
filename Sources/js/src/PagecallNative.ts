@@ -39,6 +39,15 @@ interface PagecallNativePublic {
   start: () => void;
   stop: () => void;
 
+  getPermissions: (constraints: {
+    video: boolean;
+    audio: boolean;
+  }) => Promise<{ video?: boolean | null; audio?: boolean | null }>;
+  requestPermissions: (constraints: {
+    video: boolean;
+    audio: boolean;
+  }) => Promise<{ video?: boolean; audio?: boolean }>;
+
   pauseAudio: () => void;
   resumeAudio: () => void;
   setAudioDevice: (deviceId: string) => void;
@@ -110,6 +119,30 @@ function registerGlobals() {
       postMessage({ action: "stop" });
     },
 
+    getPermissions: (constraints: { video: boolean; audio: boolean }) => {
+      return new Promise((resolve) => {
+        postMessage(
+          { action: "getPermissions", payload: JSON.stringify(constraints) },
+          (response: { video?: boolean | null; audio?: boolean | null }) => {
+            resolve(response);
+          }
+        );
+      });
+    },
+    requestPermissions: (constraints: { video: boolean; audio: boolean }) => {
+      return new Promise((resolve) => {
+        postMessage(
+          {
+            action: "requestPermissions",
+            payload: JSON.stringify(constraints),
+          },
+          (response: { video?: boolean; audio?: boolean }) => {
+            resolve(response);
+          }
+        );
+      });
+    },
+
     pauseAudio: () => {
       postMessage({ action: "pauseAudio" });
     },
@@ -123,11 +156,11 @@ function registerGlobals() {
       });
     },
     getAudioDevices: () => {
-      return new Promise<MediaDeviceInfo[]>((resolve, reject) => {
+      return new Promise((resolve) => {
         postMessage(
           { action: "getAudioDevices" },
-          (info: MediaDeviceInfo[]) => {
-            resolve(info);
+          (response: MediaDeviceInfo[]) => {
+            resolve(response);
           }
         );
       });
