@@ -149,6 +149,20 @@ class NativeBridge {
                 } else {
                     self.response(requestId: requestId, errorMessage: "Wrong payload")
                 }
+            case .requestPermissions:
+                if let payloadData = payload?.data(using: .utf8) {
+                    self.chimeController.requestPermissions(constraint: payloadData, callback: { (permissions: MediaType?, error: Error?) in
+                        if let error = error {
+                            print("Failed to requestPermissions: \(error.localizedDescription)")
+                            self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                        } else if let permissions = permissions {
+                            guard let data = try? JSONEncoder().encode(permissions) else { return }
+                            self.response(requestId: requestId, data: data)
+                        }
+                    })
+                } else {
+                    self.response(requestId: requestId, errorMessage: "Wrong payload")
+                }
             case .pauseAudio:
                 self.chimeController.pauseAudio { (error: Error?) in
                     if let error = error { print("Failed to pauseAudio: \(error.localizedDescription)") }

@@ -9,20 +9,17 @@ import AmazonChimeSDK
 import AVFoundation
 import Foundation
 
+struct MediaType: Codable {
+    var audio: Bool?
+    var video: Bool?
+}
+
 class ChimeController {
     let emitter: WebViewEmitter
     var chimeMeetingSession: ChimeMeetingSession?
 
     init(emitter: WebViewEmitter) {
         self.emitter = emitter
-
-        AVAudioSession.sharedInstance().requestRecordPermission { granted in
-            if granted {
-                print("granted")
-            } else {
-                print("rejected")
-            }
-        }
     }
 
     func createMeetingSession(joinMeetingData: Data, callback: (Error?) -> Void) {
@@ -67,11 +64,6 @@ class ChimeController {
     }
 
     func getPermissions(constraint: Data, callback: (Error?) -> Void) -> Data? {
-        struct MediaType: Codable {
-            var audio: Bool?
-            var video: Bool?
-        }
-
         guard let mediaType = try? JSONDecoder().decode(MediaType.self, from: constraint) else {
             callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wrong Constraint"]))
             return nil
@@ -110,6 +102,37 @@ class ChimeController {
             callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to getPermissions"]))
             return nil
         }
+    }
+
+    // TODO: video permission
+    func requestPermissions(constraint: Data, callback: @escaping (MediaType?, Error?) -> Void) {
+        guard let mediaType = try? JSONDecoder().decode(MediaType.self, from: constraint) else {
+            callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wrong Constraint"]))
+            return
+        }
+
+        if let video = mediaType.video {
+            if video {
+                callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Not Implemented for Video Permission"]))
+                return
+            }
+        }
+
+        func requestAudioPermission(callback: @escaping (Bool) -> Void) {
+            if let audio = mediaType.audio {
+                if !audio {
+                    callback(false)
+                    return
+                }
+                AVCaptureDevice.requestAccess(for: .audio) {
+                    isAudio in callback(isAudio)
+                }
+            } else {
+                callback(false)
+            }
+        }
+
+        requestAudioPermission { isAudio in callback(MediaType(audio: isAudio, video: false), nil) }
     }
 
     func pauseAudio(callback: (Error?) -> Void) {
