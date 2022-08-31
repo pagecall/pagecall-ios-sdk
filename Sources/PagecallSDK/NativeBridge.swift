@@ -146,8 +146,9 @@ class NativeBridge {
                     }) {
                         self.response(requestId: requestId, data: permissions)
                     }
+                } else {
+                    self.response(requestId: requestId, errorMessage: "Wrong payload")
                 }
-                self.response(requestId: requestId, data: data)
             case .pauseAudio:
                 self.chimeController.pauseAudio { (error: Error?) in
                     if let error = error { print("Failed to pauseAudio: \(error.localizedDescription)") }
