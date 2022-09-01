@@ -186,9 +186,6 @@ class NativeBridge {
                     print("Failed to getAudioDevices")
                     self.response(requestId: requestId, errorMessage: error.localizedDescription)
                 }
-
-            default:
-                break
             }
         } catch let error as NSError {
             print(error)
