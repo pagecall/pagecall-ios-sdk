@@ -13,7 +13,7 @@ enum BridgeEvent: String, Codable {
 }
 
 enum BridgeAction: String, Codable {
-    case createSession, start, stop, getPermissions, requestPermissions, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice
+    case createSession, start, stop, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice
 }
 
 class WebViewEmitter {
@@ -149,14 +149,14 @@ class NativeBridge {
                 } else {
                     self.response(requestId: requestId, errorMessage: "Wrong payload")
                 }
-            case .requestPermissions:
+            case .requestPermission:
                 if let payloadData = payload?.data(using: .utf8) {
-                    self.chimeController.requestPermissions(constraint: payloadData, callback: { (permissions: MediaType?, error: Error?) in
+                    self.chimeController.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
                         if let error = error {
-                            print("Failed to requestPermissions: \(error.localizedDescription)")
+                            print("Failed to requestPermission: \(error.localizedDescription)")
                             self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                        } else if let permissions = permissions {
-                            guard let data = try? JSONEncoder().encode(permissions) else { return }
+                        } else if let isGranted = isGranted {
+                            guard let data = try? JSONEncoder().encode(isGranted) else { return }
                             self.response(requestId: requestId, data: data)
                         }
                     })

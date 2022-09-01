@@ -43,10 +43,7 @@ interface PagecallNativePublic {
     video: boolean;
     audio: boolean;
   }) => Promise<{ video?: boolean; audio?: boolean }>;
-  requestPermissions: (constraints: {
-    video: boolean;
-    audio: boolean;
-  }) => Promise<{ video?: boolean; audio?: boolean }>;
+  requestPermission: (mediaType: "audio" | "video") => Promise<boolean>;
 
   pauseAudio: () => void;
   resumeAudio: () => void;
@@ -103,7 +100,7 @@ function registerGlobals() {
       listenerController.removeListener(eventName, listener);
     },
 
-    createSession: (configuration: ChimeMeetingSessionConfiguration) => {
+    createSession: (configuration) => {
       return new Promise((resolve, reject) => {
         postMessage(
           { action: "createSession", payload: JSON.stringify(configuration) },
@@ -118,7 +115,7 @@ function registerGlobals() {
       postMessage({ action: "stop" });
     },
 
-    getPermissions: (constraints: { video: boolean; audio: boolean }) => {
+    getPermissions: (constraints) => {
       return new Promise((resolve, reject) => {
         postMessage(
           { action: "getPermissions", payload: JSON.stringify(constraints) },
@@ -126,12 +123,12 @@ function registerGlobals() {
         );
       });
     },
-    requestPermissions: (constraints: { video: boolean; audio: boolean }) => {
+    requestPermission: (mediaType) => {
       return new Promise((resolve, reject) => {
         postMessage(
           {
-            action: "requestPermissions",
-            payload: JSON.stringify(constraints),
+            action: "requestPermission",
+            payload: JSON.stringify({ mediaType }),
           },
           { resolve, reject }
         );
@@ -144,7 +141,7 @@ function registerGlobals() {
     resumeAudio: () => {
       postMessage({ action: "resumeAudio" });
     },
-    setAudioDevice: (deviceId: string) => {
+    setAudioDevice: (deviceId) => {
       postMessage({
         action: "setAudioDevice",
         payload: JSON.stringify({ deviceId }),
