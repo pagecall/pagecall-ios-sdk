@@ -13,7 +13,7 @@ enum BridgeEvent: String, Codable {
 }
 
 enum BridgeAction: String, Codable {
-    case createSession, start, stop, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice
+    case createSession, start, stop, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume
 }
 
 class WebViewEmitter {
@@ -185,6 +185,15 @@ class NativeBridge {
                 } catch {
                     print("Failed to getAudioDevices")
                     self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                }
+            case .requestAudioVolume:
+                self.chimeController.requestAudioVolume { volume, error in
+                    if let error = error { print("Failed to requestAudioVolume: \(error.localizedDescription)")
+                        self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                    } else if let volume = volume {
+                        guard let data = try? JSONEncoder().encode(volume) else { return }
+                        self.response(requestId: requestId, data: data)
+                    }
                 }
             }
         } catch let error as NSError {

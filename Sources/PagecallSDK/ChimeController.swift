@@ -12,9 +12,30 @@ import Foundation
 class ChimeController {
     let emitter: WebViewEmitter
     var chimeMeetingSession: ChimeMeetingSession?
+    let audioRecorder: AVAudioRecorder?
 
     init(emitter: WebViewEmitter) {
         self.emitter = emitter
+        let audioSession = AVAudioSession.sharedInstance()
+        try? audioSession.setCategory(.playAndRecord, mode: .default, options: [])
+
+        let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let audioFilename = documentPath.appendingPathComponent("nothing.m4a")
+        let settings = [
+            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+            AVSampleRateKey: 12000,
+            AVNumberOfChannelsKey: 1,
+            AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+        ]
+
+        do {
+            let audioRecorder = try AVAudioRecorder(url: audioFilename, settings: settings)
+            self.audioRecorder = audioRecorder
+            audioRecorder.isMeteringEnabled = true
+            audioRecorder.record()
+        } catch {
+            self.audioRecorder = nil
+        }
     }
 
     func createMeetingSession(joinMeetingData: Data, callback: (Error?) -> Void) {
@@ -33,6 +54,28 @@ class ChimeController {
         let chimeMeetingSession = ChimeMeetingSession(configuration: meetingSessionConfiguration, logger: logger, emitter: emitter)
         self.chimeMeetingSession = chimeMeetingSession
         callback(nil)
+    }
+
+    private func normalizeSoundLevel(level: Float) -> Float {
+        let lowLevel: Float = -40
+        let highLevel: Float = -10
+
+        var level = max(0.0, level - lowLevel)
+        level = min(level, highLevel - lowLevel)
+        return level / (highLevel - lowLevel) // scaled to 0.0 ~ 1
+    }
+
+    func requestAudioVolume(callback: @escaping (Float?, Error?) -> Void) {
+        guard let audioRecorder = audioRecorder else {
+            callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "AudioRecorder is not exist"]))
+            return
+        }
+        audioRecorder.updateMeters()
+        let averagePower = audioRecorder.averagePower(forChannel: 0)
+        print(averagePower)
+        let nomalizedVolume = normalizeSoundLevel(level: averagePower)
+        print(nomalizedVolume)
+        callback(nomalizedVolume, nil)
     }
 
     func start(callback: (Error?) -> Void) {

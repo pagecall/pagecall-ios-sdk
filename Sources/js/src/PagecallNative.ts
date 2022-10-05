@@ -49,6 +49,7 @@ interface PagecallNativePublic {
   resumeAudio: () => void;
   setAudioDevice: (deviceId: string) => void;
   getAudioDevices: () => Promise<MediaDeviceInfo[]>;
+  requestAudioVolume: () => Promise<number>;
 
   startScreenshare: () => void;
   stopScreenshare: () => void;
@@ -150,6 +151,12 @@ function registerGlobals() {
     getAudioDevices: () => {
       return new Promise((resolve, reject) => {
         postMessage({ action: "getAudioDevices" }, { resolve, reject });
+      });
+    },
+
+    requestAudioVolume: () => {
+      return new Promise((resolve, reject) => {
+        postMessage({ action: "requestAudioVolume" }, { resolve, reject });
       });
     },
   };
