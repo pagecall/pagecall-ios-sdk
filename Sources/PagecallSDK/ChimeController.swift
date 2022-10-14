@@ -72,9 +72,7 @@ class ChimeController {
         }
         audioRecorder.updateMeters()
         let averagePower = audioRecorder.averagePower(forChannel: 0)
-        print(averagePower)
         let nomalizedVolume = normalizeSoundLevel(level: averagePower)
-        print(nomalizedVolume)
         callback(nomalizedVolume, nil)
     }
 
