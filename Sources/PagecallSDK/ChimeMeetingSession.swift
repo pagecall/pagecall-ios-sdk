@@ -22,6 +22,9 @@ class ChimeMeetingSession {
     func start(callback: (Error?) -> Void) {
         do {
             try meetingSession.audioVideo.start()
+
+            _ = meetingSession.audioVideo.realtimeSetVoiceFocusEnabled(enabled: true)
+
             callback(nil)
         } catch {
             print(error)
