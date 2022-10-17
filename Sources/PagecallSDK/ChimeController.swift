@@ -82,6 +82,7 @@ class ChimeController {
                 if error != nil {
                     callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to start session"]))
                 } else {
+                    try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .allowBluetooth])
                     callback(nil)
                 }
             }
