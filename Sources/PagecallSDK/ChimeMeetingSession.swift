@@ -17,6 +17,7 @@ class ChimeMeetingSession {
 
         meetingSession.audioVideo.addRealtimeObserver(observer: ChimeRealtimeObserver(emitter: emitter, myAttendeeId: meetingSession.configuration.credentials.attendeeId))
         meetingSession.audioVideo.addAudioVideoObserver(observer: ChimeAudioVideoObserver(emitter: emitter))
+        meetingSession.audioVideo.addMetricsObserver(observer: ChimeMetricsObserver(emitter: emitter))
     }
 
     func start(callback: (Error?) -> Void) {
