@@ -9,7 +9,7 @@ import AmazonChimeSDK
 import Foundation
 
 enum StatKind: String, Codable {
-    case audioReceivePacketLossPercent, audioSendPacketLossPercent
+    case audioPacketsSentLossPercent, audioPacketsReceivedLossPercent
 }
 
 struct MediaStat: Codable {
@@ -21,14 +21,17 @@ struct MediaStat: Codable {
 class ChimeMetricsObserver: MetricsObserver {
     let emitter: WebViewEmitter
 
+    func sendStat(kind: StatKind, value: Int) {
+        guard let data = try? JSONEncoder().encode(MediaStat(event: "audio", key: kind, value: value)) else { return }
+        emitter.emit(eventName: .mediaStat, data: data)
+    }
+
     func metricsDidReceive(metrics: [AnyHashable: Any]) {
         if let metric = metrics[ObservableMetric.audioReceivePacketLossPercent] as? Int {
-            guard let data = try? JSONEncoder().encode(MediaStat(event: "audio", key: .audioReceivePacketLossPercent, value: metric)) else { return }
-            emitter.emit(eventName: .mediaStat, data: data)
+            sendStat(kind: .audioPacketsReceivedLossPercent, value: metric)
         }
         if let metric = metrics[ObservableMetric.audioSendPacketLossPercent] as? Int {
-            guard let data = try? JSONEncoder().encode(MediaStat(event: "audio", key: .audioSendPacketLossPercent, value: metric)) else { return }
-            emitter.emit(eventName: .mediaStat, data: data)
+            sendStat(kind: .audioPacketsSentLossPercent, value: metric)
         }
     }
 
