@@ -9,7 +9,7 @@ import Foundation
 import WebKit
 
 enum BridgeEvent: String, Codable {
-    case audioDevices, audioVolume, audioStatus, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, meetingEnded, error
+    case audioDevice, audioDevices, audioVolume, audioStatus, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, meetingEnded, error
 }
 
 enum BridgeAction: String, Codable {

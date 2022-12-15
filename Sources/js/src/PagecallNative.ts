@@ -8,6 +8,7 @@ interface ChimeMeetingSessionConfiguration {
 }
 
 type PayloadByNativeEvent = {
+  audioDevice: MediaDeviceInfo;
   audioDevices: MediaDeviceInfo[];
   audioVolume: number;
   audioStatus: { sessionId: string; muted: boolean };

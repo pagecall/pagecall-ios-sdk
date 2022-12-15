@@ -18,7 +18,7 @@ class ChimeMeetingSession {
         meetingSession.audioVideo.addRealtimeObserver(observer: ChimeRealtimeObserver(emitter: emitter, myAttendeeId: meetingSession.configuration.credentials.attendeeId))
         meetingSession.audioVideo.addAudioVideoObserver(observer: ChimeAudioVideoObserver(emitter: emitter))
         meetingSession.audioVideo.addMetricsObserver(observer: ChimeMetricsObserver(emitter: emitter))
-        meetingSession.audioVideo.addDeviceChangeObserver(observer: ChimeDeviceChangeObserver(emitter: emitter))
+        meetingSession.audioVideo.addDeviceChangeObserver(observer: ChimeDeviceChangeObserver(emitter: emitter, meetingSession: self.meetingSession))
     }
 
     func start(callback: (Error?) -> Void) {

@@ -223,8 +223,6 @@ class ChimeController {
 
         let audioDevices = chimeMeetingSession.getAudioDevices()
 
-        return audioDevices.map { mediaDevice in
-            MediaDeviceInfo(deviceId: mediaDevice.label, groupId: "DefaultGroupId", kind: .audioinput, label: mediaDevice.label)
-        }
+        return audioDevices.map(MediaDeviceInfo.init)
     }
 }
