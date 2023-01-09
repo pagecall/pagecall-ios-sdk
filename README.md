@@ -13,7 +13,7 @@
 ```swift
 import UIKit
 import WebKit
-import PagecallSDK
+import PagecallCore
 
 class ViewController: UIViewController, WKUIDelegate {
     var webView: PagecallWebView?
