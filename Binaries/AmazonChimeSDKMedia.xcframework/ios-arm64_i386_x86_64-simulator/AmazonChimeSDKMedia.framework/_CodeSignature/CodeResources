@@ -22,7 +22,7 @@
 		</data>
 		<key>Headers/VideoClientSDK.h</key>
 		<data>
-		jmIsxAerg2kikhGTgZpIR4aJMkY=
+		x4L930MHZvloS1n7mydGsjNU9Zk=
 		</data>
 		<key>Headers/VideoRendererDelegate.h</key>
 		<data>
@@ -38,7 +38,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		zVyEfe3hyuI1QGWsUHS4aHsh0sU=
+		qzGA7DOEp4LIJlFFe5PU1pcKwPM=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -95,11 +95,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			jmIsxAerg2kikhGTgZpIR4aJMkY=
+			x4L930MHZvloS1n7mydGsjNU9Zk=
 			</data>
 			<key>hash2</key>
 			<data>
-			AQdTWY5pDedRe0XlduEupgtuA2XCYUXgzY2u0+/3KfM=
+			PhfuQ2W9UfnqPenLKsjLtLRlsOMjpaRjjcUL/5+Gqjo=
 			</data>
 		</dict>
 		<key>Headers/VideoRendererDelegate.h</key>
