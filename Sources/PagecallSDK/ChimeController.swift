@@ -56,6 +56,13 @@ class ChimeController {
         callback(nil)
     }
 
+    public func deleteMeetingSession() {
+        if let chimeMeetingSession = chimeMeetingSession {
+            chimeMeetingSession.dispose()
+            self.chimeMeetingSession = nil
+        }
+    }
+
     private func normalizeSoundLevel(level: Float) -> Float {
         let lowLevel: Float = -40
         let highLevel: Float = -10

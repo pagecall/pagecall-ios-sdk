@@ -200,4 +200,8 @@ class NativeBridge {
             print(error)
         }
     }
+
+    public func disconnect() {
+        self.chimeController.deleteMeetingSession()
+    }
 }
