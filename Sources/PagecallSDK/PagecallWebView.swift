@@ -59,5 +59,7 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
         }
     }
     
-    public func dispose() {}
+    public func dispose() {
+        self.nativeBridge?.disconnect()
+    }
 }
