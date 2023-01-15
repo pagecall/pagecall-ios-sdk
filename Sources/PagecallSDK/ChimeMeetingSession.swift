@@ -11,14 +11,25 @@ import Foundation
 class ChimeMeetingSession {
     let meetingSession: DefaultMeetingSession
 
+    let realtimeObserver: ChimeRealtimeObserver
+    let audioVideoObserver: ChimeAudioVideoObserver
+    let metricsObserver: ChimeMetricsObserver
+    let deviceChangeObserver: ChimeDeviceChangeObserver
+
     init(configuration: MeetingSessionConfiguration, logger: AmazonChimeSDK.Logger, emitter: WebViewEmitter) {
         let meetingSession = DefaultMeetingSession(configuration: configuration, logger: logger)
         self.meetingSession = meetingSession
 
-        meetingSession.audioVideo.addRealtimeObserver(observer: ChimeRealtimeObserver(emitter: emitter, myAttendeeId: meetingSession.configuration.credentials.attendeeId))
-        meetingSession.audioVideo.addAudioVideoObserver(observer: ChimeAudioVideoObserver(emitter: emitter))
-        meetingSession.audioVideo.addMetricsObserver(observer: ChimeMetricsObserver(emitter: emitter))
-        meetingSession.audioVideo.addDeviceChangeObserver(observer: ChimeDeviceChangeObserver(emitter: emitter, meetingSession: self.meetingSession))
+        self.realtimeObserver = ChimeRealtimeObserver(emitter: emitter, myAttendeeId: meetingSession.configuration.credentials.attendeeId)
+        self.audioVideoObserver = ChimeAudioVideoObserver(emitter: emitter)
+        self.metricsObserver = ChimeMetricsObserver(emitter: emitter)
+        self.deviceChangeObserver = ChimeDeviceChangeObserver(emitter: emitter, meetingSession: self.meetingSession)
+
+        meetingSession.audioVideo.addRealtimeObserver(observer: realtimeObserver)
+        meetingSession.audioVideo.addAudioVideoObserver(observer: audioVideoObserver)
+        meetingSession.audioVideo.addMetricsObserver(observer: metricsObserver)
+        meetingSession.audioVideo.addDeviceChangeObserver(observer: deviceChangeObserver)
+
     }
 
     func start(callback: (Error?) -> Void) {
@@ -65,5 +76,10 @@ class ChimeMeetingSession {
 
     func dispose() {
         meetingSession.audioVideo.stop()
+
+        meetingSession.audioVideo.removeRealtimeObserver(observer: realtimeObserver)
+        meetingSession.audioVideo.removeAudioVideoObserver(observer: audioVideoObserver)
+        meetingSession.audioVideo.removeMetricsObserver(observer: metricsObserver)
+        meetingSession.audioVideo.removeDeviceChangeObserver(observer: deviceChangeObserver)
     }
 }
