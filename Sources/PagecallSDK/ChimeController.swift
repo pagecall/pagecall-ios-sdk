@@ -61,7 +61,7 @@ class ChimeController {
             let averagePower = audioRecorder.averagePower(forChannel: 0)
             let nomalizedVolume = normalizeSoundLevel(level: averagePower)
             callback(nomalizedVolume, nil)
-            return;
+            return
         }
         do {
             let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -97,9 +97,9 @@ class ChimeController {
     }
 
     func stop(callback: (Error?) -> Void) {
-        if let audioRecorder = audioRecorder{
-            audioRecorder.stop();
-            self.audioRecorder = nil;
+        if let audioRecorder = audioRecorder {
+            audioRecorder.stop()
+            self.audioRecorder = nil
         }
         if let chimeMeetingSession = chimeMeetingSession {
             chimeMeetingSession.stop()
