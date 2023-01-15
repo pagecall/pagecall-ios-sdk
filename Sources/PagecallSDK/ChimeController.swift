@@ -76,6 +76,11 @@ class ChimeController {
             self.audioRecorder = audioRecorder
             audioRecorder.isMeteringEnabled = true
             audioRecorder.record()
+
+            audioRecorder.updateMeters()
+            let averagePower = audioRecorder.averagePower(forChannel: 0)
+            let nomalizedVolume = normalizeSoundLevel(level: averagePower)
+            callback(nomalizedVolume, nil)
         } catch {
             callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "AudioRecorder is not exist"]))
         }
