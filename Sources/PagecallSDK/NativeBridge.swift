@@ -114,16 +114,14 @@ class NativeBridge {
             case .createSession:
                 if let payloadData = payload?.data(using: .utf8) {
                     self.chimeController.createMeetingSession(joinMeetingData: payloadData) { (error: Error?) in
-                        if let error = error { print("Failed to createMeetingSession: \(error.localizedDescription)") }
-                        else {
+                        if let error = error { print("Failed to createMeetingSession: \(error.localizedDescription)") } else {
                             self.response(requestId: requestId)
                         }
                     }
                 }
             case .start:
                 self.chimeController.start { (error: Error?) in
-                    if let error = error { print("Failed to start: \(error.localizedDescription)") }
-                    else {
+                    if let error = error { print("Failed to start: \(error.localizedDescription)") } else {
                         self.response(requestId: requestId)
                     }
                 }
