@@ -26,7 +26,6 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
             configuration.limitsNavigationsToAppBoundDomains = true
         }
         super.init(frame: frame, configuration: configuration)
-        self.nativeBridge = .init(webview: self)
 
         self.allowsBackForwardNavigationGestures = false
 
@@ -56,6 +55,18 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
             }
         default:
             break
+        }
+    }
+
+    public override func didMoveToSuperview() {
+        if self.superview == nil {
+            self.nativeBridge?.disconnect()
+            self.nativeBridge = nil
+            return
+        }
+
+        if self.nativeBridge == nil {
+            self.nativeBridge = .init(webview: self)
         }
     }
 
