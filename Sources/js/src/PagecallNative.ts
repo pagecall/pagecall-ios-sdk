@@ -15,6 +15,8 @@ type PayloadByNativeEvent = {
   mediaStat: MediaStat;
   audioEnded: void;
   videoEnded: void;
+  connected: void;
+  disconnected: void;
   screenshareEnded: void;
   meetingEnded: void;
   log: string;
