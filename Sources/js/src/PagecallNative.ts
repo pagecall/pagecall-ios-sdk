@@ -17,6 +17,7 @@ type PayloadByNativeEvent = {
   videoEnded: void;
   screenshareEnded: void;
   meetingEnded: void;
+  log: string;
   error: { name: string; message: string };
 };
 
