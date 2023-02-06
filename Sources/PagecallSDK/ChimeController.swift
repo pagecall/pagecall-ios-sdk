@@ -16,9 +16,76 @@ class ChimeController {
 
     init(emitter: WebViewEmitter) {
         self.emitter = emitter
-        let audioSession = AVAudioSession.sharedInstance()
-        try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .allowBluetooth])
+        self.setAudioSessionCategory()
 
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleAudioSessionRouteChange),
+                                               name: AVAudioSession.routeChangeNotification,
+                                               object: nil)
+    }
+
+    @objc private func handleAudioSessionRouteChange(notification: Notification) {
+        self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange notification name=\(notification.name)")
+        let audioSession = AVAudioSession.sharedInstance()
+        guard let routeChangeReason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
+        let reason = AVAudioSession.RouteChangeReason(rawValue: routeChangeReason) else { return }
+
+        switch reason {
+        case AVAudioSession.RouteChangeReason.unknown:
+            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : The reason is unknown.")
+        case AVAudioSession.RouteChangeReason.newDeviceAvailable:
+            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : A new device became available")
+        case AVAudioSession.RouteChangeReason.oldDeviceUnavailable:
+            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : The old device became unavailable")
+        case AVAudioSession.RouteChangeReason.categoryChange:
+            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : The audio category has changed")
+            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Category = \(audioSession.category.rawValue)")
+        case AVAudioSession.RouteChangeReason.override:
+            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : The route has been overridden")
+        case AVAudioSession.RouteChangeReason.wakeFromSleep:
+            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : The device woke from sleep.")
+        case AVAudioSession.RouteChangeReason.noSuitableRouteForCategory:
+            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : Returned when there is no route for the current category")
+        case AVAudioSession.RouteChangeReason.routeConfigurationChange:
+            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : Indicates that the set of input and/our output ports has not changed, but some aspect of their configuration has changed.")
+        default:
+            break
+        }
+
+        let currentRoute = audioSession.currentRoute
+        if !currentRoute.outputs.isEmpty {
+            for description in currentRoute.outputs {
+                self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange | portType=\(description.portType), portName=\(description.portName), UID=\(description.uid)")
+            }
+        } else {
+            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange | requires connection to device")
+        }
+        self.setAudioSessionCategory()
+        /**
+         * TODO: setIdiomPhoneOutputAudioPort() 
+         * Ref: https://github.com/pplink/pagecall-ios-sdk/blob/main/PageCallSDK/PageCallSDK/Classes/PCMainViewController.m#L673-L841
+         */
+    }
+
+    private func setAudioSessionCategory() {
+        let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+        var options: AVAudioSession.CategoryOptions
+        if #available(iOS 14.5, *) {
+            options = [.mixWithOthers,
+                    .allowBluetooth,
+                    .allowAirPlay,
+                    .allowBluetoothA2DP,
+                    .overrideMutedMicrophoneInterruption,
+                    .interruptSpokenAudioAndMixWithOthers,
+                    .defaultToSpeaker]
+        } else {
+            options = [.mixWithOthers,
+                    .allowBluetooth,
+                    .allowAirPlay,
+                    .allowBluetoothA2DP,
+                    .defaultToSpeaker]
+        }
+        try? audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: options)
     }
 
     func createMeetingSession(joinMeetingData: Data, callback: (Error?) -> Void) {
@@ -238,5 +305,21 @@ class ChimeController {
         let audioDevices = chimeMeetingSession.getAudioDevices()
 
         return audioDevices.map(MediaDeviceInfo.init)
+    }
+
+    func dispose(callback: (Error?) -> Void) {
+        NotificationCenter.default.removeObserver(self)
+
+        if self.audioRecorder != nil && self.chimeMeetingSession != nil {
+            audioRecorder?.stop()
+            self.audioRecorder = nil
+
+            chimeMeetingSession?.dispose()
+            self.chimeMeetingSession = nil
+
+            callback(nil)
+        } else {
+            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "chimeMeetingSession and audioRecorder not exist"]))
+        }
     }
 }

@@ -13,7 +13,7 @@ enum BridgeEvent: String, Codable {
 }
 
 enum BridgeAction: String, Codable {
-    case createSession, start, stop, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume
+    case createSession, initController, start, stop, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume, dispose
 }
 
 struct ErrorEvent: Codable {
@@ -52,6 +52,12 @@ class WebViewEmitter {
         self.emit(eventName: .error, data: data)
     }
 
+    func log(name: String, message: String?) {
+        NSLog("log \(name) \(String(describing: message))")
+        guard let data = try? JSONEncoder().encode(ErrorEvent(name: name, message: message)) else { return }
+        self.emit(eventName: .log, data: data)
+    }
+
     init(webView: WKWebView) {
         self.webview = webView
     }
@@ -60,7 +66,7 @@ class WebViewEmitter {
 class NativeBridge {
     let webview: WKWebView
     let emitter: WebViewEmitter
-    let chimeController: ChimeController
+    var chimeController: ChimeController
 
     init(webview: WKWebView) {
         self.webview = webview
@@ -132,6 +138,9 @@ class NativeBridge {
                         }
                     }
                 }
+            case .initController:
+                self.chimeController = .init(emitter: self.emitter)
+                self.response(requestId: requestId)
             case .start:
                 self.chimeController.start { (error: Error?) in
                     if let error = error {
@@ -144,6 +153,15 @@ class NativeBridge {
                 self.chimeController.stop { (error: Error?) in
                     if let error = error {
                         self.emitter.error(name: "Failed to stop", message: error.localizedDescription)
+                        self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                    } else {
+                        self.response(requestId: requestId)
+                    }
+                }
+            case .dispose:
+                self.chimeController.dispose { (error: Error?) in
+                    if let error = error {
+                        print("Failed to dispose: \(error.localizedDescription)")
                         self.response(requestId: requestId, errorMessage: error.localizedDescription)
                     } else {
                         self.response(requestId: requestId)
@@ -222,6 +240,12 @@ class NativeBridge {
     }
 
     public func disconnect() {
-        self.chimeController.deleteMeetingSession()
+        self.chimeController.dispose { (error: Error?) in
+            if let error = error {
+                self.emitter.error(name: "ChimeController", message: "failed to dispose: \(error.localizedDescription)")
+            } else {
+                self.emitter.log(name: "ChimeController", message: "dispose success")
+            }
+        }
     }
 }
