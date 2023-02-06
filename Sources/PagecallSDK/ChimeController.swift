@@ -9,6 +9,28 @@ import AmazonChimeSDK
 import AVFoundation
 import Foundation
 
+extension AVAudioSession.RouteChangeReason {
+    var description: String {
+        switch self {
+        case .newDeviceAvailable:
+            return "NewDeviceAvailable"
+        case .oldDeviceUnavailable:
+            return "OldDeviceUnavailable"
+        case .categoryChange:
+            return "CategoryChange"
+        case .override:
+            return "Override"
+        case .wakeFromSleep:
+            return "WakeFromSleep"
+        case .noSuitableRouteForCategory:
+            return "NoSuitableRouteForCategory"
+        case .routeConfigurationChange:
+            return "RouteConfigurationChange"
+        default:
+            return "Unknown"
+        }
+    }
+}
 class ChimeController {
     let emitter: WebViewEmitter
     var chimeMeetingSession: ChimeMeetingSession?
@@ -29,38 +51,25 @@ class ChimeController {
         let audioSession = AVAudioSession.sharedInstance()
         guard let routeChangeReason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
         let reason = AVAudioSession.RouteChangeReason(rawValue: routeChangeReason) else { return }
+        let currentRouteOutputs: [[String: String]] = audioSession.currentRoute.outputs.map { output in
+            return ["portType": output.portType.rawValue,
+                    "portName": output.portName,
+                    "uid": output.uid]
+        }
+        if #available(iOS 13.0, *) { // .withoutEscapingSlashes is available from iOS 13
+            guard let payload = try? JSONSerialization.data(withJSONObject: ["reason": reason.description,
+                                                                                   "outputs": currentRouteOutputs,
+                                                                                   "category": audioSession.category.rawValue] as [String: Any],
+                                                                  options: .withoutEscapingSlashes) else { return }
 
-        switch reason {
-        case AVAudioSession.RouteChangeReason.unknown:
-            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : The reason is unknown.")
-        case AVAudioSession.RouteChangeReason.newDeviceAvailable:
-            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : A new device became available")
-        case AVAudioSession.RouteChangeReason.oldDeviceUnavailable:
-            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : The old device became unavailable")
-        case AVAudioSession.RouteChangeReason.categoryChange:
-            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : The audio category has changed")
-            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Category = \(audioSession.category.rawValue)")
-        case AVAudioSession.RouteChangeReason.override:
-            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : The route has been overridden")
-        case AVAudioSession.RouteChangeReason.wakeFromSleep:
-            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : The device woke from sleep.")
-        case AVAudioSession.RouteChangeReason.noSuitableRouteForCategory:
-            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : Returned when there is no route for the current category")
-        case AVAudioSession.RouteChangeReason.routeConfigurationChange:
-            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange Reason : Indicates that the set of input and/our output ports has not changed, but some aspect of their configuration has changed.")
-        default:
-            break
+            self.emitter.emit(eventName: .audioSessionRouteChanged, data: payload)
         }
 
-        let currentRoute = audioSession.currentRoute
-        if !currentRoute.outputs.isEmpty {
-            for description in currentRoute.outputs {
-                self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange | portType=\(description.portType), portName=\(description.portName), UID=\(description.uid)")
-            }
-        } else {
-            self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange | requires connection to device")
+        if audioSession.currentRoute.outputs.isEmpty {
+            self.emitter.error(name: "AVAudioSession", message: "AudioSessionRouteChange | requires connection to device")
         }
         self.setAudioSessionCategory()
+
         /**
          * TODO: setIdiomPhoneOutputAudioPort() 
          * Ref: https://github.com/pplink/pagecall-ios-sdk/blob/main/PageCallSDK/PageCallSDK/Classes/PCMainViewController.m#L673-L841
