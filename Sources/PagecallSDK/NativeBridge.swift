@@ -13,7 +13,7 @@ enum BridgeEvent: String, Codable {
 }
 
 enum BridgeAction: String, Codable {
-    case createSession, initController, start, stop, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume, dispose
+    case createSession, `init`, start, stop, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume, dispose
 }
 
 struct ErrorEvent: Codable {
@@ -138,7 +138,7 @@ class NativeBridge {
                         }
                     }
                 }
-            case .initController:
+            case .`init`:
                 self.chimeController = .init(emitter: self.emitter)
                 self.response(requestId: requestId)
             case .start:
