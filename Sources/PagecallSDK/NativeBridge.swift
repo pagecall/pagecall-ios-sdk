@@ -127,135 +127,141 @@ class NativeBridge {
 
             print("Bridge Action: \(bridgeAction)")
 
-            if bridgeAction != .`init` && self.chimeController == nil {
-                self.response(requestId: requestId, errorMessage: "ChimeController does not exist")
-                return
-            }
-
-            switch bridgeAction {
-            case .`init`:
-                if self.chimeController == nil {
+            if bridgeAction == .`init` {
+                if let _ = self.chimeController {
+                    self.response(requestId: requestId, errorMessage: "ChimeController already exists")
+                } else {
                     self.chimeController = .init(emitter: self.emitter)
                     self.response(requestId: requestId)
-                } else {
-                    self.response(requestId: requestId, errorMessage: "ChimeController already exists")
                 }
-            case .createSession:
-                if let payloadData = payload?.data(using: .utf8) {
-                    self.chimeController?.createMeetingSession(joinMeetingData: payloadData) { (error: Error?) in
+            } else if let chimeController = self.chimeController {
+                switch bridgeAction {
+                case .`init`:
+                    print("impossible to receive .`init` as a case when chimeController exists")
+                case .createSession:
+                    if let payloadData = payload?.data(using: .utf8) {
+                        chimeController.createMeetingSession(joinMeetingData: payloadData) { (error: Error?) in
+                            if let error = error {
+                                self.emitter.error(name: "Failed to createMeetingSession", message: error.localizedDescription)
+                            } else {
+                                self.response(requestId: requestId)
+                            }
+                        }
+                    }
+                case .start:
+                    chimeController.start { (error: Error?) in
                         if let error = error {
-                            self.emitter.error(name: "Failed to createMeetingSession", message: error.localizedDescription)
+                            self.emitter.error(name: "Failed to start", message: error.localizedDescription)
                         } else {
                             self.response(requestId: requestId)
                         }
                     }
-                }
-            case .start:
-                self.chimeController?.start { (error: Error?) in
-                    if let error = error {
-                        self.emitter.error(name: "Failed to start", message: error.localizedDescription)
-                    } else {
-                        self.response(requestId: requestId)
-                    }
-                }
-            case .stop:
-                self.chimeController?.stop { (error: Error?) in
-                    if let error = error {
-                        self.emitter.error(name: "Failed to stop", message: error.localizedDescription)
-                        self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                    } else {
-                        self.response(requestId: requestId)
-                    }
-                }
-            case .dispose:
-                self.chimeController?.dispose { (error: Error?) in
-                    if let error = error {
-                        print("Failed to dispose: \(error.localizedDescription)")
-                        self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                    } else {
-                        self.chimeController = nil
-                        self.response(requestId: requestId)
-                    }
-                }
-            case .getPermissions:
-                if let payloadData = payload?.data(using: .utf8) {
-                    if let permissions = self.chimeController?.getPermissions(constraint: payloadData, callback: { (error: Error?) in
+                case .stop:
+                    chimeController.stop { (error: Error?) in
                         if let error = error {
-                            self.emitter.error(name: "Failed to getPermissions", message: error.localizedDescription)
+                            self.emitter.error(name: "Failed to stop", message: error.localizedDescription)
                             self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                        } else {
+                            self.response(requestId: requestId)
                         }
-                    }) {
-                        self.response(requestId: requestId, data: permissions)
                     }
-                } else {
-                    self.response(requestId: requestId, errorMessage: "Wrong payload")
-                }
-            case .requestPermission:
-                if let payloadData = payload?.data(using: .utf8) {
-                    self.chimeController?.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
+                case .dispose:
+                    chimeController.dispose { (error: Error?) in
                         if let error = error {
-                            self.emitter.error(name: "Failed to requestPermission", message: error.localizedDescription)
+                            print("Failed to dispose: \(error.localizedDescription)")
                             self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                        } else if let isGranted = isGranted {
-                            guard let data = try? JSONEncoder().encode(isGranted) else { return }
+                        } else {
+                            self.chimeController = nil
+                            self.response(requestId: requestId)
+                        }
+                    }
+                case .getPermissions:
+                    if let payloadData = payload?.data(using: .utf8) {
+                        if let permissions = chimeController.getPermissions(constraint: payloadData, callback: { (error: Error?) in
+                            if let error = error {
+                                self.emitter.error(name: "Failed to getPermissions", message: error.localizedDescription)
+                                self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                            }
+                        }) {
+                            self.response(requestId: requestId, data: permissions)
+                        }
+                    } else {
+                        self.response(requestId: requestId, errorMessage: "Wrong payload")
+                    }
+                case .requestPermission:
+                    if let payloadData = payload?.data(using: .utf8) {
+                        chimeController.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
+                            if let error = error {
+                                self.emitter.error(name: "Failed to requestPermission", message: error.localizedDescription)
+                                self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                            } else if let isGranted = isGranted {
+                                guard let data = try? JSONEncoder().encode(isGranted) else { return }
+                                self.response(requestId: requestId, data: data)
+                            }
+                        })
+                    } else {
+                        self.response(requestId: requestId, errorMessage: "Wrong payload")
+                    }
+                case .pauseAudio:
+                    chimeController.pauseAudio { (error: Error?) in
+                        if let error = error {
+                            self.emitter.error(name: "Failed to pauseAudio", message: error.localizedDescription)
+                        }
+                    }
+                case .resumeAudio:
+                    chimeController.resumeAudio { (error: Error?) in
+                        if let error = error {
+                            self.emitter.error(name: "Failed to resumeAudio", message: error.localizedDescription)
+                        }
+                    }
+                case .setAudioDevice:
+                    if let payloadData = payload?.data(using: .utf8) {
+                        chimeController.setAudioDevice(deviceData: payloadData) { (error: Error?) in
+                            if let error = error {
+                                self.emitter.error(name: "Failed to setAudioDevice", message: error.localizedDescription)
+                            }
+                        }
+                    }
+                case .getAudioDevices:
+                    let mediaDeviceInfoList = chimeController.getAudioDevices()
+                    do {
+                        let data = try JSONEncoder().encode(mediaDeviceInfoList)
+                        self.response(requestId: requestId, data: data)
+                    } catch {
+                        self.emitter.error(name: "Failed to getAudioDevices", message: error.localizedDescription)
+                        self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                    }
+                case .requestAudioVolume:
+                    chimeController.requestAudioVolume { volume, error in
+                        if let error = error {
+                            self.emitter.error(name: "Failed to requestAudioVolume", message: error.localizedDescription)
+                            self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                        } else if let volume = volume {
+                            guard let data = try? JSONEncoder().encode(volume) else { return }
                             self.response(requestId: requestId, data: data)
                         }
-                    })
-                } else {
-                    self.response(requestId: requestId, errorMessage: "Wrong payload")
-                }
-            case .pauseAudio:
-                self.chimeController?.pauseAudio { (error: Error?) in
-                    if let error = error {
-                        self.emitter.error(name: "Failed to pauseAudio", message: error.localizedDescription)
                     }
                 }
-            case .resumeAudio:
-                self.chimeController?.resumeAudio { (error: Error?) in
-                    if let error = error {
-                        self.emitter.error(name: "Failed to resumeAudio", message: error.localizedDescription)
-                    }
-                }
-            case .setAudioDevice:
-                if let payloadData = payload?.data(using: .utf8) {
-                    self.chimeController?.setAudioDevice(deviceData: payloadData) { (error: Error?) in
-                        if let error = error {
-                            self.emitter.error(name: "Failed to setAudioDevice", message: error.localizedDescription)
-                        }
-                    }
-                }
-            case .getAudioDevices:
-                let mediaDeviceInfoList = self.chimeController?.getAudioDevices()
-                do {
-                    let data = try JSONEncoder().encode(mediaDeviceInfoList)
-                    self.response(requestId: requestId, data: data)
-                } catch {
-                    self.emitter.error(name: "Failed to getAudioDevices", message: error.localizedDescription)
-                    self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                }
-            case .requestAudioVolume:
-                self.chimeController?.requestAudioVolume { volume, error in
-                    if let error = error {
-                        self.emitter.error(name: "Failed to requestAudioVolume", message: error.localizedDescription)
-                        self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                    } else if let volume = volume {
-                        guard let data = try? JSONEncoder().encode(volume) else { return }
-                        self.response(requestId: requestId, data: data)
-                    }
-                }
+            } else {
+                self.response(requestId: requestId, errorMessage: "ChimeController does not exist")
             }
+
         } catch let error as NSError {
             print(error)
         }
     }
 
     public func disconnect() {
-        self.chimeController?.dispose { (error: Error?) in
-            if let error = error {
-                self.emitter.error(name: "ChimeController", message: "failed to dispose: \(error.localizedDescription)")
-            } else {
-                self.emitter.log(name: "ChimeController", message: "dispose success")
+        if let chimeController = self.chimeController {
+              chimeController.dispose { (error: Error?) in
+                if let error = error {
+                    self.emitter.error(name: "ChimeController", message: "failed to dispose: \(error.localizedDescription)")
+                } else {
+                    self.emitter.log(name: "ChimeController", message: "dispose success")
+                    self.chimeController = nil
+                }
             }
+
         }
     }
 }
