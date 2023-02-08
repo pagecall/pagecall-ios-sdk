@@ -12,6 +12,16 @@ type PayloadByNativeEvent = {
   audioDevices: MediaDeviceInfo[];
   audioVolume: number;
   audioStatus: { sessionId: string; muted: boolean };
+  audioSessionRouteChanged: {
+    reason: string;
+    outputs: { portType: string; portName: string; uid: string }[];
+    category: string;
+  };
+  audioSessionInterrupted: {
+    reason: "Default" | "BuiltInMicMuted" | "Unknown" | "None";
+    type: "Began" | "Ended" | "Unknown" | "None";
+    options: "ShouldResume" | "Unknown" | "None";
+  }
   mediaStat: MediaStat;
   audioEnded: void;
   videoEnded: void;

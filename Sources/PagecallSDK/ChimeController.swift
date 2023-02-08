@@ -9,6 +9,63 @@ import AmazonChimeSDK
 import AVFoundation
 import Foundation
 
+extension AVAudioSession.RouteChangeReason {
+    var description: String {
+        switch self {
+        case .newDeviceAvailable:
+            return "NewDeviceAvailable"
+        case .oldDeviceUnavailable:
+            return "OldDeviceUnavailable"
+        case .categoryChange:
+            return "CategoryChange"
+        case .override:
+            return "Override"
+        case .wakeFromSleep:
+            return "WakeFromSleep"
+        case .noSuitableRouteForCategory:
+            return "NoSuitableRouteForCategory"
+        case .routeConfigurationChange:
+            return "RouteConfigurationChange"
+        default:
+            return "Unknown"
+        }
+    }
+}
+extension AVAudioSession.InterruptionType {
+    var description: String {
+        switch self {
+        case .began:
+            return "Began"
+        case .ended:
+            return "Ended"
+        default:
+            return "Unknown"
+        }
+    }
+}
+extension AVAudioSession.InterruptionReason {
+    var description: String {
+        switch self {
+        case .default:
+            return "Default"
+        case .builtInMicMuted:
+            return "BuiltInMicMuted"
+        default:
+            return "Unknown"
+        }
+    }
+}
+
+extension AVAudioSession.InterruptionOptions {
+    var description: String {
+        switch self {
+        case .shouldResume:
+            return "ShouldResume"
+        default:
+            return "Unknown"
+        }
+    }
+}
 class ChimeController {
     let emitter: WebViewEmitter
     var chimeMeetingSession: ChimeMeetingSession?
@@ -16,9 +73,111 @@ class ChimeController {
 
     init(emitter: WebViewEmitter) {
         self.emitter = emitter
-        let audioSession = AVAudioSession.sharedInstance()
-        try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .allowBluetooth])
+        self.setAudioSessionCategory()
 
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleAudioSessionRouteChange),
+                                               name: AVAudioSession.routeChangeNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleAudioSessionInterruption),
+                                               name: AVAudioSession.interruptionNotification,
+                                               object: nil)
+    }
+
+    @objc private func handleAudioSessionInterruption(notification: Notification) {
+        self.emitter.log(name: "AVAudioSession", message: "AudioSessionInterruption notification name=\(notification.name)")
+
+        var payloadType: String
+        var payloadReason: String
+        var payloadOptions: String
+
+        if notification.name == AVAudioSession.interruptionNotification {
+            if #available(iOS 14.5, *) {
+
+                let interruptionType = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+                if let interruptionType = interruptionType,
+                   let type = AVAudioSession.InterruptionType(rawValue: interruptionType) {
+                    payloadType = type.description
+                } else {
+                    payloadType = "None"
+                }
+
+                let interruptionReason = notification.userInfo?[AVAudioSessionInterruptionReasonKey] as? UInt
+                if let interruptionReason = interruptionReason,
+                   let reason = AVAudioSession.InterruptionReason(rawValue: interruptionReason) {
+                    payloadReason = reason.description
+                } else {
+                    payloadReason = "None"
+                }
+
+                let interruptionOptions = notification.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt
+                if let interruptionOptions = interruptionOptions {
+                    let options = AVAudioSession.InterruptionOptions(rawValue: interruptionOptions)
+                    payloadOptions = options.description
+                } else {
+                    payloadOptions = "None"
+                }
+
+                guard let payload = try? JSONSerialization.data(withJSONObject: ["type": payloadType,
+                                                                                 "reason": payloadReason,
+                                                                                 "options": payloadOptions] as [String: Any],
+                                                                options: .withoutEscapingSlashes) else { return }
+
+                self.emitter.emit(eventName: .audioSessionInterrupted, data: payload)
+            }
+        }
+    }
+
+    @objc private func handleAudioSessionRouteChange(notification: Notification) {
+        self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange notification name=\(notification.name)")
+        let audioSession = AVAudioSession.sharedInstance()
+        guard let routeChangeReason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
+        let reason = AVAudioSession.RouteChangeReason(rawValue: routeChangeReason) else { return }
+        let currentRouteOutputs: [[String: String]] = audioSession.currentRoute.outputs.map { output in
+            return ["portType": output.portType.rawValue,
+                    "portName": output.portName,
+                    "uid": output.uid]
+        }
+        if #available(iOS 13.0, *) { // .withoutEscapingSlashes is available from iOS 13
+            guard let payload = try? JSONSerialization.data(withJSONObject: ["reason": reason.description,
+                                                                             "outputs": currentRouteOutputs,
+                                                                             "category": audioSession.category.rawValue] as [String: Any],
+                                                                  options: .withoutEscapingSlashes) else { return }
+
+            self.emitter.emit(eventName: .audioSessionRouteChanged, data: payload)
+        }
+
+        if audioSession.currentRoute.outputs.isEmpty {
+            self.emitter.error(name: "AVAudioSession", message: "AudioSessionRouteChange | requires connection to device")
+        }
+        self.setAudioSessionCategory()
+
+        /**
+         * TODO: setIdiomPhoneOutputAudioPort() 
+         * Ref: https://github.com/pplink/pagecall-ios-sdk/blob/main/PageCallSDK/PageCallSDK/Classes/PCMainViewController.m#L673-L841
+         */
+    }
+
+    private func setAudioSessionCategory() {
+        let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+        var options: AVAudioSession.CategoryOptions
+        if #available(iOS 14.5, *) {
+            options = [.mixWithOthers,
+                    .allowBluetooth,
+                    .allowAirPlay,
+                    .allowBluetoothA2DP,
+                    .overrideMutedMicrophoneInterruption,
+                    .interruptSpokenAudioAndMixWithOthers,
+                    .defaultToSpeaker]
+        } else {
+            options = [.mixWithOthers,
+                    .allowBluetooth,
+                    .allowAirPlay,
+                    .allowBluetoothA2DP,
+                    .defaultToSpeaker]
+        }
+        try? audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: options)
     }
 
     func createMeetingSession(joinMeetingData: Data, callback: (Error?) -> Void) {
@@ -238,5 +397,21 @@ class ChimeController {
         let audioDevices = chimeMeetingSession.getAudioDevices()
 
         return audioDevices.map(MediaDeviceInfo.init)
+    }
+
+    func dispose(callback: (Error?) -> Void) {
+        NotificationCenter.default.removeObserver(self)
+
+        if self.audioRecorder != nil && self.chimeMeetingSession != nil {
+            audioRecorder?.stop()
+            self.audioRecorder = nil
+
+            chimeMeetingSession?.dispose()
+            self.chimeMeetingSession = nil
+
+            callback(nil)
+        } else {
+            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "chimeMeetingSession and audioRecorder not exist"]))
+        }
     }
 }
