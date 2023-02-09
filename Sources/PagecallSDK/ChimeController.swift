@@ -402,16 +402,14 @@ class ChimeController {
     func dispose(callback: (Error?) -> Void) {
         NotificationCenter.default.removeObserver(self)
 
-        if self.audioRecorder != nil && self.chimeMeetingSession != nil {
-            audioRecorder?.stop()
+        if let audioRecorder = self.audioRecorder {
+            audioRecorder.stop()
             self.audioRecorder = nil
-
-            chimeMeetingSession?.dispose()
-            self.chimeMeetingSession = nil
-
-            callback(nil)
-        } else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "chimeMeetingSession and audioRecorder not exist"]))
         }
+        if let chimeMeetingSession = self.chimeMeetingSession {
+            chimeMeetingSession.dispose()
+            self.chimeMeetingSession = nil
+        }
+        callback(nil)
     }
 }
