@@ -60,7 +60,7 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
 
     public override func didMoveToSuperview() {
         if self.superview == nil {
-            self.dispose()
+            self.disposeInner()
             return
         }
 
@@ -69,9 +69,13 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
         }
     }
 
-    public func dispose() {
+    private func disposeInner() {
         self.nativeBridge?.disconnect()
         self.nativeBridge = nil
         self.contentController.removeScriptMessageHandler(forName: self.controllerName)
+    }
+
+    public func dispose() {
+        self.disposeInner()
     }
 }
