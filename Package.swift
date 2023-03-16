@@ -6,13 +6,14 @@ import PackageDescription
 let package = Package(
     name: "Pagecall",
     platforms: [
-        .iOS(.v11)
+        .iOS(.v14)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "PagecallCore",
-            targets: ["PagecallCore", "AmazonChimeSDK", "AmazonChimeSDKMedia"])
+            targets: ["PagecallCore", "AmazonChimeSDK", "AmazonChimeSDKMedia", "Mediasoup", "WebRTC"]
+        )
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -25,10 +26,20 @@ let package = Package(
             ]),
         .binaryTarget(
             name: "AmazonChimeSDK",
-            path: "Binaries/AmazonChimeSDK.xcframework"),
+            path: "Binaries/AmazonChimeSDK.xcframework"
+        ),
         .binaryTarget(
             name: "AmazonChimeSDKMedia",
-            path: "Binaries/AmazonChimeSDKMedia.xcframework"),
+            path: "Binaries/AmazonChimeSDKMedia.xcframework"
+        ),
+        .binaryTarget(
+            name: "Mediasoup",
+            path: "Binaries/Mediasoup.xcframework"
+        ),
+        .binaryTarget(
+            name: "WebRTC",
+            path: "Binaries/WebRTC.xcframework"
+        ),
         .testTarget(
             name: "PagecallSDKTests",
             dependencies: ["PagecallCore"])
