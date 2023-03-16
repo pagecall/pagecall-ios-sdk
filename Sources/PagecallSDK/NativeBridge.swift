@@ -195,6 +195,7 @@ class NativeBridge {
                 }
             case .dispose:
                 mediaController.dispose()
+                self.mediaController = nil
                 self.response(requestId: requestId)
             case .pauseAudio:
                 mediaController.pauseAudio { (error: Error?) in
