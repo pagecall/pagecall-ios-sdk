@@ -13,10 +13,10 @@ enum MediaDeviceKind: String, Codable {
 }
 
 struct MediaDeviceInfo: Codable {
-    var deviceId: String
-    var groupId: String
-    var kind: MediaDeviceKind
-    var label: String
+    let deviceId: String
+    let groupId: String
+    let kind: MediaDeviceKind
+    let label: String
 
     init(mediaDevice: MediaDevice) {
         self.deviceId = mediaDevice.label
@@ -24,4 +24,13 @@ struct MediaDeviceInfo: Codable {
         self.kind = .audioinput
         self.label = mediaDevice.label
     }
+
+    init(deviceId: String, groupId: String, kind: MediaDeviceKind, label: String) {
+        self.deviceId = deviceId
+        self.groupId = groupId
+        self.kind = kind
+        self.label = label
+    }
+
+    static let audioDefault = MediaDeviceInfo(deviceId: "audio0", groupId: "", kind: .audioinput, label: "Default")
 }
