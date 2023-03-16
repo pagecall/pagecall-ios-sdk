@@ -11,10 +11,15 @@ import AVFoundation
 
 enum BridgeEvent: String, Codable {
     case audioDevice, audioDevices, audioVolume, audioStatus, audioSessionRouteChanged, audioSessionInterrupted, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, meetingEnded, log, error
+    case connectTransport
+}
+
+enum BridgeRequest: String, Codable {
+    case produce
 }
 
 enum BridgeAction: String, Codable {
-    case initialize, dispose, start, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume
+    case initialize, dispose, start, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume, consume, response
 }
 
 struct ErrorEvent: Codable {
@@ -25,19 +30,68 @@ struct ErrorEvent: Codable {
 class WebViewEmitter {
     let webview: WKWebView
 
-    func emit(eventName: BridgeEvent) {
-        self.webview.evaluateJavaScript("window.PagecallNative.emit('\(eventName)')") { _, error in
-            if let error = error {
-                NSLog("Failed to PagecallNative.emit \(error)")
+    private func rawEmit(eventName: String) {
+        self.rawEmit(eventName: eventName, message: nil)
+    }
+
+    private func rawEmit(eventName: String, message: String?) {
+        self.rawEmit(eventName: eventName, message: message, eventId: nil)
+    }
+
+    private func rawEmit(eventName: String, message: String?, eventId: String?) {
+        let args = [eventName, message, eventId].compactMap { $0 }
+        let script = "window.PagecallNative.emit(\(args.map { arg in "'\(arg)'" }.joined(separator: ",")))"
+        DispatchQueue.main.async {
+            self.webview.evaluateJavaScript(script) { _, error in
+                if let error = error {
+                    NSLog("Failed to PagecallNative.emit \(error)")
+                }
             }
         }
     }
 
+    func emit(eventName: BridgeEvent) {
+        self.rawEmit(eventName: eventName.rawValue)
+    }
+
     func emit(eventName: BridgeEvent, message: String) {
-        self.webview.evaluateJavaScript("window.PagecallNative.emit('\(eventName)','\(message)')") { _, error in
-            if let error = error {
-                NSLog("Failed to PagecallNative.emit \(error)")
+        self.rawEmit(eventName: eventName.rawValue, message: message)
+    }
+
+    private var eventIdToCallback = [String: (Error?, String?) -> Void]()
+
+    func emit(eventName: BridgeEvent, json: [String: Any]) {
+        self.jsonEmit(eventName: eventName.rawValue, json: json, callback: nil)
+
+    }
+    func request(eventName: BridgeRequest, json: [String: Any], callback: @escaping ((Error?, String?) -> Void)) {
+        self.jsonEmit(eventName: eventName.rawValue, json: json, callback: callback)
+    }
+
+    private func jsonEmit(eventName: String, json: [String: Any], callback: ((Error?, String?) -> Void)?) {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: json), let stringifiedJson = String(data: jsonData, encoding: .utf8) else {
+            callback?(PagecallError(message: "Failed to stringify"), nil)
+            return
+        }
+        if let callback = callback {
+            let eventId = UUID().uuidString
+            eventIdToCallback[eventId] = callback
+            self.rawEmit(eventName: eventName, message: stringifiedJson, eventId: eventId)
+        } else {
+            self.rawEmit(eventName: eventName, message: stringifiedJson)
+        }
+    }
+
+    func resolve(eventId: String, error: String?, result: String?) {
+        if let callback = eventIdToCallback[eventId] {
+            eventIdToCallback.removeValue(forKey: eventId)
+            if let errorMessage = error {
+                callback(PagecallError(message: errorMessage), nil)
+            } else {
+                callback(nil, result)
             }
+        } else {
+            print("Event not found (id: \(eventId)")
         }
     }
 
@@ -59,6 +113,33 @@ class WebViewEmitter {
         self.emit(eventName: .log, data: data)
     }
 
+    func response(requestId: String, data: Data?) {
+        let script: String = {
+            if let data = data, let string = String(data: data, encoding: .utf8) {
+                return "window.PagecallNative.response('\(requestId)', '\(string)')"
+            } else {
+                return "window.PagecallNative.response('\(requestId)')"
+            }
+        }()
+        DispatchQueue.main.async {
+            self.webview.evaluateJavaScript(script) { _, error in
+                if let error = error {
+                    NSLog("Failed to PagecallNative.response \(error)")
+                }
+            }
+        }
+    }
+
+    func response(requestId: String, errorMessage: String) {
+        DispatchQueue.main.async {
+            self.webview.evaluateJavaScript("window.PagecallNative.throw('\(requestId)','\(errorMessage)')") { _, error in
+                if let error = error {
+                    NSLog("Failed to PagecallNative.response \(error)")
+                }
+            }
+        }
+    }
+
     init(webView: WKWebView) {
         self.webview = webView
     }
@@ -72,47 +153,6 @@ class NativeBridge {
     init(webview: WKWebView) {
         self.webview = webview
         self.emitter = .init(webView: self.webview)
-    }
-
-    func response(requestId: String?) {
-        guard let requestId = requestId else {
-            return
-        }
-
-        self.webview.evaluateJavaScript("window.PagecallNative.response('\(requestId)')") { _, error in
-            if let error = error {
-                NSLog("Failed to PagecallNative.response \(error)")
-            }
-        }
-    }
-
-    func response(requestId: String?, data: Data) {
-        guard let requestId = requestId else {
-            return
-        }
-
-        let string = String(data: data, encoding: .utf8)
-        if let string = string {
-            DispatchQueue.main.async {
-                self.webview.evaluateJavaScript("window.PagecallNative.response('\(requestId)','\(string)')") { _, error in
-                    if let error = error {
-                        NSLog("Failed to PagecallNative.response \(error)")
-                    }
-                }
-            }
-        }
-    }
-
-    func response(requestId: String?, errorMessage: String) {
-        guard let requestId = requestId else {
-            return
-        }
-
-        self.webview.evaluateJavaScript("window.PagecallNative.throw('\(requestId)','\(errorMessage)')") { _, error in
-            if let error = error {
-                NSLog("Failed to PagecallNative.response \(error)")
-            }
-        }
     }
 
     func messageHandler(message: String) {
@@ -129,42 +169,69 @@ class NativeBridge {
 
             print("Bridge Action: \(bridgeAction)")
 
-            if bridgeAction == .getPermissions {
-                if let payloadData = payload?.data(using: .utf8) {
-                    if let permissions = NativeBridge.getPermissions(constraint: payloadData, callback: { (error: Error?) in
-                        if let error = error {
-                            self.emitter.error(name: "Failed to getPermissions", message: error.localizedDescription)
-                            self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                        }
-                    }) {
-                        self.response(requestId: requestId, data: permissions)
+            let respond: (Error?, Data?) -> Void = { error, data in
+                if let error = error {
+                    if let requestId = requestId {
+                        self.emitter.response(requestId: requestId, errorMessage: error.localizedDescription)
+                    } else {
+                        self.emitter.error(name: "RequestFailed", message: error.localizedDescription)
                     }
                 } else {
-                    self.response(requestId: requestId, errorMessage: "Wrong payload")
+                    if let requestId = requestId {
+                        self.emitter.response(requestId: requestId, data: data)
+                    } else {
+                        print("Missing requestId", jsonArray)
+                        self.emitter.error(name: "RequestIdMissing", message: "\(bridgeAction) succeeded without requestId")
+                    }
+                }
+            }
+
+            let payloadData = payload?.data(using: .utf8)
+
+            if bridgeAction == .response {
+                struct ResponsePayload: Codable {
+                    let eventId: String
+                    let error: String?
+                    let result: String?
+                }
+                if let payloadData = payloadData, let responsePayload = try? JSONDecoder().decode(ResponsePayload.self, from: payloadData) {
+                    emitter.resolve(eventId: responsePayload.eventId, error: responsePayload.error, result: responsePayload.result)
+                } else {
+                    print("Invalid response data")
+                }
+                return
+            } else if bridgeAction == .getPermissions {
+                guard let payloadData = payloadData else {
+                    respond(PagecallError(message: "Missing payload"), nil)
+                    return
+                }
+                if let permissions = NativeBridge.getPermissions(constraint: payloadData, callback: { (error: Error?) in
+                    respond(error, nil)
+                }) {
+                    respond(nil, permissions)
                 }
                 return
             } else if bridgeAction == .requestPermission {
-                if let payloadData = payload?.data(using: .utf8) {
-                    NativeBridge.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
-                        if let error = error {
-                            self.emitter.error(name: "Failed to requestPermission", message: error.localizedDescription)
-                            self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                        } else if let isGranted = isGranted {
-                            guard let data = try? JSONEncoder().encode(isGranted) else { return }
-                            self.response(requestId: requestId, data: data)
-                        }
-                    })
-                } else {
-                    self.response(requestId: requestId, errorMessage: "Wrong payload")
+                guard let payloadData = payloadData else {
+                    respond(PagecallError(message: "Missing payload"), nil)
+                    return
                 }
+                NativeBridge.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
+                    if let error = error {
+                        respond(error, nil)
+                    } else if let isGranted = isGranted {
+                        guard let data = try? JSONEncoder().encode(isGranted) else { return }
+                        respond(nil, data)
+                    }
+                })
                 return
             } else if bridgeAction == .initialize {
                 if let _ = mediaController {
-                    self.response(requestId: requestId, errorMessage: "Must be disposed first")
+                    respond(PagecallError(message: "Must be disposed first"), nil)
                     return
                 }
                 guard let payloadData = payload?.data(using: .utf8) else {
-                    self.response(requestId: requestId, errorMessage: "Missing payload")
+                    respond(PagecallError(message: "Missing payload"), nil)
                     return
                 }
                 struct MiPayload: Codable {
@@ -172,80 +239,98 @@ class NativeBridge {
                 }
                 if let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: payloadData) {
                     mediaController = ChimeController(emitter: emitter, configuration: meetingSessionConfiguration)
-                    self.response(requestId: requestId)
-                } else if let _ = try? JSONDecoder().decode(MiPayload.self, from: payloadData) {
-                    // TODO make use of the payload
-                    mediaController = MiController()
+                    respond(nil, nil)
+                } else if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
+                    do {
+                        let miController = try MiController(emitter: emitter, initialPayload: initialPayload)
+                        mediaController = miController
+                        respond(nil, nil)
+                    } catch {
+                        respond(error, nil)
+                    }
                 }
+                return
+            } else if bridgeAction == .getAudioDevices {
+                let deviceList: [MediaDeviceInfo] = {
+                    if let chimeController = mediaController as? ChimeController {
+                        return chimeController.getAudioDevices()
+                    } else {
+                        return [MediaDeviceInfo.audioDefault]
+                    }
+                }()
+                do {
+                    let data = try JSONEncoder().encode(deviceList)
+                    respond(nil, data)
+                } catch {
+                    respond(error, nil)
+                }
+                return
             }
 
             guard let mediaController = mediaController else {
-                self.response(requestId: requestId, errorMessage: "Missing mediaController, initialize first")
+                respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
                 return
             }
 
             switch bridgeAction {
             case .start:
                 mediaController.start { (error: Error?) in
-                    if let error = error {
-                        self.emitter.error(name: "Failed to start", message: error.localizedDescription)
-                    } else {
-                        self.response(requestId: requestId)
-                    }
+                    respond(error, nil)
                 }
             case .dispose:
                 mediaController.dispose()
                 self.mediaController = nil
-                self.response(requestId: requestId)
+                respond(nil, nil)
             case .pauseAudio:
                 mediaController.pauseAudio { (error: Error?) in
-                    if let error = error {
-                        self.emitter.error(name: "Failed to pauseAudio", message: error.localizedDescription)
-                    }
+                    respond(error, nil)
                 }
             case .resumeAudio:
                 mediaController.resumeAudio { (error: Error?) in
-                    if let error = error {
-                        self.emitter.error(name: "Failed to resumeAudio", message: error.localizedDescription)
-                    }
+                    respond(error, nil)
                 }
             case .setAudioDevice:
                 struct DeviceId: Codable {
                     var deviceId: String
                 }
-                guard let payloadData = payload?.data(using: .utf8), let deviceId = try? JSONDecoder().decode(DeviceId.self, from: payloadData) else {
-                    let message = "deviceId does not exist"
-                    self.emitter.error(name: message, message: message)
+                guard let payloadData = payloadData, let deviceId = try? JSONDecoder().decode(DeviceId.self, from: payloadData) else {
+                    respond(PagecallError(message: "Invalid payload"), nil)
                     return
                 }
 
-                mediaController.setAudioDevice(deviceId: deviceId.deviceId) { (error: Error?) in
-                    if let error = error {
-                        self.emitter.error(name: "Failed to setAudioDevice", message: error.localizedDescription)
-                    }
+                guard let chimeController = mediaController as? ChimeController else {
+                    // No op for miController
+                    return
                 }
-            case .getAudioDevices:
-                let mediaDeviceInfoList = mediaController.getAudioDevices()
-                do {
-                    let data = try JSONEncoder().encode(mediaDeviceInfoList)
-                    self.response(requestId: requestId, data: data)
-                } catch {
-                    self.emitter.error(name: "Failed to getAudioDevices", message: error.localizedDescription)
-                    self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                chimeController.setAudioDevice(deviceId: deviceId.deviceId) { (error: Error?) in
+                    respond(error, nil)
                 }
             case .requestAudioVolume:
                 mediaController.requestAudioVolume { volume, error in
                     if let error = error {
-                        self.emitter.error(name: "Failed to requestAudioVolume", message: error.localizedDescription)
-                        self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                        respond(error, nil)
                     } else if let volume = volume {
                         guard let data = try? JSONEncoder().encode(volume) else { return }
-                        self.response(requestId: requestId, data: data)
+                        respond(nil, data)
                     }
                 }
+            case .consume:
+                if let miController = mediaController as? MiController {
+                    if let payloadData = payloadData {
+                        miController.consume(data: payloadData) { error in
+                            respond(error, nil)
+                        }
+                    } else {
+                        respond(PagecallError(message: "Invalid payload"), nil)
+                    }
+                } else {
+                    respond(PagecallError(message: "consume is only effective for MI"), nil)
+                }
+            case .getAudioDevices: fatalError()
             case .initialize: fatalError()
             case .getPermissions: fatalError()
             case .requestPermission: fatalError()
+            case .response: fatalError()
             }
         } catch let error as NSError {
             print(error)

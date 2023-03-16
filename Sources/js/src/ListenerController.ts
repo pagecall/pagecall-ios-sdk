@@ -1,30 +1,39 @@
-class ListenerController<T> {
+export type Listener = (payload?: string) => Promise<string | void>;
+
+class ListenerController {
   listenersByEvent: {
-    [K in keyof T]?: Set<(payload: T[K]) => void>;
+    [eventName: string]: Set<Listener>
   } = {};
 
-  addListener<K extends keyof T>(
-    eventName: K,
-    listener: (payload: T[K]) => void
+  addListener(
+    eventName: string,
+    listener: Listener
   ) {
     if (!this.listenersByEvent[eventName])
-      this.listenersByEvent[eventName] = new Set<(payload: T[K]) => void>();
+      this.listenersByEvent[eventName] = new Set<Listener>();
     this.listenersByEvent[eventName]?.add(listener);
   }
 
-  removeListener<K extends keyof T>(
-    eventName: K,
-    listener: (payload: T[K]) => void
+  removeListener(
+    eventName: string,
+    listener: Listener
   ) {
     const listeners = this.listenersByEvent[eventName];
     if (!listeners) return;
     listeners.delete(listener);
   }
 
-  emit<K extends keyof T>(eventName: K, payload: T[K]) {
+  emit(eventName: string, payload: string, callback?: (error: string | null, result?: string) => void) {
     const listeners = this.listenersByEvent[eventName];
     if (!listeners) return;
-    Array.from(listeners).map((listener) => listener(payload));
+    listeners.forEach(async (listener) => {
+      try {
+        const result = await listener(payload);
+        callback?.(null, result ?? undefined);
+      } catch (error) {
+        callback?.((error as Error).message)
+      }
+    });
   }
 }
 
