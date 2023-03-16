@@ -13,7 +13,9 @@ enum BridgeEvent: String, Codable {
 }
 
 enum BridgeAction: String, Codable {
-    case createSession, `init`, start, stop, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume, dispose
+    case start, stop, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume, dispose
+    case initChime, createSession
+    case initMi
 }
 
 struct ErrorEvent: Codable {
@@ -127,7 +129,7 @@ class NativeBridge {
 
             print("Bridge Action: \(bridgeAction)")
 
-            if bridgeAction == .`init` {
+            if bridgeAction == .initChime {
                 if let _ = self.chimeController {
                     self.response(requestId: requestId, errorMessage: "ChimeController already exists")
                 } else {
@@ -136,7 +138,7 @@ class NativeBridge {
                 }
             } else if let chimeController = self.chimeController {
                 switch bridgeAction {
-                case .`init`:
+                case .initChime:
                     print("impossible to receive .`init` as a case when chimeController exists")
                 case .createSession:
                     if let payloadData = payload?.data(using: .utf8) {
@@ -241,6 +243,8 @@ class NativeBridge {
                             self.response(requestId: requestId, data: data)
                         }
                     }
+                default:
+                    return
                 }
             } else {
                 self.response(requestId: requestId, errorMessage: "ChimeController does not exist")
@@ -253,7 +257,7 @@ class NativeBridge {
 
     public func disconnect() {
         if let chimeController = self.chimeController {
-              chimeController.dispose { (error: Error?) in
+            chimeController.dispose { (error: Error?) in
                 if let error = error {
                     self.emitter.error(name: "ChimeController", message: "failed to dispose: \(error.localizedDescription)")
                 } else {
@@ -261,7 +265,6 @@ class NativeBridge {
                     self.chimeController = nil
                 }
             }
-
         }
     }
 }

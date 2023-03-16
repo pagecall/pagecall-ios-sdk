@@ -31,6 +31,7 @@ extension AVAudioSession.RouteChangeReason {
         }
     }
 }
+
 extension AVAudioSession.InterruptionType {
     var description: String {
         switch self {
@@ -43,6 +44,7 @@ extension AVAudioSession.InterruptionType {
         }
     }
 }
+
 extension AVAudioSession.InterruptionReason {
     var description: String {
         switch self {
@@ -66,6 +68,7 @@ extension AVAudioSession.InterruptionOptions {
         }
     }
 }
+
 class ChimeController {
     let emitter: WebViewEmitter
     var chimeMeetingSession: ChimeMeetingSession?
@@ -76,11 +79,11 @@ class ChimeController {
         self.setAudioSessionCategory()
 
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(handleAudioSessionRouteChange),
+                                               selector: #selector(self.handleAudioSessionRouteChange),
                                                name: AVAudioSession.routeChangeNotification,
                                                object: nil)
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(handleAudioSessionInterruption),
+                                               selector: #selector(self.handleAudioSessionInterruption),
                                                name: AVAudioSession.interruptionNotification,
                                                object: nil)
     }
@@ -94,10 +97,10 @@ class ChimeController {
 
         if notification.name == AVAudioSession.interruptionNotification {
             if #available(iOS 14.5, *) {
-
                 let interruptionType = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
                 if let interruptionType = interruptionType,
-                   let type = AVAudioSession.InterruptionType(rawValue: interruptionType) {
+                   let type = AVAudioSession.InterruptionType(rawValue: interruptionType)
+                {
                     payloadType = type.description
                 } else {
                     payloadType = "None"
@@ -105,7 +108,8 @@ class ChimeController {
 
                 let interruptionReason = notification.userInfo?[AVAudioSessionInterruptionReasonKey] as? UInt
                 if let interruptionReason = interruptionReason,
-                   let reason = AVAudioSession.InterruptionReason(rawValue: interruptionReason) {
+                   let reason = AVAudioSession.InterruptionReason(rawValue: interruptionReason)
+                {
                     payloadReason = reason.description
                 } else {
                     payloadReason = "None"
@@ -133,17 +137,17 @@ class ChimeController {
         self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange notification name=\(notification.name)")
         let audioSession = AVAudioSession.sharedInstance()
         guard let routeChangeReason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
-        let reason = AVAudioSession.RouteChangeReason(rawValue: routeChangeReason) else { return }
+              let reason = AVAudioSession.RouteChangeReason(rawValue: routeChangeReason) else { return }
         let currentRouteOutputs: [[String: String]] = audioSession.currentRoute.outputs.map { output in
-            return ["portType": output.portType.rawValue,
-                    "portName": output.portName,
-                    "uid": output.uid]
+            ["portType": output.portType.rawValue,
+             "portName": output.portName,
+             "uid": output.uid]
         }
         if #available(iOS 13.0, *) { // .withoutEscapingSlashes is available from iOS 13
             guard let payload = try? JSONSerialization.data(withJSONObject: ["reason": reason.description,
                                                                              "outputs": currentRouteOutputs,
                                                                              "category": audioSession.category.rawValue] as [String: Any],
-                                                                  options: .withoutEscapingSlashes) else { return }
+                                                            options: .withoutEscapingSlashes) else { return }
 
             self.emitter.emit(eventName: .audioSessionRouteChanged, data: payload)
         }
@@ -154,28 +158,28 @@ class ChimeController {
         self.setAudioSessionCategory()
 
         /**
-         * TODO: setIdiomPhoneOutputAudioPort() 
+         * TODO: setIdiomPhoneOutputAudioPort()
          * Ref: https://github.com/pplink/pagecall-ios-sdk/blob/main/PageCallSDK/PageCallSDK/Classes/PCMainViewController.m#L673-L841
          */
     }
 
     private func setAudioSessionCategory() {
-        let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+        let audioSession = AVAudioSession.sharedInstance()
         var options: AVAudioSession.CategoryOptions
         if #available(iOS 14.5, *) {
             options = [.mixWithOthers,
-                    .allowBluetooth,
-                    .allowAirPlay,
-                    .allowBluetoothA2DP,
-                    .overrideMutedMicrophoneInterruption,
-                    .interruptSpokenAudioAndMixWithOthers,
-                    .defaultToSpeaker]
+                       .allowBluetooth,
+                       .allowAirPlay,
+                       .allowBluetoothA2DP,
+                       .overrideMutedMicrophoneInterruption,
+                       .interruptSpokenAudioAndMixWithOthers,
+                       .defaultToSpeaker]
         } else {
             options = [.mixWithOthers,
-                    .allowBluetooth,
-                    .allowAirPlay,
-                    .allowBluetoothA2DP,
-                    .defaultToSpeaker]
+                       .allowBluetooth,
+                       .allowAirPlay,
+                       .allowBluetoothA2DP,
+                       .defaultToSpeaker]
         }
         try? audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: options)
     }
@@ -218,7 +222,7 @@ class ChimeController {
         if let audioRecorder = audioRecorder {
             audioRecorder.updateMeters()
             let averagePower = audioRecorder.averagePower(forChannel: 0)
-            let nomalizedVolume = normalizeSoundLevel(level: averagePower)
+            let nomalizedVolume = self.normalizeSoundLevel(level: averagePower)
             callback(nomalizedVolume, nil)
             return
         }
@@ -238,7 +242,7 @@ class ChimeController {
 
             audioRecorder.updateMeters()
             let averagePower = audioRecorder.averagePower(forChannel: 0)
-            let nomalizedVolume = normalizeSoundLevel(level: averagePower)
+            let nomalizedVolume = self.normalizeSoundLevel(level: averagePower)
             callback(nomalizedVolume, nil)
         } catch {
             callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "AudioRecorder is not exist"]))
@@ -289,11 +293,11 @@ class ChimeController {
                 if !audio { return nil }
                 let status = AVCaptureDevice.authorizationStatus(for: .audio)
                 switch status {
-                    case .notDetermined: return nil
-                    case .restricted: return false
-                    case .denied: return false
-                    case .authorized: return true
-                    default: return nil
+                case .notDetermined: return nil
+                case .restricted: return false
+                case .denied: return false
+                case .authorized: return true
+                default: return nil
                 }
             } else { return nil }
         }
@@ -302,11 +306,11 @@ class ChimeController {
                 if !video { return nil }
                 let status = AVCaptureDevice.authorizationStatus(for: .video)
                 switch status {
-                    case .notDetermined: return nil
-                    case .restricted: return false
-                    case .denied: return false
-                    case .authorized: return true
-                    default: return nil
+                case .notDetermined: return nil
+                case .restricted: return false
+                case .denied: return false
+                case .authorized: return true
+                default: return nil
                 }
             } else { return nil }
         }

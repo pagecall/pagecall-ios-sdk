@@ -29,7 +29,6 @@ class ChimeMeetingSession {
         meetingSession.audioVideo.addAudioVideoObserver(observer: audioVideoObserver)
         meetingSession.audioVideo.addMetricsObserver(observer: metricsObserver)
         meetingSession.audioVideo.addDeviceChangeObserver(observer: deviceChangeObserver)
-
     }
 
     func start(callback: (Error?) -> Void) {
