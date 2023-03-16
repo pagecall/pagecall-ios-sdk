@@ -93,9 +93,11 @@ class NativeBridge {
 
         let string = String(data: data, encoding: .utf8)
         if let string = string {
-            self.webview.evaluateJavaScript("window.PagecallNative.response('\(requestId)','\(string)')") { _, error in
-                if let error = error {
-                    NSLog("Failed to PagecallNative.response \(error)")
+            DispatchQueue.main.async {
+                self.webview.evaluateJavaScript("window.PagecallNative.response('\(requestId)','\(string)')") { _, error in
+                    if let error = error {
+                        NSLog("Failed to PagecallNative.response \(error)")
+                    }
                 }
             }
         }
