@@ -7,66 +7,8 @@
 
 import AmazonChimeSDK
 import AVFoundation
-import Foundation
 
-extension AVAudioSession.RouteChangeReason {
-    var description: String {
-        switch self {
-        case .newDeviceAvailable:
-            return "NewDeviceAvailable"
-        case .oldDeviceUnavailable:
-            return "OldDeviceUnavailable"
-        case .categoryChange:
-            return "CategoryChange"
-        case .override:
-            return "Override"
-        case .wakeFromSleep:
-            return "WakeFromSleep"
-        case .noSuitableRouteForCategory:
-            return "NoSuitableRouteForCategory"
-        case .routeConfigurationChange:
-            return "RouteConfigurationChange"
-        default:
-            return "Unknown"
-        }
-    }
-}
-extension AVAudioSession.InterruptionType {
-    var description: String {
-        switch self {
-        case .began:
-            return "Began"
-        case .ended:
-            return "Ended"
-        default:
-            return "Unknown"
-        }
-    }
-}
-extension AVAudioSession.InterruptionReason {
-    var description: String {
-        switch self {
-        case .default:
-            return "Default"
-        case .builtInMicMuted:
-            return "BuiltInMicMuted"
-        default:
-            return "Unknown"
-        }
-    }
-}
-
-extension AVAudioSession.InterruptionOptions {
-    var description: String {
-        switch self {
-        case .shouldResume:
-            return "ShouldResume"
-        default:
-            return "Unknown"
-        }
-    }
-}
-class ChimeController {
+class ChimeController: MediaController {
     let emitter: WebViewEmitter
     var chimeMeetingSession: ChimeMeetingSession?
     var audioRecorder: AVAudioRecorder?
@@ -273,76 +215,6 @@ class ChimeController {
         }
     }
 
-    func getPermissions(constraint: Data, callback: (Error?) -> Void) -> Data? {
-        struct MediaType: Codable {
-            var audio: Bool?
-            var video: Bool?
-        }
-
-        guard let mediaType = try? JSONDecoder().decode(MediaType.self, from: constraint) else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wrong Constraint"]))
-            return nil
-        }
-
-        func getAudioStatus() -> Bool? {
-            if let audio = mediaType.audio {
-                if !audio { return nil }
-                let status = AVCaptureDevice.authorizationStatus(for: .audio)
-                switch status {
-                    case .notDetermined: return nil
-                    case .restricted: return false
-                    case .denied: return false
-                    case .authorized: return true
-                    default: return nil
-                }
-            } else { return nil }
-        }
-        func getVideoStatus() -> Bool? {
-            if let video = mediaType.video {
-                if !video { return nil }
-                let status = AVCaptureDevice.authorizationStatus(for: .video)
-                switch status {
-                    case .notDetermined: return nil
-                    case .restricted: return false
-                    case .denied: return false
-                    case .authorized: return true
-                    default: return nil
-                }
-            } else { return nil }
-        }
-
-        if let data = try? JSONEncoder().encode(MediaType(audio: getAudioStatus(), video: getVideoStatus())) {
-            return data
-        } else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to getPermissions"]))
-            return nil
-        }
-    }
-
-    func requestPermission(data: Data, callback: @escaping (Bool?, Error?) -> Void) {
-        struct MediaType: Codable {
-            var mediaType: String
-        }
-        guard let mediaType = try? JSONDecoder().decode(MediaType.self, from: data) else {
-            callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wrong Constraint"]))
-            return
-        }
-
-        func requestPermission(callback: @escaping (Bool) -> Void) {
-            if mediaType.mediaType == "audio" {
-                AVCaptureDevice.requestAccess(for: .audio) {
-                    isGranted in callback(isGranted)
-                }
-            } else if mediaType.mediaType == "video" {
-                AVCaptureDevice.requestAccess(for: .video) {
-                    isGranted in callback(isGranted)
-                }
-            } else { callback(false) }
-        }
-
-        requestPermission { isGranted in callback(isGranted, nil) }
-    }
-
     func pauseAudio(callback: (Error?) -> Void) {
         if let chimeMeetingSession = chimeMeetingSession {
             let isSucceed = chimeMeetingSession.pauseAudio()
@@ -370,22 +242,13 @@ class ChimeController {
         }
     }
 
-    func setAudioDevice(deviceData: Data, callback: (Error?) -> Void) {
-        struct DeviceId: Codable {
-            var deviceId: String
-        }
-
-        guard let deviceId = try? JSONDecoder().decode(DeviceId.self, from: deviceData) else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "DeviceId not exist"]))
-            return
-        }
-
+    func setAudioDevice(deviceId: String, callback: (Error?) -> Void) {
         guard let chimeMeetingSession = chimeMeetingSession else {
             callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ChimeMeetingSession not exist"]))
             return
         }
 
-        chimeMeetingSession.setAudioDevice(label: deviceId.deviceId)
+        chimeMeetingSession.setAudioDevice(label: deviceId)
         callback(nil)
     }
 
