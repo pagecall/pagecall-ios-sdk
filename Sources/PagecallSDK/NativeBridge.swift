@@ -66,12 +66,12 @@ class WebViewEmitter {
 class NativeBridge {
     let webview: WKWebView
     let emitter: WebViewEmitter
-    var chimeController: ChimeController?
+    var mediaController: MediaController?
 
     init(webview: WKWebView) {
         self.webview = webview
         self.emitter = .init(webView: self.webview)
-        self.chimeController = .init(emitter: self.emitter)
+        self.mediaController = ChimeController(emitter: self.emitter)
     }
 
     func response(requestId: String?) {
@@ -128,28 +128,32 @@ class NativeBridge {
             print("Bridge Action: \(bridgeAction)")
 
             if bridgeAction == .`init` {
-                if let _ = self.chimeController {
+                if let _ = self.mediaController {
                     self.response(requestId: requestId, errorMessage: "ChimeController already exists")
                 } else {
-                    self.chimeController = .init(emitter: self.emitter)
+                    self.mediaController = ChimeController(emitter: self.emitter)
                     self.response(requestId: requestId)
                 }
-            } else if let chimeController = self.chimeController {
+            } else if let mediaController = self.mediaController {
                 switch bridgeAction {
                 case .`init`:
-                    print("impossible to receive .`init` as a case when chimeController exists")
+                    print("impossible to receive .`init` as a case when mediaController exists")
                 case .createSession:
-                    if let payloadData = payload?.data(using: .utf8) {
-                        chimeController.createMeetingSession(joinMeetingData: payloadData) { (error: Error?) in
-                            if let error = error {
-                                self.emitter.error(name: "Failed to createMeetingSession", message: error.localizedDescription)
-                            } else {
-                                self.response(requestId: requestId)
+                    if let chimeController = mediaController as? ChimeController {
+                        if let payloadData = payload?.data(using: .utf8) {
+                            chimeController.createMeetingSession(joinMeetingData: payloadData) { (error: Error?) in
+                                if let error = error {
+                                    self.emitter.error(name: "Failed to createMeetingSession", message: error.localizedDescription)
+                                } else {
+                                    self.response(requestId: requestId)
+                                }
                             }
                         }
+                    } else {
+                        print("TODO")
                     }
                 case .start:
-                    chimeController.start { (error: Error?) in
+                    mediaController.start { (error: Error?) in
                         if let error = error {
                             self.emitter.error(name: "Failed to start", message: error.localizedDescription)
                         } else {
@@ -157,7 +161,7 @@ class NativeBridge {
                         }
                     }
                 case .stop:
-                    chimeController.stop { (error: Error?) in
+                    mediaController.stop { (error: Error?) in
                         if let error = error {
                             self.emitter.error(name: "Failed to stop", message: error.localizedDescription)
                             self.response(requestId: requestId, errorMessage: error.localizedDescription)
@@ -166,18 +170,18 @@ class NativeBridge {
                         }
                     }
                 case .dispose:
-                    chimeController.dispose { (error: Error?) in
+                    mediaController.dispose { (error: Error?) in
                         if let error = error {
                             print("Failed to dispose: \(error.localizedDescription)")
                             self.response(requestId: requestId, errorMessage: error.localizedDescription)
                         } else {
-                            self.chimeController = nil
+                            self.mediaController = nil
                             self.response(requestId: requestId)
                         }
                     }
                 case .getPermissions:
                     if let payloadData = payload?.data(using: .utf8) {
-                        if let permissions = chimeController.getPermissions(constraint: payloadData, callback: { (error: Error?) in
+                        if let permissions = mediaController.getPermissions(constraint: payloadData, callback: { (error: Error?) in
                             if let error = error {
                                 self.emitter.error(name: "Failed to getPermissions", message: error.localizedDescription)
                                 self.response(requestId: requestId, errorMessage: error.localizedDescription)
@@ -190,7 +194,7 @@ class NativeBridge {
                     }
                 case .requestPermission:
                     if let payloadData = payload?.data(using: .utf8) {
-                        chimeController.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
+                        mediaController.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
                             if let error = error {
                                 self.emitter.error(name: "Failed to requestPermission", message: error.localizedDescription)
                                 self.response(requestId: requestId, errorMessage: error.localizedDescription)
@@ -203,27 +207,34 @@ class NativeBridge {
                         self.response(requestId: requestId, errorMessage: "Wrong payload")
                     }
                 case .pauseAudio:
-                    chimeController.pauseAudio { (error: Error?) in
+                    mediaController.pauseAudio { (error: Error?) in
                         if let error = error {
                             self.emitter.error(name: "Failed to pauseAudio", message: error.localizedDescription)
                         }
                     }
                 case .resumeAudio:
-                    chimeController.resumeAudio { (error: Error?) in
+                    mediaController.resumeAudio { (error: Error?) in
                         if let error = error {
                             self.emitter.error(name: "Failed to resumeAudio", message: error.localizedDescription)
                         }
                     }
                 case .setAudioDevice:
-                    if let payloadData = payload?.data(using: .utf8) {
-                        chimeController.setAudioDevice(deviceData: payloadData) { (error: Error?) in
-                            if let error = error {
-                                self.emitter.error(name: "Failed to setAudioDevice", message: error.localizedDescription)
-                            }
+                    struct DeviceId: Codable {
+                        var deviceId: String
+                    }
+                    guard let payloadData = payload?.data(using: .utf8), let deviceId = try? JSONDecoder().decode(DeviceId.self, from: payloadData) else {
+                        let message = "deviceId does not exist"
+                        self.emitter.error(name: message, message: message)
+                        return
+                    }
+
+                    mediaController.setAudioDevice(deviceId: deviceId.deviceId) { (error: Error?) in
+                        if let error = error {
+                            self.emitter.error(name: "Failed to setAudioDevice", message: error.localizedDescription)
                         }
                     }
                 case .getAudioDevices:
-                    let mediaDeviceInfoList = chimeController.getAudioDevices()
+                    let mediaDeviceInfoList = mediaController.getAudioDevices()
                     do {
                         let data = try JSONEncoder().encode(mediaDeviceInfoList)
                         self.response(requestId: requestId, data: data)
@@ -232,7 +243,7 @@ class NativeBridge {
                         self.response(requestId: requestId, errorMessage: error.localizedDescription)
                     }
                 case .requestAudioVolume:
-                    chimeController.requestAudioVolume { volume, error in
+                    mediaController.requestAudioVolume { volume, error in
                         if let error = error {
                             self.emitter.error(name: "Failed to requestAudioVolume", message: error.localizedDescription)
                             self.response(requestId: requestId, errorMessage: error.localizedDescription)
@@ -252,13 +263,13 @@ class NativeBridge {
     }
 
     public func disconnect() {
-        if let chimeController = self.chimeController {
-              chimeController.dispose { (error: Error?) in
+        if let mediaController = self.mediaController {
+              mediaController.dispose { (error: Error?) in
                 if let error = error {
                     self.emitter.error(name: "ChimeController", message: "failed to dispose: \(error.localizedDescription)")
                 } else {
                     self.emitter.log(name: "ChimeController", message: "dispose success")
-                    self.chimeController = nil
+                    self.mediaController = nil
                 }
             }
 
