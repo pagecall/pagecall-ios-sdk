@@ -10,11 +10,16 @@ import AVFoundation
 
 class ChimeController: MediaController {
     let emitter: WebViewEmitter
-    var chimeMeetingSession: ChimeMeetingSession?
+    let chimeMeetingSession: ChimeMeetingSession
     var audioRecorder: AVAudioRecorder?
 
-    init(emitter: WebViewEmitter) {
+    init(emitter: WebViewEmitter, configuration: MeetingSessionConfiguration) {
         self.emitter = emitter
+
+        let logger = ConsoleLogger(name: "DefaultMeetingSession", level: LogLevel.INFO)
+        let chimeMeetingSession = ChimeMeetingSession(configuration: configuration, logger: logger, emitter: emitter)
+        self.chimeMeetingSession = chimeMeetingSession
+
         self.setAudioSessionCategory()
 
         NotificationCenter.default.addObserver(self,
@@ -101,52 +106,6 @@ class ChimeController: MediaController {
          */
     }
 
-    private func setAudioSessionCategory() {
-        let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
-        var options: AVAudioSession.CategoryOptions
-        if #available(iOS 14.5, *) {
-            options = [.mixWithOthers,
-                    .allowBluetooth,
-                    .allowAirPlay,
-                    .allowBluetoothA2DP,
-                    .overrideMutedMicrophoneInterruption,
-                    .interruptSpokenAudioAndMixWithOthers,
-                    .defaultToSpeaker]
-        } else {
-            options = [.mixWithOthers,
-                    .allowBluetooth,
-                    .allowAirPlay,
-                    .allowBluetoothA2DP,
-                    .defaultToSpeaker]
-        }
-        try? audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: options)
-    }
-
-    func createMeetingSession(joinMeetingData: Data, callback: (Error?) -> Void) {
-        let logger = ConsoleLogger(name: "DefaultMeetingSession", level: LogLevel.INFO)
-
-        let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: joinMeetingData)
-
-        guard let meetingSessionConfiguration = meetingSessionConfiguration else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to parse joinMeetingData"]))
-            return
-        }
-        if let prevChimeMeetingSession = self.chimeMeetingSession {
-            prevChimeMeetingSession.dispose()
-        }
-
-        let chimeMeetingSession = ChimeMeetingSession(configuration: meetingSessionConfiguration, logger: logger, emitter: emitter)
-        self.chimeMeetingSession = chimeMeetingSession
-        callback(nil)
-    }
-
-    public func deleteMeetingSession() {
-        if let chimeMeetingSession = chimeMeetingSession {
-            chimeMeetingSession.dispose()
-            self.chimeMeetingSession = nil
-        }
-    }
-
     private func normalizeSoundLevel(level: Float) -> Float {
         let lowLevel: Float = -40
         let highLevel: Float = -10
@@ -188,48 +147,26 @@ class ChimeController: MediaController {
     }
 
     func start(callback: (Error?) -> Void) {
-        if let chimeMeetingSession = chimeMeetingSession {
-            chimeMeetingSession.start { (error: Error?) in
-                if error != nil {
-                    callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to start session"]))
-                } else {
-                    try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .allowBluetooth])
-                    callback(nil)
-                }
+        chimeMeetingSession.start { (error: Error?) in
+            if error != nil {
+                callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to start session"]))
+            } else {
+                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .allowBluetooth])
+                callback(nil)
             }
-        } else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ChimeMeetingSession not exist"]))
-        }
-    }
-
-    func stop(callback: (Error?) -> Void) {
-        if let audioRecorder = audioRecorder {
-            audioRecorder.stop()
-            self.audioRecorder = nil
-        }
-        if let chimeMeetingSession = chimeMeetingSession {
-            chimeMeetingSession.stop()
-            callback(nil)
-        } else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ChimeMeetingSession not exist"]))
         }
     }
 
     func pauseAudio(callback: (Error?) -> Void) {
-        if let chimeMeetingSession = chimeMeetingSession {
             let isSucceed = chimeMeetingSession.pauseAudio()
             if isSucceed {
                 callback(nil)
             } else {
                 callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed at chimeMeetingSession.pauseAudio"]))
             }
-        } else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ChimeMeetingSession not exist"]))
-        }
     }
 
     func resumeAudio(callback: (Error?) -> Void) {
-        if let chimeMeetingSession = chimeMeetingSession {
             let isSucceed = chimeMeetingSession.resumeAudio()
             if isSucceed {
                 callback(nil)
@@ -237,42 +174,24 @@ class ChimeController: MediaController {
                 callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed at chimeMeetingSession.resumeAudio"]))
                 return
             }
-        } else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ChimeMeetingSession not exist"]))
-        }
     }
 
     func setAudioDevice(deviceId: String, callback: (Error?) -> Void) {
-        guard let chimeMeetingSession = chimeMeetingSession else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ChimeMeetingSession not exist"]))
-            return
-        }
-
         chimeMeetingSession.setAudioDevice(label: deviceId)
         callback(nil)
     }
 
     func getAudioDevices() -> [MediaDeviceInfo] {
-        guard let chimeMeetingSession = chimeMeetingSession else {
-            return []
-        }
-
         let audioDevices = chimeMeetingSession.getAudioDevices()
-
         return audioDevices.map(MediaDeviceInfo.init)
     }
 
-    func dispose(callback: (Error?) -> Void) {
+    func dispose() {
         NotificationCenter.default.removeObserver(self)
-
         if let audioRecorder = self.audioRecorder {
             audioRecorder.stop()
             self.audioRecorder = nil
         }
-        if let chimeMeetingSession = self.chimeMeetingSession {
-            chimeMeetingSession.dispose()
-            self.chimeMeetingSession = nil
-        }
-        callback(nil)
+        chimeMeetingSession.dispose()
     }
 }
