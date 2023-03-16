@@ -1,4 +1,4 @@
-@testable import Pagecall
+@testable import PagecallCore
 import XCTest
 
 final class PagecallSDKTests: XCTestCase {
@@ -6,6 +6,7 @@ final class PagecallSDKTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual(Pagecall().text, "Hello, World!")
+        let webView = PagecallWebView()
+        XCTAssertEqual(webView.url, nil)
     }
 }
