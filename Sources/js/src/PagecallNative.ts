@@ -51,7 +51,7 @@ interface PagecallNativePublic {
     configuration: ChimeMeetingSessionConfiguration
   ) => Promise<void>;
   start: () => void;
-  stop: () => void;
+  dispose: () => void;
 
   getPermissions: (constraints: {
     video: boolean;
@@ -94,87 +94,6 @@ function registerGlobals() {
     );
   };
 
-  const pagecallNativePublic: Partial<PagecallNativePublic> = {
-    getPlatform: () => {
-      return "ios";
-    },
-    useNativeMediaStore: () => {
-      return true;
-    },
-
-    addListener: <T extends NativeEvent>(
-      eventName: T,
-      listener: (payload: PayloadByNativeEvent[T]) => void
-    ) => {
-      listenerController.addListener(eventName, listener);
-    },
-    removeListener: <T extends NativeEvent>(
-      eventName: T,
-      listener: (payload: PayloadByNativeEvent[T]) => void
-    ) => {
-      listenerController.removeListener(eventName, listener);
-    },
-
-    createSession: (configuration) => {
-      return new Promise((resolve, reject) => {
-        postMessage(
-          { action: "createSession", payload: JSON.stringify(configuration) },
-          { resolve, reject }
-        );
-      });
-    },
-    start: () => {
-      postMessage({ action: "start" });
-    },
-    stop: () => {
-      postMessage({ action: "stop" });
-    },
-
-    getPermissions: (constraints) => {
-      return new Promise((resolve, reject) => {
-        postMessage(
-          { action: "getPermissions", payload: JSON.stringify(constraints) },
-          { resolve, reject }
-        );
-      });
-    },
-    requestPermission: (mediaType) => {
-      return new Promise((resolve, reject) => {
-        postMessage(
-          {
-            action: "requestPermission",
-            payload: JSON.stringify({ mediaType }),
-          },
-          { resolve, reject }
-        );
-      });
-    },
-
-    pauseAudio: () => {
-      postMessage({ action: "pauseAudio" });
-    },
-    resumeAudio: () => {
-      postMessage({ action: "resumeAudio" });
-    },
-    setAudioDevice: (deviceId) => {
-      postMessage({
-        action: "setAudioDevice",
-        payload: JSON.stringify({ deviceId }),
-      });
-    },
-    getAudioDevices: () => {
-      return new Promise((resolve, reject) => {
-        postMessage({ action: "getAudioDevices" }, { resolve, reject });
-      });
-    },
-
-    requestAudioVolume: () => {
-      return new Promise((resolve, reject) => {
-        postMessage({ action: "requestAudioVolume" }, { resolve, reject });
-      });
-    },
-  };
-
   const pagecallNativePrivate: Partial<PagecallNativePrivate> = {
     emit: (eventName, payload) => {
       const parsedPayload = payload ? JSON.parse(payload) : undefined;
@@ -191,7 +110,57 @@ function registerGlobals() {
     },
   };
 
-  window.PagecallNative = { ...pagecallNativePrivate, ...pagecallNativePublic };
+  const pagecallNativePublicStatic: Partial<PagecallNativePublic> = {
+    getPlatform: () => 'ios',
+    useNativeMediaStore: () => true,
+    addListener: <T extends NativeEvent>(
+      eventName: T,
+      listener: (payload: PayloadByNativeEvent[T]) => void
+    ) => {
+      listenerController.addListener(eventName, listener);
+    },
+    removeListener: <T extends NativeEvent>(
+      eventName: T,
+      listener: (payload: PayloadByNativeEvent[T]) => void
+    ) => {
+      listenerController.removeListener(eventName, listener);
+    },
+    requestPermission: (mediaType) => {
+      return new Promise((resolve, reject) => {
+        postMessage(
+          {
+            action: "requestPermission",
+            payload: JSON.stringify({ mediaType }),
+          },
+          { resolve, reject }
+        );
+      });
+    },
+    setAudioDevice: (deviceId) => {
+      postMessage({
+        action: "setAudioDevice",
+        payload: JSON.stringify({ deviceId }),
+      });
+    },
+  };
+  const pagecallNative = new Proxy({
+    ...pagecallNativePrivate,
+    ...pagecallNativePublicStatic
+  }, {
+    get(staticMethods, action) {
+      const staticMethod = staticMethods[action as keyof typeof staticMethods];
+      if (staticMethod) return staticMethod;
+      if (typeof action === 'symbol') throw new Error('Invalid access');
+      return (payload: unknown) => new Promise((resolve, reject) => {
+        postMessage(
+          { action, payload: JSON.stringify(payload) },
+          { resolve, reject }
+        );
+      });
+    }
+  });
+
+  window.PagecallNative = pagecallNative
 }
 
 registerGlobals();
