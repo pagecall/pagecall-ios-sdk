@@ -45,10 +45,6 @@ class ChimeMeetingSession {
         }
     }
 
-    func stop() {
-        meetingSession.audioVideo.stop()
-    }
-
     func pauseAudio() -> Bool {
         return meetingSession.audioVideo.realtimeLocalMute()
     }

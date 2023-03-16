@@ -7,13 +7,14 @@
 
 import Foundation
 import WebKit
+import AVFoundation
 
 enum BridgeEvent: String, Codable {
     case audioDevice, audioDevices, audioVolume, audioStatus, audioSessionRouteChanged, audioSessionInterrupted, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, meetingEnded, log, error
 }
 
 enum BridgeAction: String, Codable {
-    case createSession, `init`, start, stop, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume, dispose
+    case initialize, dispose, start, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume
 }
 
 struct ErrorEvent: Codable {
@@ -71,7 +72,6 @@ class NativeBridge {
     init(webview: WKWebView) {
         self.webview = webview
         self.emitter = .init(webView: self.webview)
-        self.mediaController = ChimeController(emitter: self.emitter)
     }
 
     func response(requestId: String?) {
@@ -127,152 +127,203 @@ class NativeBridge {
 
             print("Bridge Action: \(bridgeAction)")
 
-            if bridgeAction == .`init` {
-                if let _ = self.mediaController {
-                    self.response(requestId: requestId, errorMessage: "ChimeController already exists")
+            if bridgeAction == .getPermissions {
+                if let payloadData = payload?.data(using: .utf8) {
+                    if let permissions = NativeBridge.getPermissions(constraint: payloadData, callback: { (error: Error?) in
+                        if let error = error {
+                            self.emitter.error(name: "Failed to getPermissions", message: error.localizedDescription)
+                            self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                        }
+                    }) {
+                        self.response(requestId: requestId, data: permissions)
+                    }
                 } else {
-                    self.mediaController = ChimeController(emitter: self.emitter)
-                    self.response(requestId: requestId)
+                    self.response(requestId: requestId, errorMessage: "Wrong payload")
                 }
-            } else if let mediaController = self.mediaController {
-                switch bridgeAction {
-                case .`init`:
-                    print("impossible to receive .`init` as a case when mediaController exists")
-                case .createSession:
-                    if let chimeController = mediaController as? ChimeController {
-                        if let payloadData = payload?.data(using: .utf8) {
-                            chimeController.createMeetingSession(joinMeetingData: payloadData) { (error: Error?) in
-                                if let error = error {
-                                    self.emitter.error(name: "Failed to createMeetingSession", message: error.localizedDescription)
-                                } else {
-                                    self.response(requestId: requestId)
-                                }
-                            }
-                        }
-                    } else {
-                        print("TODO")
-                    }
-                case .start:
-                    mediaController.start { (error: Error?) in
+                return
+            } else if bridgeAction == .requestPermission {
+                if let payloadData = payload?.data(using: .utf8) {
+                    NativeBridge.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
                         if let error = error {
-                            self.emitter.error(name: "Failed to start", message: error.localizedDescription)
-                        } else {
-                            self.response(requestId: requestId)
-                        }
-                    }
-                case .stop:
-                    mediaController.stop { (error: Error?) in
-                        if let error = error {
-                            self.emitter.error(name: "Failed to stop", message: error.localizedDescription)
+                            self.emitter.error(name: "Failed to requestPermission", message: error.localizedDescription)
                             self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                        } else {
-                            self.response(requestId: requestId)
-                        }
-                    }
-                case .dispose:
-                    mediaController.dispose { (error: Error?) in
-                        if let error = error {
-                            print("Failed to dispose: \(error.localizedDescription)")
-                            self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                        } else {
-                            self.mediaController = nil
-                            self.response(requestId: requestId)
-                        }
-                    }
-                case .getPermissions:
-                    if let payloadData = payload?.data(using: .utf8) {
-                        if let permissions = mediaController.getPermissions(constraint: payloadData, callback: { (error: Error?) in
-                            if let error = error {
-                                self.emitter.error(name: "Failed to getPermissions", message: error.localizedDescription)
-                                self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                            }
-                        }) {
-                            self.response(requestId: requestId, data: permissions)
-                        }
-                    } else {
-                        self.response(requestId: requestId, errorMessage: "Wrong payload")
-                    }
-                case .requestPermission:
-                    if let payloadData = payload?.data(using: .utf8) {
-                        mediaController.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
-                            if let error = error {
-                                self.emitter.error(name: "Failed to requestPermission", message: error.localizedDescription)
-                                self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                            } else if let isGranted = isGranted {
-                                guard let data = try? JSONEncoder().encode(isGranted) else { return }
-                                self.response(requestId: requestId, data: data)
-                            }
-                        })
-                    } else {
-                        self.response(requestId: requestId, errorMessage: "Wrong payload")
-                    }
-                case .pauseAudio:
-                    mediaController.pauseAudio { (error: Error?) in
-                        if let error = error {
-                            self.emitter.error(name: "Failed to pauseAudio", message: error.localizedDescription)
-                        }
-                    }
-                case .resumeAudio:
-                    mediaController.resumeAudio { (error: Error?) in
-                        if let error = error {
-                            self.emitter.error(name: "Failed to resumeAudio", message: error.localizedDescription)
-                        }
-                    }
-                case .setAudioDevice:
-                    struct DeviceId: Codable {
-                        var deviceId: String
-                    }
-                    guard let payloadData = payload?.data(using: .utf8), let deviceId = try? JSONDecoder().decode(DeviceId.self, from: payloadData) else {
-                        let message = "deviceId does not exist"
-                        self.emitter.error(name: message, message: message)
-                        return
-                    }
-
-                    mediaController.setAudioDevice(deviceId: deviceId.deviceId) { (error: Error?) in
-                        if let error = error {
-                            self.emitter.error(name: "Failed to setAudioDevice", message: error.localizedDescription)
-                        }
-                    }
-                case .getAudioDevices:
-                    let mediaDeviceInfoList = mediaController.getAudioDevices()
-                    do {
-                        let data = try JSONEncoder().encode(mediaDeviceInfoList)
-                        self.response(requestId: requestId, data: data)
-                    } catch {
-                        self.emitter.error(name: "Failed to getAudioDevices", message: error.localizedDescription)
-                        self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                    }
-                case .requestAudioVolume:
-                    mediaController.requestAudioVolume { volume, error in
-                        if let error = error {
-                            self.emitter.error(name: "Failed to requestAudioVolume", message: error.localizedDescription)
-                            self.response(requestId: requestId, errorMessage: error.localizedDescription)
-                        } else if let volume = volume {
-                            guard let data = try? JSONEncoder().encode(volume) else { return }
+                        } else if let isGranted = isGranted {
+                            guard let data = try? JSONEncoder().encode(isGranted) else { return }
                             self.response(requestId: requestId, data: data)
                         }
-                    }
+                    })
+                } else {
+                    self.response(requestId: requestId, errorMessage: "Wrong payload")
                 }
-            } else {
-                self.response(requestId: requestId, errorMessage: "ChimeController does not exist")
+                return
+            } else if bridgeAction == .initialize {
+                if let _ = mediaController {
+                    self.response(requestId: requestId, errorMessage: "Must be disposed first")
+                    return
+                }
+                guard let payloadData = payload?.data(using: .utf8) else {
+                    self.response(requestId: requestId, errorMessage: "Missing payload")
+                    return
+                }
+                struct MiPayload: Codable {
+                    let plugin: String
+                }
+                if let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: payloadData) {
+                    mediaController = ChimeController(emitter: emitter, configuration: meetingSessionConfiguration)
+                    self.response(requestId: requestId)
+                } else if let _ = try? JSONDecoder().decode(MiPayload.self, from: payloadData) {
+                    // TODO make use of the payload
+                    mediaController = MiController()
+                }
             }
 
+            guard let mediaController = mediaController else {
+                self.response(requestId: requestId, errorMessage: "Missing mediaController, initialize first")
+                return
+            }
+
+            switch bridgeAction {
+            case .start:
+                mediaController.start { (error: Error?) in
+                    if let error = error {
+                        self.emitter.error(name: "Failed to start", message: error.localizedDescription)
+                    } else {
+                        self.response(requestId: requestId)
+                    }
+                }
+            case .dispose:
+                mediaController.dispose()
+                self.response(requestId: requestId)
+            case .pauseAudio:
+                mediaController.pauseAudio { (error: Error?) in
+                    if let error = error {
+                        self.emitter.error(name: "Failed to pauseAudio", message: error.localizedDescription)
+                    }
+                }
+            case .resumeAudio:
+                mediaController.resumeAudio { (error: Error?) in
+                    if let error = error {
+                        self.emitter.error(name: "Failed to resumeAudio", message: error.localizedDescription)
+                    }
+                }
+            case .setAudioDevice:
+                struct DeviceId: Codable {
+                    var deviceId: String
+                }
+                guard let payloadData = payload?.data(using: .utf8), let deviceId = try? JSONDecoder().decode(DeviceId.self, from: payloadData) else {
+                    let message = "deviceId does not exist"
+                    self.emitter.error(name: message, message: message)
+                    return
+                }
+
+                mediaController.setAudioDevice(deviceId: deviceId.deviceId) { (error: Error?) in
+                    if let error = error {
+                        self.emitter.error(name: "Failed to setAudioDevice", message: error.localizedDescription)
+                    }
+                }
+            case .getAudioDevices:
+                let mediaDeviceInfoList = mediaController.getAudioDevices()
+                do {
+                    let data = try JSONEncoder().encode(mediaDeviceInfoList)
+                    self.response(requestId: requestId, data: data)
+                } catch {
+                    self.emitter.error(name: "Failed to getAudioDevices", message: error.localizedDescription)
+                    self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                }
+            case .requestAudioVolume:
+                mediaController.requestAudioVolume { volume, error in
+                    if let error = error {
+                        self.emitter.error(name: "Failed to requestAudioVolume", message: error.localizedDescription)
+                        self.response(requestId: requestId, errorMessage: error.localizedDescription)
+                    } else if let volume = volume {
+                        guard let data = try? JSONEncoder().encode(volume) else { return }
+                        self.response(requestId: requestId, data: data)
+                    }
+                }
+            case .initialize: fatalError()
+            case .getPermissions: fatalError()
+            case .requestPermission: fatalError()
+            }
         } catch let error as NSError {
             print(error)
         }
     }
 
     public func disconnect() {
-        if let mediaController = self.mediaController {
-              mediaController.dispose { (error: Error?) in
-                if let error = error {
-                    self.emitter.error(name: "ChimeController", message: "failed to dispose: \(error.localizedDescription)")
-                } else {
-                    self.emitter.log(name: "ChimeController", message: "dispose success")
-                    self.mediaController = nil
-                }
-            }
+        mediaController?.dispose()
+        mediaController = nil
+    }
+}
 
+struct MediaConstraints: Codable {
+    var audio: Bool?
+    var video: Bool?
+}
+
+struct MediaType: Codable {
+    var mediaType: String
+}
+
+extension NativeBridge {
+    static func getPermissions(constraint: Data, callback: (Error?) -> Void) -> Data? {
+        guard let mediaType = try? JSONDecoder().decode(MediaConstraints.self, from: constraint) else {
+            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wrong Constraint"]))
+            return nil
         }
+
+        func getAudioStatus() -> Bool? {
+            if let audio = mediaType.audio {
+                if !audio { return nil }
+                let status = AVCaptureDevice.authorizationStatus(for: .audio)
+                switch status {
+                    case .notDetermined: return nil
+                    case .restricted: return false
+                    case .denied: return false
+                    case .authorized: return true
+                    default: return nil
+                }
+            } else { return nil }
+        }
+        func getVideoStatus() -> Bool? {
+            if let video = mediaType.video {
+                if !video { return nil }
+                let status = AVCaptureDevice.authorizationStatus(for: .video)
+                switch status {
+                    case .notDetermined: return nil
+                    case .restricted: return false
+                    case .denied: return false
+                    case .authorized: return true
+                    default: return nil
+                }
+            } else { return nil }
+        }
+
+        if let data = try? JSONEncoder().encode(MediaConstraints(audio: getAudioStatus(), video: getVideoStatus())) {
+            return data
+        } else {
+            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to getPermissions"]))
+            return nil
+        }
+    }
+
+    static func requestPermission(data: Data, callback: @escaping (Bool?, Error?) -> Void) {
+        guard let mediaType = try? JSONDecoder().decode(MediaType.self, from: data) else {
+            callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wrong Constraint"]))
+            return
+        }
+
+        func requestPermission(callback: @escaping (Bool) -> Void) {
+            if mediaType.mediaType == "audio" {
+                AVCaptureDevice.requestAccess(for: .audio) {
+                    isGranted in callback(isGranted)
+                }
+            } else if mediaType.mediaType == "video" {
+                AVCaptureDevice.requestAccess(for: .video) {
+                    isGranted in callback(isGranted)
+                }
+            } else { callback(false) }
+        }
+
+        requestPermission { isGranted in callback(isGranted, nil) }
     }
 }
