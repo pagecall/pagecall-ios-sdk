@@ -145,6 +145,8 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
 
         sendTransport.delegate = self
         recvTransport.delegate = self
+
+        startHandlingInterruption()
     }
 
     func consume(data: Data, callback: (Error?) -> Void) {
@@ -216,6 +218,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     }
 
     func dispose() {
+        stopHandlingInterruption()
         sendTransport.close()
         recvTransport.close()
     }
