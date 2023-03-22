@@ -21,14 +21,7 @@ class ChimeController: MediaController {
     }
 
     func start(callback: (Error?) -> Void) {
-        chimeMeetingSession.start { (error: Error?) in
-            if error != nil {
-                callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to start session"]))
-            } else {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .allowBluetooth])
-                callback(nil)
-            }
-        }
+        chimeMeetingSession.start(callback: callback)
     }
 
     func pauseAudio(callback: (Error?) -> Void) {
