@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Jaeseong Seo on 2023/03/22.
-//
-
 import AVFoundation
 
 extension NativeBridge {

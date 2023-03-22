@@ -6,7 +6,6 @@
 //
 
 import AmazonChimeSDK
-import Foundation
 
 enum StatKind: String, Codable {
     case audioPacketsSentLossPercent, audioPacketsReceivedLossPercent

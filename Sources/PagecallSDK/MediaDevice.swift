@@ -6,7 +6,6 @@
 //
 
 import AmazonChimeSDK
-import Foundation
 
 enum MediaDeviceKind: String, Codable {
     case audioinput, audiooutput, videoinput
