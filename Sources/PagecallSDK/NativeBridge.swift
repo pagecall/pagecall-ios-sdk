@@ -148,7 +148,14 @@ class WebViewEmitter {
 class NativeBridge {
     let webview: WKWebView
     let emitter: WebViewEmitter
-    var mediaController: MediaController?
+    var mediaController: MediaController? {
+        didSet {
+            stopHandlingInterruption()
+            if let _ = mediaController {
+                startHandlingInterruption()
+            }
+        }
+    }
 
     init(webview: WKWebView) {
         self.webview = webview
