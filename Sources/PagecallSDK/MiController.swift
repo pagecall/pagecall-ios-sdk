@@ -211,10 +211,6 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         callback(nil)
     }
 
-    func requestAudioVolume(callback: @escaping (Float?, Error?) -> Void) {
-        callback(nil, PagecallError(message: "Not implemented"))
-    }
-
     func dispose() {
         sendTransport.close()
         recvTransport.close()

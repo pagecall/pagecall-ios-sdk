@@ -78,4 +78,8 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
     public func dispose() {
         self.disposeInner()
     }
+
+    deinit {
+        dispose()
+    }
 }

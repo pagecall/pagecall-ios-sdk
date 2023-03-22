@@ -195,44 +195,8 @@ class NativeBridge {
 
             let payloadData = payload?.data(using: .utf8)
 
-            if bridgeAction == .response {
-                struct ResponsePayload: Codable {
-                    let eventId: String
-                    let error: String?
-                    let result: String?
-                }
-                if let payloadData = payloadData, let responsePayload = try? JSONDecoder().decode(ResponsePayload.self, from: payloadData) {
-                    emitter.resolve(eventId: responsePayload.eventId, error: responsePayload.error, result: responsePayload.result)
-                } else {
-                    print("Invalid response data")
-                }
-                return
-            } else if bridgeAction == .getPermissions {
-                guard let payloadData = payloadData else {
-                    respond(PagecallError(message: "Missing payload"), nil)
-                    return
-                }
-                if let permissions = NativeBridge.getPermissions(constraint: payloadData, callback: { (error: Error?) in
-                    respond(error, nil)
-                }) {
-                    respond(nil, permissions)
-                }
-                return
-            } else if bridgeAction == .requestPermission {
-                guard let payloadData = payloadData else {
-                    respond(PagecallError(message: "Missing payload"), nil)
-                    return
-                }
-                NativeBridge.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
-                    if let error = error {
-                        respond(error, nil)
-                    } else if let isGranted = isGranted {
-                        guard let data = try? JSONEncoder().encode(isGranted) else { return }
-                        respond(nil, data)
-                    }
-                })
-                return
-            } else if bridgeAction == .initialize {
+            switch bridgeAction {
+            case .initialize:
                 if let _ = mediaController {
                     respond(PagecallError(message: "Must be disposed first"), nil)
                     return
@@ -257,7 +221,32 @@ class NativeBridge {
                     }
                 }
                 return
-            } else if bridgeAction == .getAudioDevices {
+            case .getPermissions:
+                guard let payloadData = payloadData else {
+                    respond(PagecallError(message: "Missing payload"), nil)
+                    return
+                }
+                if let permissions = NativeBridge.getPermissions(constraint: payloadData, callback: { (error: Error?) in
+                    respond(error, nil)
+                }) {
+                    respond(nil, permissions)
+                }
+                return
+            case .requestPermission:
+                guard let payloadData = payloadData else {
+                    respond(PagecallError(message: "Missing payload"), nil)
+                    return
+                }
+                NativeBridge.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
+                    if let error = error {
+                        respond(error, nil)
+                    } else if let isGranted = isGranted {
+                        guard let data = try? JSONEncoder().encode(isGranted) else { return }
+                        respond(nil, data)
+                    }
+                })
+                return
+            case .getAudioDevices:
                 let deviceList: [MediaDeviceInfo] = {
                     if let chimeController = mediaController as? ChimeController {
                         return chimeController.getAudioDevices()
@@ -272,6 +261,36 @@ class NativeBridge {
                     respond(error, nil)
                 }
                 return
+            case .requestAudioVolume:
+                requestAudioVolume { volume, error in
+                    if let error = error {
+                        respond(error, nil)
+                    } else if let volume = volume {
+                        guard let data = try? JSONEncoder().encode(volume) else { return }
+                        respond(nil, data)
+                    }
+                }
+                return
+            case .response:
+                struct ResponsePayload: Codable {
+                    let eventId: String
+                    let error: String?
+                    let result: String?
+                }
+                if let payloadData = payloadData, let responsePayload = try? JSONDecoder().decode(ResponsePayload.self, from: payloadData) {
+                    emitter.resolve(eventId: responsePayload.eventId, error: responsePayload.error, result: responsePayload.result)
+                } else {
+                    print("Invalid response data")
+                }
+                return
+            // These actions require mediaController
+            case .pauseAudio: fallthrough
+            case .resumeAudio: fallthrough
+            case .setAudioDevice: fallthrough
+            case .consume: fallthrough
+            case .dispose: fallthrough
+            case .start: fallthrough
+            default: break
             }
 
             guard let mediaController = mediaController else {
@@ -312,15 +331,6 @@ class NativeBridge {
                 chimeController.setAudioDevice(deviceId: deviceId.deviceId) { (error: Error?) in
                     respond(error, nil)
                 }
-            case .requestAudioVolume:
-                mediaController.requestAudioVolume { volume, error in
-                    if let error = error {
-                        respond(error, nil)
-                    } else if let volume = volume {
-                        guard let data = try? JSONEncoder().encode(volume) else { return }
-                        respond(nil, data)
-                    }
-                }
             case .consume:
                 if let miController = mediaController as? MiController {
                     if let payloadData = payloadData {
@@ -338,15 +348,62 @@ class NativeBridge {
             case .getPermissions: fatalError()
             case .requestPermission: fatalError()
             case .response: fatalError()
+            case .requestAudioVolume: fatalError()
             }
         } catch let error as NSError {
             print(error)
         }
     }
 
+    private func normalizeSoundLevel(level: Float) -> Float {
+        let lowLevel: Float = -40
+        let highLevel: Float = -10
+
+        var level = max(0.0, level - lowLevel)
+        level = min(level, highLevel - lowLevel)
+        return level / (highLevel - lowLevel) // scaled to 0.0 ~ 1
+    }
+
+    private var audioRecorder: AVAudioRecorder?
+    func requestAudioVolume(callback: @escaping (Float?, Error?) -> Void) {
+        if let audioRecorder = audioRecorder {
+            audioRecorder.updateMeters()
+            let averagePower = audioRecorder.averagePower(forChannel: 0)
+            let nomalizedVolume = normalizeSoundLevel(level: averagePower)
+            callback(nomalizedVolume, nil)
+            return
+        }
+        do {
+            let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let audioFilename = documentPath.appendingPathComponent("nothing.m4a")
+            let settings = [
+                AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+                AVSampleRateKey: 12000,
+                AVNumberOfChannelsKey: 1,
+                AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+            ]
+            let audioRecorder = try AVAudioRecorder(url: audioFilename, settings: settings)
+            self.audioRecorder = audioRecorder
+            audioRecorder.isMeteringEnabled = true
+            audioRecorder.record()
+
+            audioRecorder.updateMeters()
+            let averagePower = audioRecorder.averagePower(forChannel: 0)
+            let nomalizedVolume = normalizeSoundLevel(level: averagePower)
+            callback(nomalizedVolume, nil)
+        } catch {
+            callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "AudioRecorder is not exist"]))
+        }
+    }
+
     public func disconnect() {
         mediaController?.dispose()
         mediaController = nil
+    }
+
+    deinit {
+        audioRecorder?.stop()
+        disconnect()
     }
 }
 

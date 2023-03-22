@@ -11,7 +11,6 @@ import AVFoundation
 class ChimeController: MediaController {
     let emitter: WebViewEmitter
     let chimeMeetingSession: ChimeMeetingSession
-    var audioRecorder: AVAudioRecorder?
 
     init(emitter: WebViewEmitter, configuration: MeetingSessionConfiguration) {
         self.emitter = emitter
@@ -19,46 +18,6 @@ class ChimeController: MediaController {
         let logger = ConsoleLogger(name: "DefaultMeetingSession", level: LogLevel.INFO)
         let chimeMeetingSession = ChimeMeetingSession(configuration: configuration, logger: logger, emitter: emitter)
         self.chimeMeetingSession = chimeMeetingSession
-    }
-
-    private func normalizeSoundLevel(level: Float) -> Float {
-        let lowLevel: Float = -40
-        let highLevel: Float = -10
-
-        var level = max(0.0, level - lowLevel)
-        level = min(level, highLevel - lowLevel)
-        return level / (highLevel - lowLevel) // scaled to 0.0 ~ 1
-    }
-
-    func requestAudioVolume(callback: @escaping (Float?, Error?) -> Void) {
-        if let audioRecorder = audioRecorder {
-            audioRecorder.updateMeters()
-            let averagePower = audioRecorder.averagePower(forChannel: 0)
-            let nomalizedVolume = normalizeSoundLevel(level: averagePower)
-            callback(nomalizedVolume, nil)
-            return
-        }
-        do {
-            let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let audioFilename = documentPath.appendingPathComponent("nothing.m4a")
-            let settings = [
-                AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-                AVSampleRateKey: 12000,
-                AVNumberOfChannelsKey: 1,
-                AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
-            ]
-            let audioRecorder = try AVAudioRecorder(url: audioFilename, settings: settings)
-            self.audioRecorder = audioRecorder
-            audioRecorder.isMeteringEnabled = true
-            audioRecorder.record()
-
-            audioRecorder.updateMeters()
-            let averagePower = audioRecorder.averagePower(forChannel: 0)
-            let nomalizedVolume = normalizeSoundLevel(level: averagePower)
-            callback(nomalizedVolume, nil)
-        } catch {
-            callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "AudioRecorder is not exist"]))
-        }
     }
 
     func start(callback: (Error?) -> Void) {
@@ -102,10 +61,10 @@ class ChimeController: MediaController {
     }
 
     func dispose() {
-        if let audioRecorder = self.audioRecorder {
-            audioRecorder.stop()
-            self.audioRecorder = nil
-        }
         chimeMeetingSession.dispose()
+    }
+
+    deinit {
+        dispose()
     }
 }
