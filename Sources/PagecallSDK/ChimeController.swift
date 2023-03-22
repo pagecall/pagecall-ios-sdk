@@ -19,8 +19,6 @@ class ChimeController: MediaController {
         let logger = ConsoleLogger(name: "DefaultMeetingSession", level: LogLevel.INFO)
         let chimeMeetingSession = ChimeMeetingSession(configuration: configuration, logger: logger, emitter: emitter)
         self.chimeMeetingSession = chimeMeetingSession
-
-        startHandlingInterruption()
     }
 
     private func normalizeSoundLevel(level: Float) -> Float {
@@ -104,7 +102,6 @@ class ChimeController: MediaController {
     }
 
     func dispose() {
-        stopHandlingInterruption()
         if let audioRecorder = self.audioRecorder {
             audioRecorder.stop()
             self.audioRecorder = nil
