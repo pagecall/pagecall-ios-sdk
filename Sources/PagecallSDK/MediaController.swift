@@ -70,6 +70,5 @@ protocol MediaController {
     func start(callback: @escaping (Error?) -> Void)
     func pauseAudio(callback: (Error?) -> Void)
     func resumeAudio(callback: (Error?) -> Void)
-    func requestAudioVolume(callback: @escaping (Float?, Error?) -> Void)
     func dispose()
 }
