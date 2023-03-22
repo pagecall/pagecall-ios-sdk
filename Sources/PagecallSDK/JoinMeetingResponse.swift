@@ -6,7 +6,6 @@
 //
 
 import AmazonChimeSDK
-import Foundation
 
 struct CreateMediaPlacementInfo: Codable {
     var audioFallbackUrl: String?

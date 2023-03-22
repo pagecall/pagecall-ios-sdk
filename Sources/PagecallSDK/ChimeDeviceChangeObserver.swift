@@ -6,7 +6,6 @@
 //
 
 import AmazonChimeSDK
-import Foundation
 
 class ChimeDeviceChangeObserver: DeviceChangeObserver {
     let emitter: WebViewEmitter

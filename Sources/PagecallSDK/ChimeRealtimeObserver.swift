@@ -6,7 +6,6 @@
 //
 
 import AmazonChimeSDK
-import Foundation
 
 struct AudioStatus: Codable {
     let sessionId: String

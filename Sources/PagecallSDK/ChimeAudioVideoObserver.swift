@@ -6,7 +6,6 @@
 //
 
 import AmazonChimeSDK
-import Foundation
 
 class ChimeAudioVideoObserver: AudioVideoObserver {
     let emitter: WebViewEmitter

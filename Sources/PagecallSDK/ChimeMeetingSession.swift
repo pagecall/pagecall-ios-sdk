@@ -6,7 +6,6 @@
 //
 
 import AmazonChimeSDK
-import Foundation
 
 class ChimeMeetingSession {
     let meetingSession: DefaultMeetingSession
