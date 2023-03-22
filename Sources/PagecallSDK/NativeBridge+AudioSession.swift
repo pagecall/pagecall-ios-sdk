@@ -19,7 +19,13 @@ extension NativeBridge {
                     .allowBluetoothA2DP,
                     .defaultToSpeaker]
         }
-        try? audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: options)
+        if audioSession.category != .playAndRecord {
+            try? audioSession.setCategory(.playAndRecord, options: options)
+            try? audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+        }
+        if audioSession.mode != .default {
+            try? audioSession.setMode(.default)
+        }
     }
 
     @objc private func handleRouteChange(notification: Notification) {
