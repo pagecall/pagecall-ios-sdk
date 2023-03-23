@@ -23,6 +23,9 @@ extension NativeBridge {
             try? audioSession.setCategory(.playAndRecord, options: options)
             try? audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         }
+        if let desiredMode = desiredMode, desiredMode != audioSession.mode {
+            try? audioSession.setMode(desiredMode)
+        }
     }
 
     @objc private func handleRouteChange(notification: Notification) {
@@ -49,20 +52,6 @@ extension NativeBridge {
         }
         self.setAudioSessionCategory()
 
-        let activeSpeakerPort = audioSession.currentRoute.outputs.first(where: { port in
-            return port.portType == .builtInReceiver || port.portType == .builtInSpeaker
-        })
-
-        if let _ = activeSpeakerPort {
-            // 자체 스피커에서 소리가 나오는 상황
-            if audioSession.mode != .videoChat {
-                try? audioSession.setMode(.videoChat)
-            }
-        } else {
-            if audioSession.mode != .voiceChat {
-                try? audioSession.setMode(.voiceChat)
-            }
-        }
         /**
          * TODO: setIdiomPhoneOutputAudioPort()
          * Ref: https://github.com/pplink/pagecall-ios-sdk/blob/main/PageCallSDK/PageCallSDK/Classes/PCMainViewController.m#L673-L841
