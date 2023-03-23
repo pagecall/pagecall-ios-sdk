@@ -24,10 +24,16 @@ enum BridgeAction: String, Codable {
 class NativeBridge {
     let webview: WKWebView
     let emitter: WebViewEmitter
+    var desiredMode: AVAudioSession.Mode?
     var mediaController: MediaController? {
         didSet {
             stopHandlingInterruption()
-            if let _ = mediaController {
+            if let mediaController = mediaController {
+                if let _ = mediaController as? ChimeController {
+                    desiredMode = .default
+                } else {
+                    desiredMode = .videoChat
+                }
                 startHandlingInterruption()
             }
         }
