@@ -18,12 +18,6 @@ class ChimeController: MediaController {
     let metricsObserver: ChimeMetricsObserver
     let deviceChangeObserver: ChimeDeviceChangeObserver
 
-    var shouldPauseAudio = false {
-        didSet {
-            synchronizePauseState()
-        }
-    }
-
     init(emitter: WebViewEmitter, configuration: MeetingSessionConfiguration) {
         self.emitter = emitter
 
@@ -41,19 +35,10 @@ class ChimeController: MediaController {
         meetingSession.audioVideo.addDeviceChangeObserver(observer: deviceChangeObserver)
     }
 
-    func synchronizePauseState() {
-        let isSuccess = shouldPauseAudio ? meetingSession.audioVideo.realtimeLocalMute() : meetingSession.audioVideo.realtimeLocalUnmute()
-        if !isSuccess {
-            emitter.error(name: "PauseResumeError", message: "Failed to \(shouldPauseAudio ? "pause" : "resume") audio")
-        }
-    }
-
     func start(callback: (Error?) -> Void) {
         do {
             try meetingSession.audioVideo.start()
             _ = meetingSession.audioVideo.realtimeSetVoiceFocusEnabled(enabled: true)
-
-            synchronizePauseState()
 
             callback(nil)
         } catch {
@@ -61,12 +46,12 @@ class ChimeController: MediaController {
         }
     }
 
-    func pauseAudio() {
-        shouldPauseAudio = true
+    func pauseAudio() -> Bool {
+        return meetingSession.audioVideo.realtimeLocalMute()
     }
 
-    func resumeAudio() {
-        shouldPauseAudio = false
+    func resumeAudio() -> Bool {
+        return meetingSession.audioVideo.realtimeLocalUnmute()
     }
 
     func setAudioDevice(deviceId: String, callback: (Error?) -> Void) {

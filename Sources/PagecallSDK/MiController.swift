@@ -108,16 +108,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     private let sendTransport: SendTransport
     private let recvTransport: ReceiveTransport
     private let factory = RTCPeerConnectionFactory()
-    private var producer: Producer? {
-        didSet {
-            synchronizeProducerPaused()
-        }
-    }
-    private var isPaused = false {
-        didSet {
-            synchronizeProducerPaused()
-        }
-    }
+    private var producer: Producer?
     private var consumers = [Consumer]()
     let emitter: WebViewEmitter
 
@@ -173,17 +164,6 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         }
     }
 
-    private func synchronizeProducerPaused() {
-        guard let producer = producer else {
-            return
-        }
-        if isPaused {
-            producer.pause()
-        } else {
-            producer.resume()
-        }
-    }
-
     func start(callback: @escaping (Error?) -> Void) {
         let audioSource = factory.audioSource(with: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
         let audioTrack = factory.audioTrack(with: audioSource, trackId: "audio0")
@@ -200,12 +180,20 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         }
     }
 
-    func pauseAudio() {
-        isPaused = true
+    func pauseAudio() -> Bool {
+        if let producer = producer {
+            producer.pause()
+            return true
+        }
+        return false
     }
 
-    func resumeAudio() {
-        isPaused = false
+    func resumeAudio() -> Bool {
+        if let producer = producer {
+            producer.resume()
+            return true
+        }
+        return false
     }
 
     func dispose() {

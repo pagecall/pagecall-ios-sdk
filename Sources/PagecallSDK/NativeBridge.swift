@@ -18,24 +18,50 @@ enum BridgeRequest: String, Codable {
 }
 
 enum BridgeAction: String, Codable {
-    case initialize, dispose, start, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, setAudioDevice, requestAudioVolume, consume, response
+    // 항상 유효한 요청
+    case initialize, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, requestAudioVolume
+    case response
+    // 컨트롤러 생성 후 유효한 요청
+    case start, setAudioDevice, consume, dispose
 }
 
 class NativeBridge {
     let webview: WKWebView
     let emitter: WebViewEmitter
+
+    // Handled by NativeBridge+AudioSession extension
     var desiredMode: AVAudioSession.Mode?
+
     var mediaController: MediaController? {
         didSet {
             stopHandlingInterruption()
             if let mediaController = mediaController {
+                synchronizePauseState()
                 if let _ = mediaController as? ChimeController {
+                    // Chime에서는 videoChat일 경우 소리가 작게 송출된다.
                     desiredMode = .default
                 } else {
+                    // MI에서는 default일 경우 에어팟 연결이 해제된다.
                     desiredMode = .videoChat
                 }
                 startHandlingInterruption()
             }
+        }
+    }
+
+    var isAudioPaused = false {
+        didSet {
+            synchronizePauseState()
+        }
+    }
+
+    func synchronizePauseState() {
+        guard let mediaController = mediaController else { return }
+        let success = isAudioPaused ? mediaController.pauseAudio() : mediaController.resumeAudio()
+        if success {
+            emitter.log(name: "AudioStateChange", message: isAudioPaused ? "Paused" : "Resumed")
+        } else {
+            emitter.error(name: "AudioStateChangeError", message: isAudioPaused ? "Failed to pause" : "Failed to resume")
         }
     }
 
@@ -45,193 +71,175 @@ class NativeBridge {
     }
 
     func messageHandler(message: String) {
-        do {
-            let data = message.data(using: .utf8)!
-            guard let jsonArray = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
-            else {
-                NSLog("Failed to JSONSerialization")
-                return
-            }
-            guard let action = jsonArray["action"] as? String, let bridgeAction = BridgeAction(rawValue: action), let requestId = jsonArray["requestId"] as? String?, let payload = jsonArray["payload"] as? String? else {
-                return
-            }
+        let data = message.data(using: .utf8)!
+        guard let jsonArray = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else {
+            NSLog("Failed to JSONSerialization")
+            return
+        }
+        guard let action = jsonArray["action"] as? String, let bridgeAction = BridgeAction(rawValue: action), let requestId = jsonArray["requestId"] as? String?, let payload = jsonArray["payload"] as? String? else {
+            return
+        }
 
-            print("Bridge Action: \(bridgeAction)")
+        print("Bridge Action: \(bridgeAction)")
 
-            let respond: (Error?, Data?) -> Void = { error, data in
-                if let error = error {
-                    if let requestId = requestId {
-                        self.emitter.response(requestId: requestId, errorMessage: error.localizedDescription)
-                    } else {
-                        self.emitter.error(name: "RequestFailed", message: error.localizedDescription)
-                    }
+        let respond: (Error?, Data?) -> Void = { error, data in
+            if let error = error {
+                if let requestId = requestId {
+                    self.emitter.response(requestId: requestId, errorMessage: error.localizedDescription)
                 } else {
-                    if let requestId = requestId {
-                        self.emitter.response(requestId: requestId, data: data)
-                    } else {
-                        print("Missing requestId", jsonArray)
-                        self.emitter.error(name: "RequestIdMissing", message: "\(bridgeAction) succeeded without requestId")
-                    }
+                    self.emitter.error(name: "RequestFailed", message: error.localizedDescription)
+                }
+            } else {
+                if let requestId = requestId {
+                    self.emitter.response(requestId: requestId, data: data)
+                } else {
+                    print("Missing requestId", jsonArray)
+                    self.emitter.error(name: "RequestIdMissing", message: "\(bridgeAction) succeeded without requestId")
                 }
             }
+        }
 
-            let payloadData = payload?.data(using: .utf8)
+        let payloadData = payload?.data(using: .utf8)
 
-            switch bridgeAction {
-            case .initialize:
-                if let _ = mediaController {
-                    respond(PagecallError(message: "Must be disposed first"), nil)
-                    return
-                }
-                guard let payloadData = payload?.data(using: .utf8) else {
-                    respond(PagecallError(message: "Missing payload"), nil)
-                    return
-                }
-                struct MiPayload: Codable {
-                    let plugin: String
-                }
-                if let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: payloadData) {
-                    mediaController = ChimeController(emitter: emitter, configuration: meetingSessionConfiguration)
-                    respond(nil, nil)
-                } else if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
-                    do {
-                        let miController = try MiController(emitter: emitter, initialPayload: initialPayload)
-                        mediaController = miController
-                        respond(nil, nil)
-                    } catch {
-                        respond(error, nil)
-                    }
-                }
+        switch bridgeAction {
+        case .initialize:
+            if let _ = mediaController {
+                respond(PagecallError(message: "Must be disposed first"), nil)
                 return
-            case .getPermissions:
-                guard let payloadData = payloadData else {
-                    respond(PagecallError(message: "Missing payload"), nil)
-                    return
-                }
-                if let permissions = NativeBridge.getPermissions(constraint: payloadData, callback: { (error: Error?) in
-                    respond(error, nil)
-                }) {
-                    respond(nil, permissions)
-                }
+            }
+            guard let payloadData = payload?.data(using: .utf8) else {
+                respond(PagecallError(message: "Missing payload"), nil)
                 return
-            case .requestPermission:
-                guard let payloadData = payloadData else {
-                    respond(PagecallError(message: "Missing payload"), nil)
-                    return
-                }
-                NativeBridge.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
-                    if let error = error {
-                        respond(error, nil)
-                    } else if let isGranted = isGranted {
-                        guard let data = try? JSONEncoder().encode(isGranted) else { return }
-                        respond(nil, data)
-                    }
-                })
-                return
-            case .getAudioDevices:
-                let deviceList: [MediaDeviceInfo] = {
-                    if let chimeController = mediaController as? ChimeController {
-                        return chimeController.getAudioDevices()
-                    } else {
-                        return [MediaDeviceInfo.audioDefault]
-                    }
-                }()
+            }
+            struct MiPayload: Codable {
+                let plugin: String
+            }
+            if let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: payloadData) {
+                mediaController = ChimeController(emitter: emitter, configuration: meetingSessionConfiguration)
+                respond(nil, nil)
+            } else if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
                 do {
-                    let data = try JSONEncoder().encode(deviceList)
-                    respond(nil, data)
+                    let miController = try MiController(emitter: emitter, initialPayload: initialPayload)
+                    mediaController = miController
+                    respond(nil, nil)
                 } catch {
                     respond(error, nil)
                 }
-                return
-            case .requestAudioVolume:
-                requestAudioVolume { volume, error in
-                    if let error = error {
-                        respond(error, nil)
-                    } else if let volume = volume {
-                        guard let data = try? JSONEncoder().encode(volume) else { return }
-                        respond(nil, data)
-                    }
-                }
-                return
-            case .response:
-                struct ResponsePayload: Codable {
-                    let eventId: String
-                    let error: String?
-                    let result: String?
-                }
-                if let payloadData = payloadData, let responsePayload = try? JSONDecoder().decode(ResponsePayload.self, from: payloadData) {
-                    emitter.resolve(eventId: responsePayload.eventId, error: responsePayload.error, result: responsePayload.result)
-                } else {
-                    print("Invalid response data")
-                }
-                return
-            // These actions require mediaController
-            case .pauseAudio: fallthrough
-            case .resumeAudio: fallthrough
-            case .setAudioDevice: fallthrough
-            case .consume: fallthrough
-            case .dispose: fallthrough
-            case .start: fallthrough
-            default: break
             }
-
+        case .getPermissions:
+            guard let payloadData = payloadData else {
+                respond(PagecallError(message: "Missing payload"), nil)
+                return
+            }
+            if let permissions = NativeBridge.getPermissions(constraint: payloadData, callback: { (error: Error?) in
+                respond(error, nil)
+            }) {
+                respond(nil, permissions)
+            }
+        case .requestPermission:
+            guard let payloadData = payloadData else {
+                respond(PagecallError(message: "Missing payload"), nil)
+                return
+            }
+            NativeBridge.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
+                if let error = error {
+                    respond(error, nil)
+                } else if let isGranted = isGranted {
+                    guard let data = try? JSONEncoder().encode(isGranted) else { return }
+                    respond(nil, data)
+                }
+            })
+        case .getAudioDevices:
+            let deviceList: [MediaDeviceInfo] = {
+                if let chimeController = mediaController as? ChimeController {
+                    return chimeController.getAudioDevices()
+                } else {
+                    return [MediaDeviceInfo.audioDefault]
+                }
+            }()
+            do {
+                let data = try JSONEncoder().encode(deviceList)
+                respond(nil, data)
+            } catch {
+                respond(error, nil)
+            }
+        case .requestAudioVolume:
+            requestAudioVolume { volume, error in
+                if let error = error {
+                    respond(error, nil)
+                } else if let volume = volume {
+                    guard let data = try? JSONEncoder().encode(volume) else { return }
+                    respond(nil, data)
+                }
+            }
+        case .pauseAudio:
+            isAudioPaused = true
+            respond(nil, nil)
+        case .resumeAudio:
+            isAudioPaused = false
+            respond(nil, nil)
+        case .response:
+            struct ResponsePayload: Codable {
+                let eventId: String
+                let error: String?
+                let result: String?
+            }
+            if let payloadData = payloadData, let responsePayload = try? JSONDecoder().decode(ResponsePayload.self, from: payloadData) {
+                emitter.resolve(eventId: responsePayload.eventId, error: responsePayload.error, result: responsePayload.result)
+            } else {
+                print("Invalid response data")
+            }
+        case .start:
             guard let mediaController = mediaController else {
                 respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
                 return
             }
-
-            switch bridgeAction {
-            case .start:
-                mediaController.start { (error: Error?) in
-                    respond(error, nil)
-                }
-            case .dispose:
+            mediaController.start { (error: Error?) in
+                self.synchronizePauseState()
+                respond(error, nil)
+            }
+        case .dispose:
+            if let mediaController = mediaController {
                 mediaController.dispose()
                 self.mediaController = nil
-                respond(nil, nil)
-            case .pauseAudio:
-                mediaController.pauseAudio()
-                respond(nil, nil)
-            case .resumeAudio:
-                mediaController.resumeAudio()
-                respond(nil, nil)
-            case .setAudioDevice:
-                struct DeviceId: Codable {
-                    var deviceId: String
-                }
-                guard let payloadData = payloadData, let deviceId = try? JSONDecoder().decode(DeviceId.self, from: payloadData) else {
-                    respond(PagecallError(message: "Invalid payload"), nil)
-                    return
-                }
+            }
+            respond(nil, nil)
+        case .setAudioDevice:
+            guard let mediaController = mediaController else {
+                respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
+                return
+            }
+            struct DeviceId: Codable {
+                var deviceId: String
+            }
+            guard let payloadData = payloadData, let deviceId = try? JSONDecoder().decode(DeviceId.self, from: payloadData) else {
+                respond(PagecallError(message: "Invalid payload"), nil)
+                return
+            }
 
-                guard let chimeController = mediaController as? ChimeController else {
-                    // No op for miController
-                    return
-                }
-                chimeController.setAudioDevice(deviceId: deviceId.deviceId) { (error: Error?) in
-                    respond(error, nil)
-                }
-            case .consume:
-                if let miController = mediaController as? MiController {
-                    if let payloadData = payloadData {
-                        miController.consume(data: payloadData) { error in
-                            respond(error, nil)
-                        }
-                    } else {
-                        respond(PagecallError(message: "Invalid payload"), nil)
+            guard let chimeController = mediaController as? ChimeController else {
+                // No op for miController
+                return
+            }
+            chimeController.setAudioDevice(deviceId: deviceId.deviceId) { (error: Error?) in
+                respond(error, nil)
+            }
+        case .consume:
+            guard let mediaController = mediaController else {
+                respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
+                return
+            }
+            if let miController = mediaController as? MiController {
+                if let payloadData = payloadData {
+                    miController.consume(data: payloadData) { error in
+                        respond(error, nil)
                     }
                 } else {
-                    respond(PagecallError(message: "consume is only effective for MI"), nil)
+                    respond(PagecallError(message: "Invalid payload"), nil)
                 }
-            case .getAudioDevices: fatalError()
-            case .initialize: fatalError()
-            case .getPermissions: fatalError()
-            case .requestPermission: fatalError()
-            case .response: fatalError()
-            case .requestAudioVolume: fatalError()
+            } else {
+                respond(PagecallError(message: "consume is only effective for MI"), nil)
             }
-        } catch let error as NSError {
-            print(error)
         }
     }
 
@@ -308,11 +316,11 @@ extension NativeBridge {
                 if !audio { return nil }
                 let status = AVCaptureDevice.authorizationStatus(for: .audio)
                 switch status {
-                    case .notDetermined: return nil
-                    case .restricted: return false
-                    case .denied: return false
-                    case .authorized: return true
-                    default: return nil
+                case .notDetermined: return nil
+                case .restricted: return false
+                case .denied: return false
+                case .authorized: return true
+                default: return nil
                 }
             } else { return nil }
         }
@@ -321,11 +329,11 @@ extension NativeBridge {
                 if !video { return nil }
                 let status = AVCaptureDevice.authorizationStatus(for: .video)
                 switch status {
-                    case .notDetermined: return nil
-                    case .restricted: return false
-                    case .denied: return false
-                    case .authorized: return true
-                    default: return nil
+                case .notDetermined: return nil
+                case .restricted: return false
+                case .denied: return false
+                case .authorized: return true
+                default: return nil
                 }
             } else { return nil }
         }
