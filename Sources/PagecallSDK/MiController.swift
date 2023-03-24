@@ -200,14 +200,12 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         }
     }
 
-    func pauseAudio(callback: (Error?) -> Void) {
+    func pauseAudio() {
         isPaused = true
-        callback(nil)
     }
 
-    func resumeAudio(callback: (Error?) -> Void) {
+    func resumeAudio() {
         isPaused = false
-        callback(nil)
     }
 
     func dispose() {

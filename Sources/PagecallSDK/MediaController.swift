@@ -68,7 +68,7 @@ extension AVAudioSession.InterruptionOptions {
 protocol MediaController {
     var emitter: WebViewEmitter { get }
     func start(callback: @escaping (Error?) -> Void)
-    func pauseAudio(callback: (Error?) -> Void)
-    func resumeAudio(callback: (Error?) -> Void)
+    func pauseAudio()
+    func resumeAudio()
     func dispose()
 }

@@ -190,13 +190,11 @@ class NativeBridge {
                 self.mediaController = nil
                 respond(nil, nil)
             case .pauseAudio:
-                mediaController.pauseAudio { (error: Error?) in
-                    respond(error, nil)
-                }
+                mediaController.pauseAudio()
+                respond(nil, nil)
             case .resumeAudio:
-                mediaController.resumeAudio { (error: Error?) in
-                    respond(error, nil)
-                }
+                mediaController.resumeAudio()
+                respond(nil, nil)
             case .setAudioDevice:
                 struct DeviceId: Codable {
                     var deviceId: String
