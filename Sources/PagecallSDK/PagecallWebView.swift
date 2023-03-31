@@ -11,6 +11,7 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
     }
 
     override public init(frame: CGRect, configuration: WKWebViewConfiguration) {
+        print("initializing!!!!!!!!!!!!!!!!!!!")
 
         configuration.mediaTypesRequiringUserActionForPlayback = []
         configuration.allowsInlineMediaPlayback = true
@@ -59,6 +60,9 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
     }
 
     public override func didMoveToSuperview() {
+        print("didMoveToSuperView!!!!!!!")
+        print(self.superview)
+        
         if self.superview == nil {
             self.disposeInner()
             return
