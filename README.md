@@ -23,16 +23,18 @@ class ViewController: UIViewController, WKUIDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let webView = PagecallWebView(frame: CGRect.zero, configuration: configuration)
-        webView.load(URLRequest(url: "https://app.pagecall.com/meet?my_room_id"))
-        self.view.addSubview(webView)
+        let webView = PagecallWebView(frame: CGRect.zero)
         self.webView = webView
-
+        self.view.addSubview(webView)
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 80.0).isActive = true
         webView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -20.0).isActive = true
         webView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 20.0).isActive = true
         webView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -20.0).isActive = true
+
+        if let meetUrl = URL(string: "https://app.pagecall.com/meet?room_id=64269ab541f8f8e9d7320374") {
+            webView.load(URLRequest(url: meetUrl))
+        }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
