@@ -3,11 +3,14 @@ import WebKit
 public class PagecallWebView: WKWebView, WKScriptMessageHandler {
     var nativeBridge: NativeBridge?
     var controllerName = "pagecall"
-    let contentController = WKUserContentController()
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("PagecallSDK: PagecallWebView cannot be instantiated from a storyboard")
+    }
+
+    convenience public init() {
+        self.init(frame: .zero, configuration: .init())
     }
 
     override public init(frame: CGRect, configuration: WKWebViewConfiguration) {
@@ -17,7 +20,6 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
         configuration.suppressesIncrementalRendering = false
         configuration.applicationNameForUserAgent = "PagecallIos"
         configuration.allowsAirPlayForMediaPlayback = true
-        configuration.userContentController = contentController
 
         if #available(iOS 13.0, *) {
             configuration.defaultWebpagePreferences.preferredContentMode = .mobile
@@ -37,14 +39,14 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
         if let path = Bundle.module.path(forResource: "PagecallNative", ofType: "js") {
             if let bindingJS = try? String(contentsOfFile: path, encoding: .utf8) {
                 let script = WKUserScript(source: bindingJS, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-                contentController.addUserScript(script)
+                configuration.userContentController.addUserScript(script)
             }
         } else {
             NSLog("Failed to add PagecallNative script")
             return
         }
 
-        contentController.add(self, name: self.controllerName)
+        configuration.userContentController.add(LeakAvoider(delegate: self), name: self.controllerName)
     }
 
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -72,7 +74,7 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
     private func disposeInner() {
         self.nativeBridge?.disconnect()
         self.nativeBridge = nil
-        self.contentController.removeScriptMessageHandler(forName: self.controllerName)
+        self.configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
     }
 
     public func dispose() {
