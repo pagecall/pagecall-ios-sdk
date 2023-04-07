@@ -151,6 +151,34 @@ window["\(self.subscriptionsStorageName)"][\(id)]?.unsubscribe();
         }
     }
 
+    public func sendMessage(message: String, completionHandler: ((Error?) -> Void)?) {
+        webView.evaluateJavascriptWithLog(script:
+"""
+if (!window.Pagecall) return false;
+window.Pagecall.sendMessage("\(message.javaScriptString)");
+return true;
+"""
+        ) { result, error in
+            if let error {
+                completionHandler?(error)
+            } else if let success = result as? Bool, success {
+                completionHandler?(nil)
+            } else {
+                completionHandler?(PagecallError(message: "Not initialized"))
+            }
+        }
+    }
+
+    public func listenMessage(subscriber: @escaping (String) -> Void) -> () -> Void {
+        return subscribe(target: "PagecallUI.customMessage$") { payload in
+            if let payload = payload as? String {
+                subscriber(payload)
+            } else {
+                print("[PagecallWebViewController] Invalid or unsupported message")
+            }
+        }
+    }
+
     // MARK: - WKUIDelegate
     @available(iOS 15.0, *)
     public func webView(
