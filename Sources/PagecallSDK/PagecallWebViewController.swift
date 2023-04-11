@@ -226,30 +226,29 @@ window["\(self.subscriptionsStorageName)"][\(id)]?.unsubscribe();
          }
     }
 
-    public func webView(
-        _ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction
-    ) async -> WKNavigationActionPolicy {
-        if #available(iOS 14.5, *) {
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if #available(iOS 15.0, *) {
             if navigationAction.shouldPerformDownload {
-                return .download
+                decisionHandler(.download)
+                return
             }
         }
         if let url = navigationAction.request.url, url.absoluteString.starts(with: "http") {
-            return .allow
+            decisionHandler(.allow)
+            return
         }
         // 사진촬영 시 about:blank 로 이동해버리는 문제가 있음
-        return .cancel
+        decisionHandler(.cancel)
     }
 
-    public func webView(
-        _ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse
-    ) async -> WKNavigationResponsePolicy {
-        if #available(iOS 14.5, *) {
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        if #available(iOS 15.0, *) {
             if !navigationResponse.canShowMIMEType {
-                return .download
+                decisionHandler(.download)
+                return
             }
         }
-        return .allow
+        decisionHandler(.allow)
     }
 
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
