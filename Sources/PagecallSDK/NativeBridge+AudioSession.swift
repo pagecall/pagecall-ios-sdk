@@ -65,8 +65,7 @@ extension NativeBridge {
         var payloadReason = "Unknown"
         var payloadOptions: String
 
-        let interruptionType = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
-        if let interruptionType = interruptionType,
+        if let interruptionType = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
            let type = AVAudioSession.InterruptionType(rawValue: interruptionType) {
             payloadType = type.description
         } else {
@@ -74,8 +73,7 @@ extension NativeBridge {
         }
 
         if #available(iOS 14.5, *) {
-            let interruptionReason = notification.userInfo?[AVAudioSessionInterruptionReasonKey] as? UInt
-            if let interruptionReason = interruptionReason,
+            if let interruptionReason = notification.userInfo?[AVAudioSessionInterruptionReasonKey] as? UInt,
                let reason = AVAudioSession.InterruptionReason(rawValue: interruptionReason) {
                 payloadReason = reason.description
             } else {
@@ -83,8 +81,7 @@ extension NativeBridge {
             }
         }
 
-        let interruptionOptions = notification.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt
-        if let interruptionOptions = interruptionOptions {
+        if let interruptionOptions = notification.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt {
             let options = AVAudioSession.InterruptionOptions(rawValue: interruptionOptions)
             payloadOptions = options.description
         } else {
