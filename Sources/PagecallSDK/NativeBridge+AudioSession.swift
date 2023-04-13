@@ -62,18 +62,18 @@ extension NativeBridge {
         self.emitter.log(name: "AVAudioSession", message: "AudioSessionInterruption notification name=\(notification.name)")
 
         var payloadType: String
-        var payloadReason: String
+        var payloadReason = "Unknown"
         var payloadOptions: String
 
-        if #available(iOS 14.5, *) {
-            let interruptionType = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
-            if let interruptionType = interruptionType,
-               let type = AVAudioSession.InterruptionType(rawValue: interruptionType) {
-                payloadType = type.description
-            } else {
-                payloadType = "None"
-            }
+        let interruptionType = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+        if let interruptionType = interruptionType,
+           let type = AVAudioSession.InterruptionType(rawValue: interruptionType) {
+            payloadType = type.description
+        } else {
+            payloadType = "None"
+        }
 
+        if #available(iOS 14.5, *) {
             let interruptionReason = notification.userInfo?[AVAudioSessionInterruptionReasonKey] as? UInt
             if let interruptionReason = interruptionReason,
                let reason = AVAudioSession.InterruptionReason(rawValue: interruptionReason) {
@@ -81,21 +81,21 @@ extension NativeBridge {
             } else {
                 payloadReason = "None"
             }
-
-            let interruptionOptions = notification.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt
-            if let interruptionOptions = interruptionOptions {
-                let options = AVAudioSession.InterruptionOptions(rawValue: interruptionOptions)
-                payloadOptions = options.description
-            } else {
-                payloadOptions = "None"
-            }
-
-            guard let payload = try? JSONSerialization.data(withJSONObject: ["type": payloadType,
-                                                                             "reason": payloadReason,
-                                                                             "options": payloadOptions] as [String: Any],
-                                                            options: .withoutEscapingSlashes) else { return }
-            self.emitter.emit(eventName: .audioSessionInterrupted, data: payload)
         }
+
+        let interruptionOptions = notification.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt
+        if let interruptionOptions = interruptionOptions {
+            let options = AVAudioSession.InterruptionOptions(rawValue: interruptionOptions)
+            payloadOptions = options.description
+        } else {
+            payloadOptions = "None"
+        }
+
+        guard let payload = try? JSONSerialization.data(withJSONObject: ["type": payloadType,
+                                                                         "reason": payloadReason,
+                                                                         "options": payloadOptions] as [String: Any],
+                                                        options: .withoutEscapingSlashes) else { return }
+        self.emitter.emit(eventName: .audioSessionInterrupted, data: payload)
     }
 
     func startHandlingInterruption() {
