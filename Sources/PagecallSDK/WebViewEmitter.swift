@@ -5,8 +5,33 @@ struct ErrorEvent: Codable {
     let message: String?
 }
 
+extension String {
+    var javaScriptString: String {
+        var safeString  = self
+
+        safeString      = safeString.replacingOccurrences(of: "\\", with: "\\\\")
+        safeString      = safeString.replacingOccurrences(of: "\"", with: "\\\"")
+        safeString      = safeString.replacingOccurrences(of: "\'", with: "\\\'")
+        safeString      = safeString.replacingOccurrences(of: "\n", with: "\\n")
+        safeString      = safeString.replacingOccurrences(of: "\r", with: "\\r")
+        safeString      = safeString.replacingOccurrences(of: "\t", with: "\\t")
+
+        safeString      = safeString.replacingOccurrences(of: "\u{0085}", with: "\\u{0085}")
+        safeString      = safeString.replacingOccurrences(of: "\u{2028}", with: "\\u{2028}")
+        safeString      = safeString.replacingOccurrences(of: "\u{2029}", with: "\\u{2029}")
+
+        return safeString
+    }
+}
+
 class WebViewEmitter {
     let webview: WKWebView
+
+    private func runScript(script: String) {
+        DispatchQueue.main.async {
+            self.webview.evaluateJavascriptWithLog(script: script)
+        }
+    }
 
     private func rawEmit(eventName: String) {
         self.rawEmit(eventName: eventName, message: nil)
@@ -19,13 +44,7 @@ class WebViewEmitter {
     private func rawEmit(eventName: String, message: String?, eventId: String?) {
         let args = [eventName, message, eventId].compactMap { $0 }
         let script = "window.PagecallNative.emit(\(args.map { arg in "'\(arg)'" }.joined(separator: ",")))"
-        DispatchQueue.main.async {
-            self.webview.evaluateJavaScript(script) { _, error in
-                if let error = error {
-                    NSLog("Failed to PagecallNative.emit \(error)")
-                }
-            }
-        }
+        runScript(script: script)
     }
 
     func emit(eventName: BridgeEvent) {
@@ -69,7 +88,7 @@ class WebViewEmitter {
                 callback(nil, result)
             }
         } else {
-            print("Event not found (id: \(eventId)")
+            print("[WebViewEmitter] Event not found (id: \(eventId)")
         }
     }
 
@@ -80,14 +99,12 @@ class WebViewEmitter {
     }
 
     func error(name: String, message: String?) {
-        NSLog("errorLog \(name) \(String(describing: message))")
-        guard let data = try? JSONEncoder().encode(ErrorEvent(name: name, message: message)) else { return }
+        guard let data = try? JSONEncoder().encode(ErrorEvent(name: name, message: message?.javaScriptString)) else { return }
         self.emit(eventName: .error, data: data)
     }
 
     func log(name: String, message: String?) {
-        NSLog("log \(name) \(String(describing: message))")
-        guard let data = try? JSONEncoder().encode(ErrorEvent(name: name, message: message)) else { return }
+        guard let data = try? JSONEncoder().encode(ErrorEvent(name: name, message: message?.javaScriptString)) else { return }
         self.emit(eventName: .log, data: data)
     }
 
@@ -99,23 +116,11 @@ class WebViewEmitter {
                 return "window.PagecallNative.response('\(requestId)')"
             }
         }()
-        DispatchQueue.main.async {
-            self.webview.evaluateJavaScript(script) { _, error in
-                if let error = error {
-                    NSLog("Failed to PagecallNative.response \(error)")
-                }
-            }
-        }
+        runScript(script: script)
     }
 
     func response(requestId: String, errorMessage: String) {
-        DispatchQueue.main.async {
-            self.webview.evaluateJavaScript("window.PagecallNative.throw('\(requestId)','\(errorMessage)')") { _, error in
-                if let error = error {
-                    NSLog("Failed to PagecallNative.response \(error)")
-                }
-            }
-        }
+        runScript(script: "window.PagecallNative.throw('\(requestId)','\(errorMessage.javaScriptString)')")
     }
 
     init(webView: WKWebView) {

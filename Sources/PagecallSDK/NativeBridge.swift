@@ -35,6 +35,7 @@ class NativeBridge {
     var mediaController: MediaController? {
         didSet {
             stopHandlingInterruption()
+
             if let mediaController = mediaController {
                 synchronizePauseState()
                 if let _ = mediaController as? ChimeController {
@@ -80,7 +81,7 @@ class NativeBridge {
             return
         }
 
-        print("Bridge Action: \(bridgeAction)")
+        print("[NativeBridge] Bridge Action: \(bridgeAction)")
 
         let respond: (Error?, Data?) -> Void = { error, data in
             if let error = error {
@@ -93,7 +94,6 @@ class NativeBridge {
                 if let requestId = requestId {
                     self.emitter.response(requestId: requestId, data: data)
                 } else {
-                    print("Missing requestId", jsonArray)
                     self.emitter.error(name: "RequestIdMissing", message: "\(bridgeAction) succeeded without requestId")
                 }
             }
@@ -187,21 +187,27 @@ class NativeBridge {
             if let payloadData = payloadData, let responsePayload = try? JSONDecoder().decode(ResponsePayload.self, from: payloadData) {
                 emitter.resolve(eventId: responsePayload.eventId, error: responsePayload.error, result: responsePayload.result)
             } else {
-                print("Invalid response data")
+                print("[NativeBridge] Invalid response data")
             }
         case .start:
             guard let mediaController = mediaController else {
                 respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
                 return
             }
-            mediaController.start { (error: Error?) in
-                self.synchronizePauseState()
-                respond(error, nil)
+            CallManager.shared.startCall { error in
+                if let error = error {
+                    respond(error, nil)
+                } else {
+                    mediaController.start { (error: Error?) in
+                        self.synchronizePauseState()
+                        respond(error, nil)
+                    }
+                }
             }
         case .dispose:
-            if let mediaController = mediaController {
-                mediaController.dispose()
-                self.mediaController = nil
+            self.disconnect { error in
+                guard let error = error else { return }
+                self.emitter.error(name: "DisconnectFailure", message: error.localizedDescription)
             }
             respond(nil, nil)
         case .setAudioDevice:
@@ -284,14 +290,19 @@ class NativeBridge {
         }
     }
 
-    public func disconnect() {
+    public func disconnect(completion: @escaping (Error?) -> Void) {
         mediaController?.dispose()
         mediaController = nil
+        CallManager.shared.endCall(completion: completion)
     }
 
     deinit {
         audioRecorder?.stop()
-        disconnect()
+        disconnect { error in
+            if let error = error {
+                print("[NativeBridge] Failed to disconnect in deinit", error)
+            }
+        }
     }
 }
 

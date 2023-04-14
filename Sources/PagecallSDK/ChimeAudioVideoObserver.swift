@@ -12,15 +12,13 @@ class ChimeAudioVideoObserver: AudioVideoObserver {
 
     func audioSessionDidStartConnecting(reconnecting: Bool) {}
     func audioSessionDidStart(reconnecting: Bool) {
-        print("connect")
-        self.emitter.emit(eventName: .connected)
+        self.emitter.emit(eventName: .connected, json: ["reconnecting": reconnecting])
     }
 
     func audioSessionDidDrop() {}
 
     func audioSessionDidStopWithStatus(sessionStatus: MeetingSessionStatus) {
-        print("disconnect \(sessionStatus)")
-        self.emitter.emit(eventName: .disconnected)
+        self.emitter.emit(eventName: .disconnected, json: ["statusCode": sessionStatus.statusCode])
     }
 
     func audioSessionDidCancelReconnect() {}

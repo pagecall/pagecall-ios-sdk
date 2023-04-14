@@ -1,5 +1,27 @@
 import WebKit
 
+extension WKWebView {
+    func evaluateJavascriptWithLog(script: String) {
+        evaluateJavascriptWithLog(script: script, completionHandler: nil)
+    }
+
+    func evaluateJavascriptWithLog(script: String, completionHandler: ((Any?, Error?) -> Void)?) {
+        evaluateJavaScript("""
+(function userScript() {
+\(script)
+})()
+""") { result, error in
+            if let error = error {
+                print("[PagecallWebView] runScript error", error.localizedDescription)
+                print("[PagecallWebView] original script", script)
+            } else if let result = result {
+                print("[PagecallWebView] Script result", result)
+            }
+            completionHandler?(result, error)
+        }
+    }
+}
+
 public class PagecallWebView: WKWebView, WKScriptMessageHandler {
     var nativeBridge: NativeBridge?
     var controllerName = "pagecall"
@@ -72,8 +94,12 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
     }
 
     private func disposeInner() {
-        self.nativeBridge?.disconnect()
-        self.nativeBridge = nil
+        self.nativeBridge?.disconnect(completion: { error in
+            self.nativeBridge = nil
+            if let error = error {
+                print("[PagecallWebView] Failed to dispose nativeBridge", error)
+            }
+        })
         self.configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
     }
 
