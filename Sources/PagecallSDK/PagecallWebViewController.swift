@@ -101,30 +101,11 @@ public class PagecallWebViewController:
     """) { mode in
             guard let mode = mode as? String else { return }
             if mode == "draw" {
-                self.runScript(script: "Pagecall.setMode('remove-line')")
+                self.webView.evaluateJavascriptWithLog(script: "Pagecall.setMode('remove-line')")
             } else {
-                self.runScript(script: "Pagecall.setMode('draw')")
+                self.webView.evaluateJavascriptWithLog(script: "Pagecall.setMode('draw')")
             }
         }
-    }
-
-    func runScript(script: String) {
-        runScript(script: script, completionHandler: {
-            result, error in
-            if let error = error {
-                print("[PagecallWebViewController] runScript error", error.localizedDescription)
-            } else if let result = result {
-                print("[PagecallWebViewController] Script result", result)
-            }
-        })
-    }
-
-    public func runScript(script: String, completionHandler: ((Any?, Error?) -> Void)?) {
-        webView.evaluateJavaScript("""
-(function userScript() {
-\(script)
-})()
-""", completionHandler: completionHandler)
     }
 
     private func getReturnValue(script: String, completion: @escaping (Any?) -> Void) {
@@ -149,7 +130,7 @@ if (result.then) {
   callback(result);
 }
 """
-        runScript(script: returningScript)
+        webView.evaluateJavascriptWithLog(script: returningScript)
     }
 
     var callbacks = [String: (Any?) -> Void]()
@@ -174,9 +155,9 @@ const subscription = \(target).subscribe(callback);
 if (!window["\(subscriptionsStorageName)"]) window["\(subscriptionsStorageName)"] = {};
 window["\(subscriptionsStorageName)"]["\(id)"] = subscription;
 """
-        runScript(script: returningScript)
+        webView.evaluateJavascriptWithLog(script: returningScript)
         return {
-            self.runScript(script: """
+            self.webView.evaluateJavascriptWithLog(script: """
 window["\(self.subscriptionsStorageName)"][\(id)]?.unsubscribe();
 """)
             self.subscribers.removeValue(forKey: id)
@@ -273,7 +254,7 @@ function() {
     return waitForLoad();
 }()
 """) { _ in
-            self.runScript(script: """
+            self.webView.evaluateJavascriptWithLog(script: """
 window.PagecallUI.get$('terminationState').subscribe((state) => {
     if (!state) return;
     if (state.state === "error" || state.state === "emptyReplay") {
