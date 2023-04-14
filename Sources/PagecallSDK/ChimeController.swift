@@ -10,7 +10,7 @@ import AVFoundation
 
 class ChimeLogger: Logger {
     private let consoleLogger = ConsoleLogger(name: "DefaultMeetingSession", level: LogLevel.INFO)
-    private let emitter: WebViewEmitter
+    private weak var emitter: WebViewEmitter?
 
     init(emitter: WebViewEmitter) {
         self.emitter = emitter
@@ -30,12 +30,12 @@ class ChimeLogger: Logger {
 
     func fault(msg: String) {
         consoleLogger.fault(msg: msg)
-        emitter.error(name: "ChimeFault", message: msg)
+        emitter?.error(name: "ChimeFault", message: msg)
     }
 
     func error(msg: String) {
         consoleLogger.fault(msg: msg)
-        emitter.error(name: "ChimeError", message: msg)
+        emitter?.error(name: "ChimeError", message: msg)
     }
 
     func setLogLevel(level: AmazonChimeSDK.LogLevel) {
