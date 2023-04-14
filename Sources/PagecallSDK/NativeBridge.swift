@@ -194,14 +194,20 @@ class NativeBridge {
                 respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
                 return
             }
-            mediaController.start { (error: Error?) in
-                self.synchronizePauseState()
-                respond(error, nil)
+            CallManager.shared.startCall { error in
+                if let error = error {
+                    respond(error, nil)
+                } else {
+                    mediaController.start { (error: Error?) in
+                        self.synchronizePauseState()
+                        respond(error, nil)
+                    }
+                }
             }
         case .dispose:
-            if let mediaController = mediaController {
-                mediaController.dispose()
-                self.mediaController = nil
+            self.disconnect { error in
+                guard let error = error else { return }
+                self.emitter.error(name: "DisconnectFailure", message: error.localizedDescription)
             }
             respond(nil, nil)
         case .setAudioDevice:
@@ -284,14 +290,19 @@ class NativeBridge {
         }
     }
 
-    public func disconnect() {
+    public func disconnect(completion: @escaping (Error?) -> Void) {
         mediaController?.dispose()
         mediaController = nil
+        CallManager.shared.endCall(completion: completion)
     }
 
     deinit {
         audioRecorder?.stop()
-        disconnect()
+        disconnect { error in
+            if let error = error {
+                print("[NativeBridge] Failed to disconnect in deinit", error)
+            }
+        }
     }
 }
 

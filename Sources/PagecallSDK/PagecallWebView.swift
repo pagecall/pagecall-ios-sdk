@@ -94,8 +94,12 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
     }
 
     private func disposeInner() {
-        self.nativeBridge?.disconnect()
-        self.nativeBridge = nil
+        self.nativeBridge?.disconnect(completion: { error in
+            self.nativeBridge = nil
+            if let error = error {
+                print("[PagecallWebView] Failed to dispose nativeBridge", error)
+            }
+        })
         self.configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
     }
 

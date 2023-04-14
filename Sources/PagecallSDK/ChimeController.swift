@@ -76,7 +76,7 @@ class ChimeController: MediaController {
 
     func start(callback: (Error?) -> Void) {
         do {
-            try meetingSession.audioVideo.start()
+            try meetingSession.audioVideo.start(callKitEnabled: true)
             _ = meetingSession.audioVideo.realtimeSetVoiceFocusEnabled(enabled: true)
 
             callback(nil)
