@@ -38,14 +38,13 @@ extension NativeBridge {
                     "portName": output.portName,
                     "uid": output.uid]
         }
-        if #available(iOS 13.0, *) { // .withoutEscapingSlashes is available from iOS 13
-            guard let payload = try? JSONSerialization.data(withJSONObject: ["reason": reason.description,
-                                                                             "outputs": currentRouteOutputs,
-                                                                             "category": audioSession.category.rawValue] as [String: Any],
-                                                            options: .withoutEscapingSlashes) else { return }
 
-            self.emitter.emit(eventName: .audioSessionRouteChanged, data: payload)
-        }
+        guard let payload = try? JSONSerialization.data(withJSONObject: ["reason": reason.description,
+                                                                         "outputs": currentRouteOutputs,
+                                                                         "category": audioSession.category.rawValue] as [String: Any],
+                                                        options: .withoutEscapingSlashes) else { return }
+
+        self.emitter.emit(eventName: .audioSessionRouteChanged, data: payload)
 
         if audioSession.currentRoute.outputs.isEmpty {
             self.emitter.error(name: "AVAudioSession", message: "AudioSessionRouteChange | requires connection to device")
