@@ -55,23 +55,23 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
                 if let producerId = producerId {
                     callback(producerId)
                 } else {
-                    print("Failed to produce: \(error?.localizedDescription ?? "missing error message")")
+                    print("[MiController] Failed to produce: \(error?.localizedDescription ?? "missing error message")")
                     callback(nil)
                 }
             }
         } else {
-            print("Failed to parse")
+            print("[MiController] Failed to parse")
             callback(nil)
         }
     }
 
     func onProduceData(transport: Transport, sctpParameters: String, label: String, protocol dataProtocol: String, appData: String, callback: @escaping (String?) -> Void) {
-        print("Noop")
+        print("[MiController] onProduceData: noop")
     }
 
     func onConnect(transport: Transport, dtlsParameters: String) {
         guard let data = dtlsParameters.data(using: .utf8), let parsedDtlsParameters = try? JSONSerialization.jsonObject(with: data) else {
-            print("Failed to parse dtlsParameters", dtlsParameters)
+            emitter.error(name: "UnknownTransport", message: "Failed to parse dtlsParameters")
             return
         }
         if transport.id == sendTransport.id {

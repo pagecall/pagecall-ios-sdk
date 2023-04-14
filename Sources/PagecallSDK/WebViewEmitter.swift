@@ -88,7 +88,7 @@ class WebViewEmitter {
                 callback(nil, result)
             }
         } else {
-            print("Event not found (id: \(eventId)")
+            print("[WebViewEmitter] Event not found (id: \(eventId)")
         }
     }
 

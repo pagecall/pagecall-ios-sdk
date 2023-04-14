@@ -35,6 +35,7 @@ class NativeBridge {
     var mediaController: MediaController? {
         didSet {
             stopHandlingInterruption()
+
             if let mediaController = mediaController {
                 synchronizePauseState()
                 if let _ = mediaController as? ChimeController {
@@ -80,7 +81,7 @@ class NativeBridge {
             return
         }
 
-        print("Bridge Action: \(bridgeAction)")
+        print("[NativeBridge] Bridge Action: \(bridgeAction)")
 
         let respond: (Error?, Data?) -> Void = { error, data in
             if let error = error {
@@ -93,7 +94,6 @@ class NativeBridge {
                 if let requestId = requestId {
                     self.emitter.response(requestId: requestId, data: data)
                 } else {
-                    print("Missing requestId", jsonArray)
                     self.emitter.error(name: "RequestIdMissing", message: "\(bridgeAction) succeeded without requestId")
                 }
             }
@@ -187,7 +187,7 @@ class NativeBridge {
             if let payloadData = payloadData, let responsePayload = try? JSONDecoder().decode(ResponsePayload.self, from: payloadData) {
                 emitter.resolve(eventId: responsePayload.eventId, error: responsePayload.error, result: responsePayload.result)
             } else {
-                print("Invalid response data")
+                print("[NativeBridge] Invalid response data")
             }
         case .start:
             guard let mediaController = mediaController else {
