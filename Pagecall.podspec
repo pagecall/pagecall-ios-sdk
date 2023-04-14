@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
   s.name             = 'Pagecall'
   s.version          = '0.1.0'
-  s.summary          = 'A short description of Pagecall.'
+  s.summary          = 'Pagecall WebView: Enhanced Voice Communication via Custom WebView based on WKWebView'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -17,16 +17,13 @@ Pod::Spec.new do |s|
 #   * Write the description between the DESC delimiters below.
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
-  s.description      = <<-DESC
-TODO: Add long description of the pod here.
-                       DESC
+  s.description      = 'Pagecall-ios-sdk provides PagecallWebView, a custom WebView based on WKWebView that extends its functionality by adding a proprietary JavaScript Bridge to improve voice communication features. This enables customers to offer an enhanced voice communication experience. By utilizing PagecallWebView, powerful voice communication features can be easily integrated in place of the existing WKWebView.'
 
   s.homepage         = 'https://github.com/pagecall/pagecall-ios-sdk'
-  # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
+  s.screenshots      = 'https://www.pagecall.com/logo.png'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
-  s.author           = { 'author' => 'author@email.com' }
+  s.author           = { 'author' => 'suppor@pagecall.com' }
   s.source           = { :git => 'https://github.com/pagecall/pagecall-ios-sdk.git', :tag => s.version.to_s }
-  # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
   s.ios.deployment_target = '14.0'
   s.swift_version = '5.0'
