@@ -8,6 +8,13 @@ public protocol PagecallDelegate {
     func pagecall(_ controller: PagecallWebViewController, requestDownloadFor url: URL)
 }
 
+// Optional delegates
+public extension PagecallDelegate {
+    func pagecallDidLoad(_ controller: PagecallWebViewController) {}
+    func pagecallDidReceive(_ controller: PagecallWebViewController, message: String) {}
+    func pagecall(_ controller: PagecallWebViewController, requestDownloadFor url: URL) {}
+}
+
 public class PagecallWebViewController:
     UIViewController, WKUIDelegate, WKNavigationDelegate, UIPencilInteractionDelegate {
     private let webView = PagecallWebView()
