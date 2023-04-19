@@ -58,13 +58,14 @@ open class PagecallWebView: WKWebView, WKScriptMessageHandler {
         configuration.defaultWebpagePreferences.preferredContentMode = .mobile
         configuration.limitsNavigationsToAppBoundDomains = true
 
-        if let scriptPath = {
+        let bundle = {
 #if SWIFT_PACKAGE
-            return Bundle.module.path(forResource: "PagecallNative", ofType: "js")
+            return Bundle.module
 #else
-            return Bundle.init(for: Self.self).path(forResource: "PagecallNative", ofType: "js")
+            return Bundle.init(for: PagecallWebView.self)
 #endif
-        }(), let bindingJS = try? String(contentsOfFile: scriptPath, encoding: .utf8) {
+        }()
+        if let scriptPath = bundle.path(forResource: "PagecallNative", ofType: "js"), let bindingJS = try? String(contentsOfFile: scriptPath, encoding: .utf8) {
             let script = WKUserScript(source: bindingJS, injectionTime: .atDocumentStart, forMainFrameOnly: false)
             configuration.userContentController.addUserScript(script)
         } else {
