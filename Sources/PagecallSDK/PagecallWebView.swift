@@ -22,26 +22,18 @@ extension WKWebView {
     }
 }
 
-public class PagecallWebView: WKWebView, WKScriptMessageHandler {
+open class PagecallWebView: WKWebView, WKScriptMessageHandler {
     var nativeBridge: NativeBridge?
     var controllerName = "pagecall"
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
+    required public init?(coder: NSCoder) {
         fatalError("PagecallSDK: PagecallWebView cannot be instantiated from a storyboard")
     }
 
     convenience public init() {
         self.init(frame: .zero, configuration: .init())
     }
-
-    var scriptPath = {
-        #if SWIFT_PACKAGE
-        return Bundle.module.path(forResource: "PagecallNative", ofType: "js")
-        #else
-        return Bundle.init(for: Self.self).path(forResource: "PagecallNative", ofType: "js")
-        #endif
-    }()
 
     var safariUserAgent: String = {
         let webkitVersion = "605.1.15"
@@ -66,7 +58,13 @@ public class PagecallWebView: WKWebView, WKScriptMessageHandler {
         configuration.defaultWebpagePreferences.preferredContentMode = .mobile
         configuration.limitsNavigationsToAppBoundDomains = true
 
-        if let scriptPath = scriptPath, let bindingJS = try? String(contentsOfFile: scriptPath, encoding: .utf8) {
+        if let scriptPath = {
+#if SWIFT_PACKAGE
+            return Bundle.module.path(forResource: "PagecallNative", ofType: "js")
+#else
+            return Bundle.init(for: Self.self).path(forResource: "PagecallNative", ofType: "js")
+#endif
+        }(), let bindingJS = try? String(contentsOfFile: scriptPath, encoding: .utf8) {
             let script = WKUserScript(source: bindingJS, injectionTime: .atDocumentStart, forMainFrameOnly: false)
             configuration.userContentController.addUserScript(script)
         } else {
@@ -134,7 +132,7 @@ window["\(self.subscriptionsStorageName)"][\(id)]?.unsubscribe();
         }
     }
 
-    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+    open func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard message.name == self.controllerName else { return }
         if let body = message.body as? [String: Any] {
             guard let type = body["type"] as? String, let payload = body["payload"] as? [String: Any], let id = payload["id"] as? String else { return }
@@ -204,11 +202,11 @@ return true;
         self.configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
     }
 
-    public func dispose() {
-        self.disposeInner()
+    open func dispose() {
+        disposeInner()
     }
 
     deinit {
-        dispose()
+        disposeInner()
     }
 }
