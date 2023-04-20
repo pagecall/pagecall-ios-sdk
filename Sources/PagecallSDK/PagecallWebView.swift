@@ -1,5 +1,18 @@
 import WebKit
 
+public enum PagecallMode {
+    case meet, replay
+
+    func baseURLString() -> String {
+        switch self {
+        case .meet:
+            return "https://app.pagecall.com/meet"
+        case .replay:
+            return "https://app.pagecall.com/replay"
+        }
+    }
+}
+
 extension WKWebView {
     func evaluateJavascriptWithLog(script: String) {
         evaluateJavascriptWithLog(script: script, completionHandler: nil)
@@ -69,7 +82,7 @@ open class PagecallWebView: WKWebView, WKScriptMessageHandler {
             let script = WKUserScript(source: bindingJS, injectionTime: .atDocumentStart, forMainFrameOnly: false)
             configuration.userContentController.addUserScript(script)
         } else {
-            print("[PagecallWebView] Failed to add PagecallNative script")
+            PagecallLogger.shared.capture(message: "Failed to add PagecallNative script")
         }
 
         super.init(frame: frame, configuration: configuration)
@@ -156,6 +169,36 @@ window["\(self.subscriptionsStorageName)"][\(id)]?.unsubscribe();
         }
     }
 
+    public override func didMoveToSuperview() {
+        if self.superview == nil {
+            self.disposeInner()
+            return
+        }
+
+        if self.nativeBridge == nil {
+            self.nativeBridge = .init(webview: self)
+        }
+    }
+
+    private func disposeInner() {
+        self.nativeBridge?.disconnect(completion: { error in
+            self.nativeBridge = nil
+            if let error = error {
+                PagecallLogger.shared.capture(error: error)
+            }
+        })
+        self.configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
+    }
+
+    deinit {
+        disposeInner()
+    }
+
+    // MARK: - Public methods
+    open func dispose() {
+        disposeInner()
+    }
+
     public func sendMessage(message: String, completionHandler: ((Error?) -> Void)?) {
         evaluateJavascriptWithLog(script:
 """
@@ -184,32 +227,21 @@ return true;
         }
     }
 
-    public override func didMoveToSuperview() {
-        if self.superview == nil {
-            self.disposeInner()
-            return
-        }
-
-        if self.nativeBridge == nil {
-            self.nativeBridge = .init(webview: self)
-        }
+    public func load(roomId: String, mode: PagecallMode) -> WKNavigation? {
+        var urlComps = URLComponents(string: mode.baseURLString())!
+        urlComps.queryItems = [URLQueryItem(name: "room_id", value: roomId)]
+        PagecallLogger.shared.setRoomId(roomId)
+        return super.load(URLRequest(url: urlComps.url!))
     }
 
-    private func disposeInner() {
-        self.nativeBridge?.disconnect(completion: { error in
-            self.nativeBridge = nil
-            if let error = error {
-                print("[PagecallWebView] Failed to dispose nativeBridge", error)
+    override open func load(_ request: URLRequest) -> WKNavigation? {
+        if let url = request.url, let components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            if let roomId = components.queryItems?.first(where: { item in item.name == "room_id" })?.value {
+                PagecallLogger.shared.setRoomId(roomId)
+            } else {
+                print("[PagecallWebView] a non-pagecall url is loaded")
             }
-        })
-        self.configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
-    }
-
-    open func dispose() {
-        disposeInner()
-    }
-
-    deinit {
-        disposeInner()
+        }
+        return super.load(request)
     }
 }

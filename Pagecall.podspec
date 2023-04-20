@@ -32,11 +32,12 @@ Pod::Spec.new do |s|
     'Binaries/AmazonChimeSDKMedia.xcframework',
     'Binaries/Mediasoup.xcframework',
     'Binaries/WebRTC.xcframework'
-    ]
+  ]
   s.source_files = 'Sources/PagecallSDK/**/*.{swift,h,m}'
   s.resource = 'Sources/PagecallSDK/PagecallNative.js'
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
+  s.dependency 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '8.5.0'
+
 end
