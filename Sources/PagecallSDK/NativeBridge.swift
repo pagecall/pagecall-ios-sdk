@@ -103,6 +103,7 @@ class NativeBridge {
 
         switch bridgeAction {
         case .initialize:
+            emitter.log(name: "version", message: SDKVersion.current);
             if let _ = mediaController {
                 respond(PagecallError(message: "Must be disposed first"), nil)
                 return
