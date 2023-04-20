@@ -180,6 +180,14 @@ new Promise((resolve) => {
         }
     }
 
+    public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        PagecallLogger.shared.capture(error: error)
+    }
+
+    public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        PagecallLogger.shared.capture(error: error)
+    }
+
     public func webViewDidClose(_ webView: WKWebView) {
         self.delegate?.pagecallDidClose(self)
     }
@@ -193,8 +201,8 @@ new Promise((resolve) => {
     var downloadedPreviewItemUrl: URL?
 
     // MARK: Public methods
-    public func load(_ url: URL) {
-        self.webView.load(URLRequest(url: url))
+    public func load(roomId: String, mode: PagecallMode) -> WKNavigation? {
+        return self.webView.load(roomId: roomId, mode: mode)
     }
 
     public func sendMessage(_ message: String) {
@@ -238,7 +246,7 @@ extension PagecallWebViewController: WKDownloadDelegate {
     }
 
     public func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
-        print("[PagecallWebViewController] Download failed", error)
+        PagecallLogger.shared.capture(error: error)
     }
 
 }
