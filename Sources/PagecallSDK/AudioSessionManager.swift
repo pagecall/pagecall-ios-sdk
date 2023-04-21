@@ -1,6 +1,12 @@
 import AVFoundation
 
-extension NativeBridge {
+class AudioSessionManager {
+    static let shared = AudioSessionManager()
+    public var desiredMode: AVAudioSession.Mode?
+    public weak var emitter: WebViewEmitter?
+
+    private init() {}
+
     func setAudioSessionCategory() {
         let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
         var options: AVAudioSession.CategoryOptions
@@ -29,7 +35,8 @@ extension NativeBridge {
     }
 
     @objc private func handleRouteChange(notification: Notification) {
-        self.emitter.log(name: "AVAudioSession", message: "AudioSessionRouteChange notification name=\(notification.name)")
+        self.emitter?.log(name: "AVAudioSession", message: "AudioSessionRouteChange notification name=\(notification.name)")
+        print("AudioSessionRouteChange notification name=\(notification.name)")
         let audioSession = AVAudioSession.sharedInstance()
         guard let routeChangeReason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
               let reason = AVAudioSession.RouteChangeReason(rawValue: routeChangeReason) else { return }
@@ -44,10 +51,10 @@ extension NativeBridge {
                                                                          "category": audioSession.category.rawValue] as [String: Any],
                                                         options: .withoutEscapingSlashes) else { return }
 
-        self.emitter.emit(eventName: .audioSessionRouteChanged, data: payload)
+        self.emitter?.emit(eventName: .audioSessionRouteChanged, data: payload)
 
         if audioSession.currentRoute.outputs.isEmpty {
-            self.emitter.error(name: "AVAudioSession", message: "AudioSessionRouteChange | requires connection to device")
+            self.emitter?.error(name: "AVAudioSession", message: "AudioSessionRouteChange | requires connection to device")
         }
         self.setAudioSessionCategory()
 
@@ -58,7 +65,8 @@ extension NativeBridge {
     }
 
     @objc private func handleInterruption(notification: Notification) {
-        self.emitter.log(name: "AVAudioSession", message: "AudioSessionInterruption notification name=\(notification.name)")
+        self.emitter?.log(name: "AVAudioSession", message: "AudioSessionInterruption notification name=\(notification.name)")
+        print("AudioSessionInterruption notification name=\(notification.name)")
 
         var payloadType: String
         var payloadReason = "Unknown"
@@ -91,7 +99,7 @@ extension NativeBridge {
                                                                          "reason": payloadReason,
                                                                          "options": payloadOptions] as [String: Any],
                                                         options: .withoutEscapingSlashes) else { return }
-        self.emitter.emit(eventName: .audioSessionInterrupted, data: payload)
+        self.emitter?.emit(eventName: .audioSessionInterrupted, data: payload)
     }
 
     func startHandlingInterruption() {
