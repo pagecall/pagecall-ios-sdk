@@ -38,6 +38,6 @@ Pod::Spec.new do |s|
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
-  s.dependency 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '8.5.0'
+  s.dependency 'Sentry', '8.5.0'
 
 end
