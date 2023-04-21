@@ -29,23 +29,21 @@ class NativeBridge {
     let webview: WKWebView
     let emitter: WebViewEmitter
 
-    // Handled by NativeBridge+AudioSession extension
-    var desiredMode: AVAudioSession.Mode?
-
     var mediaController: MediaController? {
         didSet {
-            stopHandlingInterruption()
+            AudioSessionManager.shared.stopHandlingInterruption()
 
             if let mediaController = mediaController {
                 synchronizePauseState()
                 if let _ = mediaController as? ChimeController {
                     // Chime에서는 videoChat일 경우 소리가 작게 송출된다.
-                    desiredMode = .default
+                    AudioSessionManager.shared.desiredMode = .default
                 } else {
                     // MI에서는 default일 경우 에어팟 연결이 해제된다.
-                    desiredMode = .videoChat
+                    AudioSessionManager.shared.desiredMode = .videoChat
                 }
-                startHandlingInterruption()
+                AudioSessionManager.shared.emitter = emitter
+                AudioSessionManager.shared.startHandlingInterruption()
             }
         }
     }
