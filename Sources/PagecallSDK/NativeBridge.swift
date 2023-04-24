@@ -193,22 +193,10 @@ class NativeBridge {
                     respond(PagecallError(message: "Failed to encode volume"), nil)
                 }
             }
-            // 콜킷 활성화 전에 AVAudioRecorder 사용시 문제 발생
-            if mediaController == nil {
-                respondVolume(0)
-                return
-            }
-
-            if let volumeRecorder = volumeRecorder {
-                let volume = volumeRecorder.requestAudioVolume()
-                respondVolume(volume)
+            if let mediaController = mediaController {
+                respondVolume(mediaController.getAudioVolume())
             } else {
-                do {
-                    self.volumeRecorder = try VolumeRecorder()
-                    respondVolume(0)
-                } catch {
-                    respond(error, nil)
-                }
+                respondVolume(0)
             }
         case .pauseAudio:
             isAudioPaused = true
