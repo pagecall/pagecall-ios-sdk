@@ -200,4 +200,17 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         sendTransport.close()
         recvTransport.close()
     }
+
+    private var volumeRecorder: VolumeRecorder?
+    func getAudioVolume() -> Float {
+        if let volumeRecorder = volumeRecorder {
+            return volumeRecorder.requestAudioVolume()
+        } else {
+            let volumeRecorder = try! VolumeRecorder()
+            volumeRecorder.highest = -40
+            volumeRecorder.lowest = -70
+            self.volumeRecorder = volumeRecorder
+            return 0
+        }
+    }
 }

@@ -2,6 +2,8 @@ import AVFoundation
 
 class VolumeRecorder {
     private let audioRecorder: AVAudioRecorder
+    var lowest: Float = -40 // -70 in MI
+    var highest: Float = -10 // -40 in MI
 
     init() throws {
         let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -20,12 +22,9 @@ class VolumeRecorder {
     }
 
     private func normalizeSoundLevel(level: Float) -> Float {
-        let lowLevel: Float = -40
-        let highLevel: Float = -10
-
-        var level = max(0.0, level - lowLevel)
-        level = min(level, highLevel - lowLevel)
-        return level / (highLevel - lowLevel) // scaled to 0.0 ~ 1
+        var level = max(0.0, level - lowest)
+        level = min(level, highest - lowest)
+        return level / (highest - lowest) // scaled to 0.0 ~ 1
     }
 
     func requestAudioVolume() -> Float {

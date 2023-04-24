@@ -123,4 +123,17 @@ class ChimeController: MediaController {
     deinit {
         dispose()
     }
+
+    private var volumeRecorder: VolumeRecorder?
+    func getAudioVolume() -> Float {
+        if let volumeRecorder = volumeRecorder {
+            return volumeRecorder.requestAudioVolume()
+        } else {
+            let volumeRecorder = try! VolumeRecorder()
+            volumeRecorder.highest = -10
+            volumeRecorder.lowest = -40
+            self.volumeRecorder = volumeRecorder
+            return 0
+        }
+    }
 }
