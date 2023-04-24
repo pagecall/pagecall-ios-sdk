@@ -228,8 +228,12 @@ return true;
     }
 
     public func load(roomId: String, mode: PagecallMode) -> WKNavigation? {
+        return load(roomId: roomId, mode: mode, queryItems: [])
+    }
+
+    public func load(roomId: String, mode: PagecallMode, queryItems: [URLQueryItem]) -> WKNavigation? {
         var urlComps = URLComponents(string: mode.baseURLString())!
-        urlComps.queryItems = [URLQueryItem(name: "room_id", value: roomId)]
+        urlComps.queryItems = [URLQueryItem(name: "room_id", value: roomId)] + queryItems
         PagecallLogger.shared.setRoomId(roomId)
         return super.load(URLRequest(url: urlComps.url!))
     }
