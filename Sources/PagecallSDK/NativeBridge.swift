@@ -74,7 +74,7 @@ class NativeBridge {
     func messageHandler(message: String) {
         let data = message.data(using: .utf8)!
         guard let jsonArray = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else {
-            NSLog("Failed to JSONSerialization")
+            print("[NativeBridge] Failed to JSONSerialization")
             return
         }
         guard let action = jsonArray["action"] as? String, let bridgeAction = BridgeAction(rawValue: action), let requestId = jsonArray["requestId"] as? String?, let payload = jsonArray["payload"] as? String? else {
