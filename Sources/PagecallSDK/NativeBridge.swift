@@ -48,6 +48,8 @@ class NativeBridge {
         }
     }
 
+    private var volumeRecorder: VolumeRecorder?
+
     var isAudioPaused = false {
         didSet {
             synchronizePauseState()
@@ -101,10 +103,6 @@ class NativeBridge {
 
         switch bridgeAction {
         case .initialize:
-            if let _ = mediaController {
-                respond(PagecallError(message: "Must be disposed first"), nil)
-                return
-            }
             guard let payloadData = payload?.data(using: .utf8) else {
                 respond(PagecallError(message: "Missing payload"), nil)
                 return
@@ -112,18 +110,37 @@ class NativeBridge {
             struct MiPayload: Codable {
                 let plugin: String
             }
-            if let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: payloadData) {
-                mediaController = ChimeController(emitter: emitter, configuration: meetingSessionConfiguration)
-                respond(nil, nil)
-            } else if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
-                do {
-                    let miController = try MiController(emitter: emitter, initialPayload: initialPayload)
-                    mediaController = miController
-                    respond(nil, nil)
-                } catch {
+            let respondError: (Error) -> Void = { error in
+                CallManager.shared.endCall { endCallError in
+                    if let endCallError = endCallError {
+                        self.emitter.error(name: "EndCallError", message: endCallError.localizedDescription)
+                    }
                     respond(error, nil)
                 }
             }
+            CallManager.shared.startCall { error in
+                if let _ = self.mediaController {
+                    respondError(PagecallError(message: "Must be disposed first"))
+                    return
+                }
+                if let error = error {
+                    respondError(error)
+                } else {
+                    if let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: payloadData) {
+                        self.mediaController = ChimeController(emitter: self.emitter, configuration: meetingSessionConfiguration)
+                        respond(nil, nil)
+                    } else if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
+                        do {
+                            let miController = try MiController(emitter: self.emitter, initialPayload: initialPayload)
+                            self.mediaController = miController
+                            respond(nil, nil)
+                        } catch {
+                            respondError(error)
+                        }
+                    }
+                }
+            }
+
         case .getPermissions:
             guard let payloadData = payloadData, let mediaType = try? JSONDecoder().decode(MediaConstraints.self, from: payloadData) else {
                 respond(PagecallError(message: "Missing or invalid payload"), nil)
@@ -169,11 +186,28 @@ class NativeBridge {
                 respond(error, nil)
             }
         case .requestAudioVolume:
-            requestAudioVolume { volume, error in
-                if let error = error {
+            let respondVolume: (Float) -> Void = { volume in
+                if let volumeData = try? JSONEncoder().encode(volume) {
+                    respond(nil, volumeData)
+                } else {
+                    respond(PagecallError(message: "Failed to encode volume"), nil)
+                }
+            }
+            // 콜킷 활성화 전에 AVAudioRecorder 사용시 문제 발생
+            if mediaController == nil {
+                respondVolume(0)
+                return
+            }
+
+            if let volumeRecorder = volumeRecorder {
+                let volume = volumeRecorder.requestAudioVolume()
+                respondVolume(volume)
+            } else {
+                do {
+                    self.volumeRecorder = try VolumeRecorder()
+                    respondVolume(0)
+                } catch {
                     respond(error, nil)
-                } else if let volume = volume, let data = try? JSONEncoder().encode(volume) {
-                    respond(nil, data)
                 }
             }
         case .pauseAudio:
@@ -198,15 +232,9 @@ class NativeBridge {
                 respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
                 return
             }
-            CallManager.shared.startCall { error in
-                if let error = error {
-                    respond(error, nil)
-                } else {
-                    mediaController.start { (error: Error?) in
-                        self.synchronizePauseState()
-                        respond(error, nil)
-                    }
-                }
+            mediaController.start { (error: Error?) in
+                self.synchronizePauseState()
+                respond(error, nil)
             }
         case .dispose:
             self.disconnect { error in
@@ -253,47 +281,6 @@ class NativeBridge {
         }
     }
 
-    private func normalizeSoundLevel(level: Float) -> Float {
-        let lowLevel: Float = -40
-        let highLevel: Float = -10
-
-        var level = max(0.0, level - lowLevel)
-        level = min(level, highLevel - lowLevel)
-        return level / (highLevel - lowLevel) // scaled to 0.0 ~ 1
-    }
-
-    private var audioRecorder: AVAudioRecorder?
-    func requestAudioVolume(callback: @escaping (Float?, Error?) -> Void) {
-        if let audioRecorder = audioRecorder {
-            audioRecorder.updateMeters()
-            let averagePower = audioRecorder.averagePower(forChannel: 0)
-            let nomalizedVolume = normalizeSoundLevel(level: averagePower)
-            callback(nomalizedVolume, nil)
-            return
-        }
-        do {
-            let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let audioFilename = documentPath.appendingPathComponent("nothing.m4a")
-            let settings = [
-                AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-                AVSampleRateKey: 12000,
-                AVNumberOfChannelsKey: 1,
-                AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
-            ]
-            let audioRecorder = try AVAudioRecorder(url: audioFilename, settings: settings)
-            self.audioRecorder = audioRecorder
-            audioRecorder.isMeteringEnabled = true
-            audioRecorder.record()
-
-            audioRecorder.updateMeters()
-            let averagePower = audioRecorder.averagePower(forChannel: 0)
-            let nomalizedVolume = normalizeSoundLevel(level: averagePower)
-            callback(nomalizedVolume, nil)
-        } catch {
-            callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "AudioRecorder is not exist"]))
-        }
-    }
-
     public func disconnect(completion: @escaping (Error?) -> Void) {
         mediaController?.dispose()
         mediaController = nil
@@ -301,7 +288,7 @@ class NativeBridge {
     }
 
     deinit {
-        audioRecorder?.stop()
+        volumeRecorder?.stop()
         disconnect { error in
             if let error = error {
                 print("[NativeBridge] Failed to disconnect in deinit", error)
