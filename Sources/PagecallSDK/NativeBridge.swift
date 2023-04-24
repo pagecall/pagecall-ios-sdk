@@ -26,10 +26,10 @@ enum BridgeAction: String, Codable {
 }
 
 class NativeBridge {
-    let webview: WKWebView
-    let emitter: WebViewEmitter
+    private let webview: WKWebView
+    private let emitter: WebViewEmitter
 
-    var mediaController: MediaController? {
+    private var mediaController: MediaController? {
         didSet {
             AudioSessionManager.shared.stopHandlingInterruption()
 
@@ -125,28 +125,35 @@ class NativeBridge {
                 }
             }
         case .getPermissions:
-            guard let payloadData = payloadData else {
-                respond(PagecallError(message: "Missing payload"), nil)
+            guard let payloadData = payloadData, let mediaType = try? JSONDecoder().decode(MediaConstraints.self, from: payloadData) else {
+                respond(PagecallError(message: "Missing or invalid payload"), nil)
                 return
             }
-            if let permissions = NativeBridge.getPermissions(constraint: payloadData, callback: { (error: Error?) in
-                respond(error, nil)
-            }) {
-                respond(nil, permissions)
+
+            if let data = try? JSONEncoder().encode(
+                MediaConstraints(
+                    audio: mediaType.audio == true ? DeviceManager.getAuthorizationStatusAsBool(for: .audio) : nil,
+                    video: mediaType.video == true ? DeviceManager.getAuthorizationStatusAsBool(for: .video) : nil
+                )
+            ) {
+                respond(nil, data)
+            } else {
+                respond(PagecallError(message: "Failed to getPermissions"), nil)
             }
         case .requestPermission:
-            guard let payloadData = payloadData else {
-                respond(PagecallError(message: "Missing payload"), nil)
+            guard let payloadData = payloadData, let mediaType = try? JSONDecoder().decode(MediaType.self, from: payloadData) else {
+                respond(PagecallError(message: "Missing or invalid payload"), nil)
                 return
             }
-            NativeBridge.requestPermission(data: payloadData, callback: { (isGranted: Bool?, error: Error?) in
-                if let error = error {
-                    respond(error, nil)
-                } else if let isGranted = isGranted {
-                    guard let data = try? JSONEncoder().encode(isGranted) else { return }
-                    respond(nil, data)
-                }
-            })
+            let respondBool: (Bool) -> Void = { result in respond(nil, try? JSONEncoder().encode(result)) }
+            switch mediaType.mediaType {
+            case "audio":
+                DeviceManager.requestAccess(for: .audio, callback: respondBool)
+            case "video":
+                DeviceManager.requestAccess(for: .video, callback: respondBool)
+            default:
+                respond(PagecallError(message: "Unknown mediaType: \(mediaType.mediaType)"), nil)
+            }
         case .getAudioDevices:
             let deviceList: [MediaDeviceInfo] = {
                 if let chimeController = mediaController as? ChimeController {
@@ -165,8 +172,7 @@ class NativeBridge {
             requestAudioVolume { volume, error in
                 if let error = error {
                     respond(error, nil)
-                } else if let volume = volume {
-                    guard let data = try? JSONEncoder().encode(volume) else { return }
+                } else if let volume = volume, let data = try? JSONEncoder().encode(volume) {
                     respond(nil, data)
                 }
             }
@@ -311,68 +317,4 @@ struct MediaConstraints: Codable {
 
 struct MediaType: Codable {
     var mediaType: String
-}
-
-extension NativeBridge {
-    static func getPermissions(constraint: Data, callback: (Error?) -> Void) -> Data? {
-        guard let mediaType = try? JSONDecoder().decode(MediaConstraints.self, from: constraint) else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wrong Constraint"]))
-            return nil
-        }
-
-        func getAudioStatus() -> Bool? {
-            if let audio = mediaType.audio {
-                if !audio { return nil }
-                let status = AVCaptureDevice.authorizationStatus(for: .audio)
-                switch status {
-                case .notDetermined: return nil
-                case .restricted: return false
-                case .denied: return false
-                case .authorized: return true
-                default: return nil
-                }
-            } else { return nil }
-        }
-        func getVideoStatus() -> Bool? {
-            if let video = mediaType.video {
-                if !video { return nil }
-                let status = AVCaptureDevice.authorizationStatus(for: .video)
-                switch status {
-                case .notDetermined: return nil
-                case .restricted: return false
-                case .denied: return false
-                case .authorized: return true
-                default: return nil
-                }
-            } else { return nil }
-        }
-
-        if let data = try? JSONEncoder().encode(MediaConstraints(audio: getAudioStatus(), video: getVideoStatus())) {
-            return data
-        } else {
-            callback(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to getPermissions"]))
-            return nil
-        }
-    }
-
-    static func requestPermission(data: Data, callback: @escaping (Bool?, Error?) -> Void) {
-        guard let mediaType = try? JSONDecoder().decode(MediaType.self, from: data) else {
-            callback(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wrong Constraint"]))
-            return
-        }
-
-        func requestPermission(callback: @escaping (Bool) -> Void) {
-            if mediaType.mediaType == "audio" {
-                AVCaptureDevice.requestAccess(for: .audio) {
-                    isGranted in callback(isGranted)
-                }
-            } else if mediaType.mediaType == "video" {
-                AVCaptureDevice.requestAccess(for: .video) {
-                    isGranted in callback(isGranted)
-                }
-            } else { callback(false) }
-        }
-
-        requestPermission { isGranted in callback(isGranted, nil) }
-    }
 }
