@@ -18,7 +18,7 @@ class ChimeAudioVideoObserver: AudioVideoObserver {
     func audioSessionDidDrop() {}
 
     func audioSessionDidStopWithStatus(sessionStatus: MeetingSessionStatus) {
-        self.emitter.emit(eventName: .disconnected, json: ["statusCode": sessionStatus.statusCode])
+        self.emitter.emit(eventName: .disconnected, json: ["statusCode": sessionStatus.statusCode.rawValue])
     }
 
     func audioSessionDidCancelReconnect() {}
