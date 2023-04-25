@@ -1,10 +1,3 @@
-//
-//  NativeBridge.swift
-//
-//
-//  Created by 록셉 on 2022/07/26.
-//
-
 import WebKit
 import AVFoundation
 
@@ -26,6 +19,8 @@ enum BridgeAction: String, Codable {
 }
 
 class NativeBridge {
+    static let version = "0.0.7"
+
     private let webview: WKWebView
     private let emitter: WebViewEmitter
 
@@ -103,6 +98,7 @@ class NativeBridge {
 
         switch bridgeAction {
         case .initialize:
+            emitter.log(name: "iOS SDK Version", message: NativeBridge.version)
             guard let payloadData = payload?.data(using: .utf8) else {
                 respond(PagecallError(message: "Missing payload"), nil)
                 return
