@@ -16,7 +16,8 @@ public extension PagecallDelegate {
 }
 
 public class PagecallWebViewController:
-    UIViewController, WKUIDelegate, WKNavigationDelegate, UIPencilInteractionDelegate {
+    UIViewController, WKUIDelegate, WKNavigationDelegate, UIPencilInteractionDelegate, PagecallWebViewDelegate {
+
     private let webView = PagecallWebView()
 
     public var delegate: PagecallDelegate?
@@ -34,6 +35,7 @@ public class PagecallWebViewController:
 
         webView.uiDelegate = self
         webView.navigationDelegate = self
+        webView.delegate = self
 
         webView.customUserAgent = [webView.customUserAgent, "PagecallSDK", "PagecallWebViewController", customUserAgent].compactMap { $0 }.joined(separator: " ")
 
@@ -130,57 +132,6 @@ public class PagecallWebViewController:
 
     var messageUnsubscriber: (() -> Void)?
 
-    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        guard let webView = webView as? PagecallWebView else { return }
-        webView.getReturnValue(script: """
-function() {
-    let trialCount = 0;
-    function waitForLoad() {
-        trialCount += 1;
-        return new Promise((resolve) => {
-            if (trialCount > 60) {
-                console.error("PagecallUI not found");
-                return resolve();
-            }
-            if (window.PagecallUI) {
-                return resolve();
-            }
-            setTimeout(() => {
-                waitForLoad().then(resolve);
-            }, 1000);
-        });
-    };
-    return waitForLoad();
-}()
-""") { _ in
-            webView.evaluateJavascriptWithLog(script: """
-window.PagecallUI.get$('terminationState').subscribe((state) => {
-    if (!state) return;
-    if (state.state === "error" || state.state === "emptyReplay") {
-      window.addEventListener('pointerup', () => window.close())
-    } else {
-      window.close()
-    }
-});
-""")
-            webView.getReturnValue(script: """
-new Promise((resolve) => {
-    const subscription = window.PagecallUI.controller$.subscribe((controller) => {
-        if (!controller) return;
-        resolve();
-        subscription.unsubscribe();
-    });
-})
-""") { _ in
-                self.delegate?.pagecallDidLoad(self)
-                self.messageUnsubscriber?()
-                self.messageUnsubscriber = webView.listenMessage(subscriber: { message in
-                    self.delegate?.pagecallDidReceive(self, message: message)
-                })
-            }
-        }
-    }
-
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         PagecallLogger.shared.capture(error: error)
     }
@@ -191,6 +142,35 @@ new Promise((resolve) => {
 
     public func webViewDidClose(_ webView: WKWebView) {
         self.delegate?.pagecallDidClose(self)
+    }
+
+    // MARK: - PagecallWebViewDelegate
+    public func pagecallDidLoad(_ webView: PagecallWebView) {
+        webView.evaluateJavascriptWithLog(script: """
+window.PagecallUI.get$('terminationState').subscribe((state) => {
+    if (!state) return;
+    if (state.state === "error" || state.state === "emptyReplay") {
+      window.addEventListener('pointerup', () => window.close())
+    } else {
+      window.close()
+    }
+});
+""")
+        webView.getReturnValue(script: """
+new Promise((resolve) => {
+    const subscription = window.PagecallUI.controller$.subscribe((controller) => {
+        if (!controller) return;
+        resolve();
+        subscription.unsubscribe();
+    });
+})
+""") { _ in
+            self.delegate?.pagecallDidLoad(self)
+            self.messageUnsubscriber?()
+            self.messageUnsubscriber = webView.listenMessage(subscriber: { message in
+                self.delegate?.pagecallDidReceive(self, message: message)
+            })
+        }
     }
 
     // MARK: - UIPencilInteractionDelegate

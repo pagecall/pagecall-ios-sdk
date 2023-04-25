@@ -12,6 +12,7 @@ enum BridgeRequest: String, Codable {
 
 enum BridgeAction: String, Codable {
     // 항상 유효한 요청
+    case loaded
     case initialize, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, requestAudioVolume
     case response
     // 컨트롤러 생성 후 유효한 요청
@@ -21,7 +22,7 @@ enum BridgeAction: String, Codable {
 class NativeBridge {
     static let version = "0.0.7"
 
-    private let webview: WKWebView
+    private let webview: PagecallWebView
     private let emitter: WebViewEmitter
 
     private var mediaController: MediaController? {
@@ -61,7 +62,7 @@ class NativeBridge {
         }
     }
 
-    init(webview: WKWebView) {
+    init(webview: PagecallWebView) {
         self.webview = webview
         self.emitter = .init(webView: self.webview)
     }
@@ -97,6 +98,8 @@ class NativeBridge {
         let payloadData = payload?.data(using: .utf8)
 
         switch bridgeAction {
+        case .loaded:
+            webview.delegate?.pagecallDidLoad(webview)
         case .initialize:
             emitter.log(name: "iOS SDK Version", message: NativeBridge.version)
             guard let payloadData = payload?.data(using: .utf8) else {
