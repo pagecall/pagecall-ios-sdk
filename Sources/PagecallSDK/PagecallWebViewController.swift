@@ -50,6 +50,7 @@ public class PagecallWebViewController:
 
     public override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+        self.messageUnsubscriber?()
         webView.loadHTMLString("", baseURL: nil)
     }
 
