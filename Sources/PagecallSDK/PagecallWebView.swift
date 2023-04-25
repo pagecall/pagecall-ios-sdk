@@ -35,9 +35,14 @@ extension WKWebView {
     }
 }
 
+public protocol PagecallWebViewDelegate: AnyObject {
+    func pagecallDidLoad(_ webView: PagecallWebView)
+}
+
 open class PagecallWebView: WKWebView, WKScriptMessageHandler {
     var nativeBridge: NativeBridge?
     var controllerName = "pagecall"
+    weak var delegate: PagecallWebViewDelegate?
 
     @available(*, unavailable)
     required public init?(coder: NSCoder) {
