@@ -42,7 +42,7 @@ public protocol PagecallWebViewDelegate: AnyObject {
 open class PagecallWebView: WKWebView, WKScriptMessageHandler {
     var nativeBridge: NativeBridge?
     var controllerName = "pagecall"
-    weak var delegate: PagecallWebViewDelegate?
+    public weak var delegate: PagecallWebViewDelegate?
 
     @available(*, unavailable)
     required public init?(coder: NSCoder) {
