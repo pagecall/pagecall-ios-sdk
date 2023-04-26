@@ -213,4 +213,26 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
             return 0
         }
     }
+    
+    private var timer: Timer?
+    func startVolumeScheduler() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(
+            timeInterval: 0.5,
+            target: self,
+            selector: #selector(emitVolume),
+            userInfo: nil,
+            repeats: true
+        )
+    }
+    
+    func stopVolumeScheduler() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
+    @objc func emitVolume() {
+        let volume = getAudioVolume()
+        self.emitter.emit(eventName: .audioVolume, message: String(volume))
+    }
 }

@@ -223,12 +223,24 @@ class NativeBridge {
                 self.synchronizePauseState()
                 respond(error, nil)
             }
+            
+            if let miController = mediaController as? MiController {
+                miController.startVolumeScheduler()
+            } else {
+                // do nothing for ChimeController
+            }
         case .dispose:
             self.disconnect { error in
                 guard let error = error else { return }
                 self.emitter.error(name: "DisconnectFailure", message: error.localizedDescription)
             }
             respond(nil, nil)
+            
+            if let miController = mediaController as? MiController {
+                miController.stopVolumeScheduler()
+            } else {
+                // do nothing for ChimeController
+            }
         case .setAudioDevice:
             guard let mediaController = mediaController else {
                 respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
