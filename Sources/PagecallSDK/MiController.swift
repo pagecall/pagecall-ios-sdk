@@ -114,7 +114,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
 
     init(emitter: WebViewEmitter, initialPayload: MiInitialPayload) throws {
         self.emitter = emitter
-
+        self.startVolumeScheduler()
         try device.load(with: initialPayload.rtpCapabilities)
         sendTransport = try device.createSendTransport(
             id: initialPayload.send.id,
@@ -199,8 +199,11 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     func dispose() {
         sendTransport.close()
         recvTransport.close()
+        self.stopVolumeScheduler()
     }
-
+    deinit {
+        self.dispose()
+    }
     private var volumeRecorder: VolumeRecorder?
     func getAudioVolume() -> Float {
         if let volumeRecorder = volumeRecorder {
@@ -212,5 +215,27 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
             self.volumeRecorder = volumeRecorder
             return 0
         }
+    }
+    
+    private var timer: Timer?
+    private func startVolumeScheduler() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(
+            timeInterval: 0.5,
+            target: self,
+            selector: #selector(emitVolume),
+            userInfo: nil,
+            repeats: true
+        )
+    }
+    
+    private func stopVolumeScheduler() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
+    @objc func emitVolume() {
+        let volume = getAudioVolume()
+        self.emitter.emit(eventName: .audioVolume, message: String(volume))
     }
 }
