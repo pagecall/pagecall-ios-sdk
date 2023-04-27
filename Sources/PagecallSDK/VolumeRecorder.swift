@@ -2,8 +2,8 @@ import AVFoundation
 
 class VolumeRecorder {
     private let audioRecorder: AVAudioRecorder
-    var lowest: Float = -40 // -70 in MI
-    var highest: Float = -10 // -40 in MI
+    var lowest: Float = -40 // -50 in MI
+    var highest: Float = -10 // -10 in MI
 
     init() throws {
         let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]

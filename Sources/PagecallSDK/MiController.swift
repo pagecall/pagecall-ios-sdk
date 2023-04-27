@@ -164,7 +164,6 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     }
 
     func start(callback: @escaping (Error?) -> Void) {
-        self.startVolumeScheduler()
         
         let audioSource = factory.audioSource(with: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
         let audioTrack = factory.audioTrack(with: audioSource, trackId: "audio0")
@@ -173,6 +172,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
             self.producer?.close()
             do {
                 self.producer = try self.sendTransport.createProducer(for: audioTrack, encodings: nil, codecOptions: nil, appData: nil)
+                self.startVolumeScheduler()
                 callback(nil)
             } catch {
                 print("Start error", error.localizedDescription)
@@ -211,8 +211,8 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
             return volumeRecorder.requestAudioVolume()
         } else {
             let volumeRecorder = try! VolumeRecorder()
-            volumeRecorder.highest = -40
-            volumeRecorder.lowest = -70
+            volumeRecorder.highest = -10
+            volumeRecorder.lowest = -50
             self.volumeRecorder = volumeRecorder
             return 0
         }
@@ -220,14 +220,16 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     
     private var timer: Timer?
     private func startVolumeScheduler() {
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(
-            timeInterval: 0.5,
-            target: self,
-            selector: #selector(emitVolume),
-            userInfo: nil,
-            repeats: true
-        )
+        DispatchQueue.main.async {
+            self.timer?.invalidate()
+            self.timer = Timer.scheduledTimer(
+                timeInterval: 0.5,
+                target: self,
+                selector: #selector(self.emitVolume),
+                userInfo: nil,
+                repeats: true
+            )
+        }
     }
     
     private func stopVolumeScheduler() {
