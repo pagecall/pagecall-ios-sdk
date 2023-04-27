@@ -202,7 +202,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         self.stopVolumeScheduler()
     }
     deinit {
-        self.stopVolumeScheduler()
+        self.dispose()
     }
     private var volumeRecorder: VolumeRecorder?
     func getAudioVolume() -> Float {
@@ -218,7 +218,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     }
     
     private var timer: Timer?
-    func startVolumeScheduler() {
+    private func startVolumeScheduler() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(
             timeInterval: 0.5,
@@ -229,7 +229,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         )
     }
     
-    func stopVolumeScheduler() {
+    private func stopVolumeScheduler() {
         timer?.invalidate()
         timer = nil
     }
