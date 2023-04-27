@@ -114,7 +114,6 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
 
     init(emitter: WebViewEmitter, initialPayload: MiInitialPayload) throws {
         self.emitter = emitter
-        self.startVolumeScheduler()
         try device.load(with: initialPayload.rtpCapabilities)
         sendTransport = try device.createSendTransport(
             id: initialPayload.send.id,
@@ -165,6 +164,8 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     }
 
     func start(callback: @escaping (Error?) -> Void) {
+        self.startVolumeScheduler()
+        
         let audioSource = factory.audioSource(with: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
         let audioTrack = factory.audioTrack(with: audioSource, trackId: "audio0")
 
