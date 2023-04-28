@@ -46,10 +46,12 @@ class AudioSessionManager {
                     "uid": output.uid]
         }
 
-        guard let payload = try? JSONSerialization.data(withJSONObject: ["reason": reason.description,
-                                                                         "outputs": currentRouteOutputs,
-                                                                         "category": audioSession.category.rawValue] as [String: Any],
-                                                        options: .withoutEscapingSlashes) else { return }
+        let routeChangeDetail: [String: Any] = [
+            "reason": reason.description,
+            "outputs": currentRouteOutputs,
+            "category": audioSession.category.rawValue
+        ]
+        guard let payload = try? JSONSerialization.data(withJSONObject: routeChangeDetail, options: .withoutEscapingSlashes) else { return }
 
         self.emitter?.emit(eventName: .audioSessionRouteChanged, data: payload)
 
@@ -95,10 +97,12 @@ class AudioSessionManager {
             payloadOptions = "None"
         }
 
-        guard let payload = try? JSONSerialization.data(withJSONObject: ["type": payloadType,
-                                                                         "reason": payloadReason,
-                                                                         "options": payloadOptions] as [String: Any],
-                                                        options: .withoutEscapingSlashes) else { return }
+        let interruptionDetail: [String: Any] = [
+            "type": payloadType,
+            "reason": payloadReason,
+            "options": payloadOptions
+        ]
+        guard let payload = try? JSONSerialization.data(withJSONObject: interruptionDetail, options: .withoutEscapingSlashes) else { return }
         self.emitter?.emit(eventName: .audioSessionInterrupted, data: payload)
     }
 
