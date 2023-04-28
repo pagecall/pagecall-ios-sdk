@@ -125,14 +125,30 @@ class ChimeController: MediaController {
     }
 
     private var volumeRecorder: VolumeRecorder?
-    func getAudioVolume() -> Float {
-        if let volumeRecorder = volumeRecorder {
-            return volumeRecorder.requestAudioVolume()
-        } else {
-            let volumeRecorder = try! VolumeRecorder()
+    private func initializeVolumeRecorder() {
+        self.volumeRecorder?.stop()
+        do {
+            let volumeRecorder = try VolumeRecorder()
             volumeRecorder.highest = -10
             volumeRecorder.lowest = -40
             self.volumeRecorder = volumeRecorder
+        } catch {
+            self.emitter.error(error)
+        }
+    }
+
+    func getAudioVolume() -> Float {
+        if let volumeRecorder = volumeRecorder {
+            do {
+                let volume = try volumeRecorder.requestAudioVolume()
+                return volume
+            } catch {
+                self.emitter.error(error)
+                initializeVolumeRecorder()
+                return 0
+            }
+        } else {
+            initializeVolumeRecorder()
             return 0
         }
     }

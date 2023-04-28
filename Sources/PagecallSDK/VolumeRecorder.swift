@@ -27,9 +27,15 @@ class VolumeRecorder {
         return level / (highest - lowest) // scaled to 0.0 ~ 1
     }
 
-    func requestAudioVolume() -> Float {
+    func requestAudioVolume() throws -> Float {
         audioRecorder.updateMeters()
         let averagePower = audioRecorder.averagePower(forChannel: 0)
+        if averagePower <= -120 {
+            // 일부 기기에서 마이크 사용중 표시(주황색 동그라미)가 꺼지면서 볼륨이 계속 -120 으로 찍히는 경우가 있습니다.
+            // 이 때는 AVAudioRecorder를 재생성해주면 해결됩니다.
+            // 아무리 조용해도 -80 정도는 나오는 것이 정상입니다.
+            throw PagecallError(message: "AVAudioRecorder seems to be broken")
+        }
         let volume = normalizeSoundLevel(level: averagePower)
         return volume
     }
