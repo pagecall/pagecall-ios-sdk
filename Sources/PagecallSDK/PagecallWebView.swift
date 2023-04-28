@@ -74,7 +74,6 @@ open class PagecallWebView: WKWebView, WKScriptMessageHandler {
         configuration.applicationNameForUserAgent = "PagecallIos"
         configuration.allowsAirPlayForMediaPlayback = true
         configuration.defaultWebpagePreferences.preferredContentMode = .mobile
-        configuration.limitsNavigationsToAppBoundDomains = true
 
         let bundle = {
 #if SWIFT_PACKAGE
