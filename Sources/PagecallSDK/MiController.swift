@@ -86,13 +86,13 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     func onConnectionStateChange(transport: Transport, connectionState: TransportConnectionState) {
         switch connectionState {
         case .new:
-            print("transport new")
+            print("[MiController] transport new")
         case .checking:
-            print("transport checking")
+            print("[MiController] transport checking")
         case .connected:
-            print("transport connected")
+            print("[MiController] transport connected")
         case .completed:
-            print("transport completed")
+            print("[MiController] transport completed")
         case .failed:
             emitter.error(name: "ConnectionError", message: "Connection failed")
         case .disconnected:
@@ -100,7 +100,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         case .closed:
             emitter.error(name: "ConnectionError", message: "Connection closed")
         @unknown default:
-            print("unknown case: \(connectionState)")
+            emitter.error(name: "ConnectionError", message: "unknown case: \(connectionState)")
         }
     }
 
@@ -164,7 +164,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     }
 
     func start(callback: @escaping (Error?) -> Void) {
-        
+
         let audioSource = factory.audioSource(with: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
         let audioTrack = factory.audioTrack(with: audioSource, trackId: "audio0")
 
@@ -175,7 +175,6 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
                 self.startVolumeScheduler()
                 callback(nil)
             } catch {
-                print("Start error", error.localizedDescription)
                 callback(error)
             }
         }
@@ -206,18 +205,35 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         self.dispose()
     }
     private var volumeRecorder: VolumeRecorder?
-    func getAudioVolume() -> Float {
-        if let volumeRecorder = volumeRecorder {
-            return volumeRecorder.requestAudioVolume()
-        } else {
-            let volumeRecorder = try! VolumeRecorder()
+
+    private func initializeVolumeRecorder() {
+        self.volumeRecorder?.stop()
+        do {
+            let volumeRecorder = try VolumeRecorder()
             volumeRecorder.highest = -10
             volumeRecorder.lowest = -50
             self.volumeRecorder = volumeRecorder
+        } catch {
+            self.emitter.error(error)
+        }
+    }
+
+    func getAudioVolume() -> Float {
+        if let volumeRecorder = volumeRecorder {
+            do {
+                let volume = try volumeRecorder.requestAudioVolume()
+                return volume
+            } catch {
+                self.emitter.error(error)
+                initializeVolumeRecorder()
+                return 0
+            }
+        } else {
+            initializeVolumeRecorder()
             return 0
         }
     }
-    
+
     private var timer: Timer?
     private func startVolumeScheduler() {
         DispatchQueue.main.async {
@@ -231,12 +247,12 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
             )
         }
     }
-    
+
     private func stopVolumeScheduler() {
         timer?.invalidate()
         timer = nil
     }
-    
+
     @objc func emitVolume() {
         let volume = getAudioVolume()
         self.emitter.emit(eventName: .audioVolume, message: String(volume))

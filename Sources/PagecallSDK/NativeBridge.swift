@@ -84,7 +84,7 @@ class NativeBridge {
                 if let requestId = requestId {
                     self.emitter.response(requestId: requestId, errorMessage: error.localizedDescription)
                 } else {
-                    self.emitter.error(name: "RequestFailed", message: error.localizedDescription)
+                    self.emitter.error(error)
                 }
             } else {
                 if let requestId = requestId {
@@ -112,7 +112,7 @@ class NativeBridge {
             let respondError: (Error) -> Void = { error in
                 CallManager.shared.endCall { endCallError in
                     if let endCallError = endCallError {
-                        self.emitter.error(name: "EndCallError", message: endCallError.localizedDescription)
+                        self.emitter.error(endCallError)
                     }
                     respond(error, nil)
                 }
@@ -226,7 +226,7 @@ class NativeBridge {
         case .dispose:
             self.disconnect { error in
                 guard let error = error else { return }
-                self.emitter.error(name: "DisconnectFailure", message: error.localizedDescription)
+                self.emitter.error(error)
             }
             respond(nil, nil)
         case .setAudioDevice:

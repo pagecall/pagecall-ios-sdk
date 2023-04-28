@@ -98,6 +98,14 @@ class WebViewEmitter {
         }
     }
 
+    func error(_ error: Error) {
+        if let error = error as? PagecallError {
+            self.error(name: "HandlediOSSDKError", message: error.message)
+        } else {
+            self.error(name: "UnexpectediOSSDKError", message: error.localizedDescription)
+        }
+    }
+
     func error(name: String, message: String?) {
         guard let data = try? JSONEncoder().encode(ErrorEvent(name: name, message: message?.javaScriptString)) else { return }
         self.emit(eventName: .error, data: data)
