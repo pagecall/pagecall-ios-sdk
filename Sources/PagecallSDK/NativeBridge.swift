@@ -20,7 +20,7 @@ enum BridgeAction: String, Codable {
 }
 
 class NativeBridge {
-    static let version = "0.0.8"
+    static let version = "0.0.9"
 
     private let webview: PagecallWebView
     private let emitter: WebViewEmitter
