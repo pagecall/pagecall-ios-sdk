@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Pagecall'
-  s.version          = '0.0.9' # Update `version` field of NativeBridge as you change this
+  s.version          = '0.0.10' # Update `version` field of NativeBridge as you change this
   s.summary          = 'Pagecall WebView: Enhanced Voice Communication via Custom WebView based on WKWebView'
 
 # This description is used to generate tags and improve search results.
@@ -38,6 +38,10 @@ Pod::Spec.new do |s|
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
-  s.dependency 'Sentry', '8.5.0'
 
+  s.default_subspec = :none
+
+  s.subspec 'Log' do |subspec|
+    subspec.dependency 'Sentry', '~> 8.0.0'
+  end
 end
