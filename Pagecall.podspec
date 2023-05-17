@@ -20,7 +20,6 @@ Pod::Spec.new do |s|
   s.description      = 'Pagecall-ios-sdk provides PagecallWebView, a custom WebView based on WKWebView that extends its functionality by adding a proprietary JavaScript Bridge to improve voice communication features. This enables customers to offer an enhanced voice communication experience. By utilizing PagecallWebView, powerful voice communication features can be easily integrated in place of the existing WKWebView.'
 
   s.homepage         = 'https://github.com/pagecall/pagecall-ios-sdk'
-  s.screenshots      = 'https://www.pagecall.com/logo.png'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'author' => 'support@pagecall.com' }
   s.source           = { :git => 'https://github.com/pagecall/pagecall-ios-sdk.git', :tag => s.version.to_s }
