@@ -91,7 +91,7 @@ open class PagecallWebView: WKWebView, WKScriptMessageHandler {
 
         super.init(frame: frame, configuration: configuration)
         self.allowsBackForwardNavigationGestures = false
-        self.customUserAgent = safariUserAgent
+        self.customUserAgent = [safariUserAgent, "PagecallSDK"].compactMap { $0 }.joined(separator: " ")
         // Some environments, such as flutter_inappwebview, reuse the configuration and it is not allowed to add a handler with the same name
         configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
         configuration.userContentController.add(LeakAvoider(delegate: self), name: self.controllerName)

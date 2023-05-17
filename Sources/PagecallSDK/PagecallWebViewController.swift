@@ -37,7 +37,7 @@ public class PagecallWebViewController:
         webView.navigationDelegate = self
         webView.delegate = self
 
-        webView.customUserAgent = [webView.customUserAgent, "PagecallSDK", "PagecallWebViewController", customUserAgent].compactMap { $0 }.joined(separator: " ")
+        webView.customUserAgent = [webView.customUserAgent, "PagecallWebViewController", customUserAgent].compactMap { $0 }.joined(separator: " ")
 
         let interaction = UIPencilInteraction()
         interaction.delegate = self
