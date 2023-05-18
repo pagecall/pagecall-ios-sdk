@@ -20,8 +20,6 @@ enum BridgeAction: String, Codable {
 }
 
 class NativeBridge {
-    static let version = "0.0.11"
-
     private let webview: PagecallWebView
     private let emitter: WebViewEmitter
 
@@ -99,7 +97,6 @@ class NativeBridge {
         case .loaded:
             webview.delegate?.pagecallDidLoad(webview)
         case .initialize:
-            emitter.log(name: "iOS SDK Version", message: NativeBridge.version)
             guard let payloadData = payload?.data(using: .utf8) else {
                 respond(PagecallError(message: "Missing payload"), nil)
                 return
