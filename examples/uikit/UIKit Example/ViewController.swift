@@ -1,5 +1,5 @@
 import UIKit
-import PagecallCore
+import Pagecall
 
 struct EmojiMessage: Codable {
     let emoji: String
@@ -7,7 +7,7 @@ struct EmojiMessage: Codable {
 }
 
 class ViewController: UIViewController, PagecallDelegate {
-    func pagecallDidClose(_ controller: PagecallCore.PagecallWebViewController) {
+    func pagecallDidClose(_ controller: Pagecall.PagecallWebViewController) {
         controller.dismiss(animated: true)
     }
 
