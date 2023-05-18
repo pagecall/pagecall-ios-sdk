@@ -44,8 +44,6 @@ class NativeBridge {
         }
     }
 
-    private var volumeRecorder: VolumeRecorder?
-
     var isAudioPaused = false {
         didSet {
             synchronizePauseState()
@@ -275,7 +273,6 @@ class NativeBridge {
     }
 
     deinit {
-        volumeRecorder?.stop()
         disconnect { error in
             if let error = error {
                 print("[NativeBridge] Failed to disconnect in deinit", error)
