@@ -146,7 +146,7 @@ window["\(subscriptionsStorageName)"]["\(id)"] = subscription;
         evaluateJavascriptWithLog(script: returningScript)
         return {
             self.evaluateJavascriptWithLog(script: """
-window["\(self.subscriptionsStorageName)"][\(id)]?.unsubscribe();
+window["\(self.subscriptionsStorageName)"]["\(id)"]?.unsubscribe();
 """)
             self.subscribers.removeValue(forKey: id)
         }
