@@ -36,7 +36,6 @@ class AudioSessionManager {
 
     @objc private func handleRouteChange(notification: Notification) {
         self.emitter?.log(name: "AVAudioSession", message: "AudioSessionRouteChange notification name=\(notification.name)")
-        print("AudioSessionRouteChange notification name=\(notification.name)")
         let audioSession = AVAudioSession.sharedInstance()
         guard let routeChangeReason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
               let reason = AVAudioSession.RouteChangeReason(rawValue: routeChangeReason) else { return }
@@ -51,6 +50,7 @@ class AudioSessionManager {
             "outputs": currentRouteOutputs,
             "category": audioSession.category.rawValue
         ]
+        print("[AudioSessionManager] routeChange", routeChangeDetail)
         guard let payload = try? JSONSerialization.data(withJSONObject: routeChangeDetail, options: .withoutEscapingSlashes) else { return }
 
         self.emitter?.emit(eventName: .audioSessionRouteChanged, data: payload)
@@ -68,7 +68,6 @@ class AudioSessionManager {
 
     @objc private func handleInterruption(notification: Notification) {
         self.emitter?.log(name: "AVAudioSession", message: "AudioSessionInterruption notification name=\(notification.name)")
-        print("AudioSessionInterruption notification name=\(notification.name)")
 
         var payloadType: String
         var payloadReason = "Unknown"
@@ -102,6 +101,7 @@ class AudioSessionManager {
             "reason": payloadReason,
             "options": payloadOptions
         ]
+        print("[AudioSessionManager] interrupt", interruptionDetail)
         guard let payload = try? JSONSerialization.data(withJSONObject: interruptionDetail, options: .withoutEscapingSlashes) else { return }
         self.emitter?.emit(eventName: .audioSessionInterrupted, data: payload)
     }
