@@ -1,26 +1,31 @@
 import UIKit
 import PagecallCore
 
-struct EmojiMessage: Codable {
-    let emoji: String
-    let sender: String
-}
+class ViewController: UIViewController {
+    override func viewDidLoad() {
+        let headerView = UIView()
+        headerView.backgroundColor = .green
+        view.addSubview(headerView)
+        headerView.translatesAutoresizingMaskIntoConstraints = false
 
-class ViewController: UIViewController, PagecallDelegate {
-    func pagecallDidClose(_ controller: PagecallCore.PagecallWebViewController) {
-        controller.dismiss(animated: true)
-    }
+        NSLayoutConstraint.activate([
+            headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            headerView.heightAnchor.constraint(equalToConstant: 80)
+        ])
 
-    @IBOutlet weak var roomIdField: UITextField!
+        let pagecallView = PagecallWebView()
+        view.addSubview(pagecallView)
+        pagecallView.translatesAutoresizingMaskIntoConstraints = false
 
-    @IBAction func enterTapped(_ sender: Any) {
-        guard let roomId = roomIdField.text else { return }
-        if roomId.isEmpty { return }
+        NSLayoutConstraint.activate([
+            pagecallView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            pagecallView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            pagecallView.topAnchor.constraint(equalTo: headerView.bottomAnchor),
+            pagecallView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
 
-        let pagecallWebViewController = PagecallWebViewController()
-        pagecallWebViewController.delegate = self
-        _ = pagecallWebViewController.load(roomId: roomId, mode: .meet)
-        pagecallWebViewController.modalPresentationStyle = .fullScreen
-        present(pagecallWebViewController, animated: true)
+        _ = pagecallView.load(roomId: "646d7c3526bcac71fe8c393b", mode: .meet)
     }
 }
