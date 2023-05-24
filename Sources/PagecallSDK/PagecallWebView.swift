@@ -40,7 +40,7 @@ public protocol PagecallWebViewDelegate: AnyObject {
 }
 
 open class PagecallWebView: WKWebView, WKScriptMessageHandler {
-    static let version = "0.0.11"
+    static let version = "0.0.12"
 
     var nativeBridge: NativeBridge?
     var controllerName = "pagecall"
