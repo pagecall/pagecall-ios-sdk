@@ -1,6 +1,6 @@
 PODS:
-  - Pagecall (0.0.11)
-  - Pagecall/Log (0.0.11):
+  - Pagecall (0.0.12)
+  - Pagecall/Log (0.0.12):
     - Sentry (~> 8.0.0)
   - Sentry (8.0.0):
     - Sentry/Core (= 8.0.0)
@@ -23,7 +23,7 @@ EXTERNAL SOURCES:
     :path: "../../"
 
 SPEC CHECKSUMS:
-  Pagecall: f285669bd2333a9b56c97143e973d839e3148545
+  Pagecall: 7c9565ad429ce58f5e27f52311365a409bbaab90
   Sentry: 2158a4621096dcd0a3a4f7c80b84b04dde261035
   SentryPrivate: 1e3acf96ee818a8d0d95b8e922d39ab6be338ea0
 
