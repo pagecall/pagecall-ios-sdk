@@ -104,34 +104,20 @@ class NativeBridge {
             struct MiPayload: Codable {
                 let plugin: String
             }
-            let respondError: (Error) -> Void = { error in
-                CallManager.shared.endCall { endCallError in
-                    if let endCallError = endCallError {
-                        self.emitter.error(endCallError)
-                    }
-                    respond(error, nil)
-                }
+            if let _ = self.mediaController {
+                respond(PagecallError(message: "Must be disposed first"), nil)
+                return
             }
-            CallManager.shared.startCall { error in
-                if let _ = self.mediaController {
-                    respondError(PagecallError(message: "Must be disposed first"))
-                    return
-                }
-                if let error = error {
-                    respondError(error)
-                } else {
-                    if let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: payloadData) {
-                        self.mediaController = ChimeController(emitter: self.emitter, configuration: meetingSessionConfiguration)
-                        respond(nil, nil)
-                    } else if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
-                        do {
-                            let miController = try MiController(emitter: self.emitter, initialPayload: initialPayload)
-                            self.mediaController = miController
-                            respond(nil, nil)
-                        } catch {
-                            respondError(error)
-                        }
-                    }
+            if let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: payloadData) {
+                self.mediaController = ChimeController(emitter: self.emitter, configuration: meetingSessionConfiguration)
+                respond(nil, nil)
+            } else if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
+                do {
+                    let miController = try MiController(emitter: self.emitter, initialPayload: initialPayload)
+                    self.mediaController = miController
+                    respond(nil, nil)
+                } catch {
+                    respond(error, nil)
                 }
             }
 
@@ -266,7 +252,6 @@ class NativeBridge {
     public func disconnect(completion: @escaping (Error?) -> Void) {
         mediaController?.dispose()
         mediaController = nil
-        CallManager.shared.endCall(completion: completion)
     }
 
     deinit {

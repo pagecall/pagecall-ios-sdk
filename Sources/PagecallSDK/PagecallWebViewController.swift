@@ -15,8 +15,7 @@ public extension PagecallDelegate {
     func pagecall(_ controller: PagecallWebViewController, requestDownloadFor url: URL) {}
 }
 
-public class PagecallWebViewController:
-    UIViewController, WKUIDelegate, WKNavigationDelegate, UIPencilInteractionDelegate, PagecallWebViewDelegate {
+public class PagecallWebViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIPencilInteractionDelegate, PagecallWebViewDelegate {
 
     private let webView = PagecallWebView()
 
@@ -132,6 +131,30 @@ public class PagecallWebViewController:
 
     var messageUnsubscriber: (() -> Void)?
 
+    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        if let isPagecallMeeting = webView.url?.absoluteString.contains(PagecallMode.meet.baseURLString()), isPagecallMeeting {
+            CallManager.shared.startCall { error in
+                if let error = error {
+                    print("[PagecallViewController] Failed to start call")
+                    PagecallLogger.shared.capture(error: error)
+                } else {
+                    PagecallLogger.shared.capture(message: "Call started")
+                }
+            }
+        }
+    }
+
+    public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        CallManager.shared.endCall { error in
+            if let error = error {
+                print("[PagecallViewController] Failed to end call")
+                PagecallLogger.shared.capture(error: error)
+            } else {
+                PagecallLogger.shared.capture(message: "Call ended")
+            }
+        }
+    }
+
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         PagecallLogger.shared.capture(error: error)
     }
@@ -192,6 +215,16 @@ new Promise((resolve) => {
 
     public func sendMessage(_ message: String, completionHandler: ((Error?) -> Void)?) {
         webView.sendMessage(message: message, completionHandler: completionHandler)
+    }
+
+    deinit {
+        CallManager.shared.endCall { error in
+            if let error = error {
+                print("[PagecallViewController] Failed to end call in deinit", error)
+            } else {
+                print("[PagecallViewController] Call ended in deinit")
+            }
+        }
     }
 }
 
