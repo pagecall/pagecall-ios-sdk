@@ -55,12 +55,16 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
                 if let producerId = producerId {
                     callback(producerId)
                 } else {
-                    print("[MiController] Failed to produce: \(error?.localizedDescription ?? "missing error message")")
+                    if let error = error {
+                        self.emitter.error(error)
+                    } else {
+                        self.emitter.error(name: "ProduceError", message: "missing error message")
+                    }
                     callback(nil)
                 }
             }
         } else {
-            print("[MiController] Failed to parse")
+            self.emitter.error(name: "ProduceError", message: "Failed to parse")
             callback(nil)
         }
     }
