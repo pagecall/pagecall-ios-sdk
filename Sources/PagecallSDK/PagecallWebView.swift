@@ -48,7 +48,7 @@ open class PagecallWebView: WKWebView, WKScriptMessageHandler {
 
     @available(*, unavailable)
     required public init?(coder: NSCoder) {
-        fatalError("PagecallSDK: PagecallWebView cannot be instantiated from a storyboard")
+        fatalError("PagecallWebView cannot be instantiated from a storyboard")
     }
 
     convenience public init() {
