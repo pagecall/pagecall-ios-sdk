@@ -48,7 +48,6 @@
 				F38BCA9CFD2A2181D207F782 /* Pods-UIKit Example.debug.xcconfig */,
 				6CA2247DD5FD7A4DB42EBA82 /* Pods-UIKit Example.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -360,6 +359,7 @@
 				DEVELOPMENT_TEAM = 9H2SNY3HBF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "UIKit Example/Info.plist";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Pagecall requires microphone access for voicechat";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -390,6 +390,7 @@
 				DEVELOPMENT_TEAM = 9H2SNY3HBF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "UIKit Example/Info.plist";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Pagecall requires microphone access for voicechat";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
