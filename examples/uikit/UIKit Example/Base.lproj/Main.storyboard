@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -17,32 +18,37 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Room ID" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="E3E-IA-VCB">
-                                <rect key="frame" x="46.666666666666657" y="409" width="300" height="34"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="300" id="9KB-GX-leb"/>
-                                </constraints>
+                                <rect key="frame" x="29.999999999999986" y="109" width="238.66666666666663" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ieU-sR-UKv">
-                                <rect key="frame" x="164.33333333333334" y="463" width="64.333333333333343" height="35"/>
+                                <rect key="frame" x="298.66666666666669" y="108.66666666666667" width="64.333333333333314" height="35.000000000000014"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Enter"/>
                                 <connections>
                                     <action selector="enterTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="cLA-ju-bzx"/>
                                 </connections>
                             </button>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="rSA-Uj-Zzy">
+                                <rect key="frame" x="30" y="163" width="333" height="4"/>
+                            </progressView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="ieU-sR-UKv" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="6Ss-Fp-smc"/>
-                            <constraint firstItem="E3E-IA-VCB" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="SEy-Hl-XuI"/>
-                            <constraint firstItem="ieU-sR-UKv" firstAttribute="top" secondItem="E3E-IA-VCB" secondAttribute="bottom" constant="20" id="gWs-Mg-EBs"/>
-                            <constraint firstItem="E3E-IA-VCB" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="rBc-uF-IfO"/>
+                            <constraint firstItem="ieU-sR-UKv" firstAttribute="leading" secondItem="E3E-IA-VCB" secondAttribute="trailing" constant="30" id="6dQ-0s-pLn"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ieU-sR-UKv" secondAttribute="trailing" constant="30" id="Ooe-j1-a0Z"/>
+                            <constraint firstItem="rSA-Uj-Zzy" firstAttribute="top" secondItem="E3E-IA-VCB" secondAttribute="bottom" constant="20" id="TTz-EJ-Buy"/>
+                            <constraint firstItem="rSA-Uj-Zzy" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="30" id="U62-0s-dPK"/>
+                            <constraint firstItem="ieU-sR-UKv" firstAttribute="centerY" secondItem="E3E-IA-VCB" secondAttribute="centerY" id="eat-H2-NZb"/>
+                            <constraint firstItem="E3E-IA-VCB" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="30" id="g0W-za-4jF"/>
+                            <constraint firstItem="E3E-IA-VCB" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="50" id="hqX-iP-B6i"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="rSA-Uj-Zzy" secondAttribute="trailing" constant="30" id="iRP-Es-Hxn"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="progressView" destination="rSA-Uj-Zzy" id="p7f-5g-dNl"/>
                         <outlet property="roomIdField" destination="E3E-IA-VCB" id="fOH-c5-fLh"/>
                     </connections>
                 </viewController>

@@ -72,19 +72,6 @@ function registerGlobals() {
   });
 
   window.PagecallNative = pagecallNative
-
-  let trialCount = 0;
-  const interval = setInterval(() => {
-    trialCount ++;
-    if (trialCount > 60) {
-      console.error("PagecallUI not found");
-      clearInterval(interval);
-    }
-    if ('PagecallUI' in window) {
-      postMessage({ action: "loaded" })
-      clearInterval(interval);
-    }
-  }, 1000);
 }
 
 registerGlobals();

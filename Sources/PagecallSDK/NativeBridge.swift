@@ -12,14 +12,17 @@ enum BridgeRequest: String, Codable {
 
 enum BridgeAction: String, Codable {
     // 항상 유효한 요청
-    case loaded
     case initialize, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, requestAudioVolume
     case response
     // 컨트롤러 생성 후 유효한 요청
     case start, setAudioDevice, consume, dispose
 }
 
-class NativeBridge {
+class NativeBridge: Equatable {
+    static func == (lhs: NativeBridge, rhs: NativeBridge) -> Bool {
+        return lhs.id == rhs.id
+    }
+
     private let webview: PagecallWebView
     private let emitter: WebViewEmitter
 
@@ -58,7 +61,12 @@ class NativeBridge {
         }
     }
 
+    static private var count = 0
+    public let id: Int
+
     init(webview: PagecallWebView) {
+        NativeBridge.count += 1
+        id = NativeBridge.count
         self.webview = webview
         self.emitter = .init(webView: self.webview)
     }
@@ -94,8 +102,6 @@ class NativeBridge {
         let payloadData = payload?.data(using: .utf8)
 
         switch bridgeAction {
-        case .loaded:
-            webview.delegate?.pagecallDidLoad(webview)
         case .initialize:
             guard let payloadData = payload?.data(using: .utf8) else {
                 respond(PagecallError(message: "Missing payload"), nil)
@@ -205,10 +211,7 @@ class NativeBridge {
                 respond(error, nil)
             }
         case .dispose:
-            self.disconnect { error in
-                guard let error = error else { return }
-                self.emitter.error(error)
-            }
+            self.disconnect()
             respond(nil, nil)
         case .setAudioDevice:
             guard let mediaController = mediaController else {
@@ -249,17 +252,13 @@ class NativeBridge {
         }
     }
 
-    public func disconnect(completion: @escaping (Error?) -> Void) {
+    public func disconnect() {
         mediaController?.dispose()
         mediaController = nil
     }
 
     deinit {
-        disconnect { error in
-            if let error = error {
-                print("[NativeBridge] Failed to disconnect in deinit", error)
-            }
-        }
+        disconnect()
     }
 }
 
