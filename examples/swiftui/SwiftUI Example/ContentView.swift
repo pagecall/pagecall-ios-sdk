@@ -9,12 +9,10 @@ struct ContentView: View {
     var body: some View {
         if let roomId = roomId {
             ZStack {
-                PagecallView(roomId: roomId, mode: .meet, onLoad: {
+                PagecallView(roomId: roomId, mode: .meet) {
                     isLoading = false
-                }, onClose: {
+                } onTerminate: { _ in
                     self.roomId = nil
-                }, onDownloadRequest: nil, onMessage: nil).onAppear {
-                    isLoading = true
                 }
                 if isLoading {
                     ProgressView()

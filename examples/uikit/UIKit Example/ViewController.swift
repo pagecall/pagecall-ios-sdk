@@ -6,9 +6,24 @@ struct EmojiMessage: Codable {
     let sender: String
 }
 
-class ViewController: UIViewController, PagecallDelegate {
-    func pagecallDidClose(_ controller: Pagecall.PagecallWebViewController) {
-        controller.dismiss(animated: true)
+class ViewController: UIViewController {
+    @IBOutlet weak var progressView: UIProgressView!
+    let pagecallWebView = PagecallWebView()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        pagecallWebView.delegate = self
+        progressView.setProgress(0, animated: false)
+
+        view.addSubview(pagecallWebView)
+
+        pagecallWebView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            pagecallWebView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            pagecallWebView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            pagecallWebView.topAnchor.constraint(equalTo: roomIdField.bottomAnchor, constant: 50),
+            pagecallWebView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
     }
 
     @IBOutlet weak var roomIdField: UITextField!
@@ -17,10 +32,21 @@ class ViewController: UIViewController, PagecallDelegate {
         guard let roomId = roomIdField.text else { return }
         if roomId.isEmpty { return }
 
-        let pagecallWebViewController = PagecallWebViewController()
-        pagecallWebViewController.delegate = self
-        _ = pagecallWebViewController.load(roomId: roomId, mode: .meet)
-        pagecallWebViewController.modalPresentationStyle = .fullScreen
-        present(pagecallWebViewController, animated: true)
+        progressView.setProgress(0.5, animated: false)
+        _ = pagecallWebView.load(roomId: roomId, mode: .meet)
+    }
+}
+
+extension ViewController: PagecallDelegate {
+    func pagecallDidTerminate(_ view: Pagecall.PagecallWebView, reason: Pagecall.TerminationReason) {
+        progressView.setProgress(0, animated: true)
+    }
+
+    func pagecallDidEncounter(_ view: PagecallWebView, error: Error) {
+        progressView.setProgress(0.25, animated: true)
+    }
+
+    func pagecallDidLoad(_ view: PagecallWebView) {
+        progressView.setProgress(1, animated: true)
     }
 }
