@@ -253,7 +253,7 @@ return true;
 }
 
 extension PagecallWebView: WKScriptMessageHandler {
-    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+    open func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard message.name == self.controllerName else { return }
         if let body = message.body as? [String: Any] {
             guard let type = body["type"] as? String, let payload = body["payload"] as? [String: Any], let id = payload["id"] as? String else { return }
@@ -289,7 +289,7 @@ extension PagecallWebView: WKUIDelegate {
 }
 
 extension PagecallWebView: WKNavigationDelegate {
-    public func webView(
+    open func webView(
         _ webView: WKWebView,
         didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
@@ -300,7 +300,7 @@ extension PagecallWebView: WKNavigationDelegate {
          }
     }
 
-    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    open func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if #available(iOS 15.0, *) {
             if navigationAction.shouldPerformDownload {
                 decisionHandler(.download)
@@ -315,7 +315,7 @@ extension PagecallWebView: WKNavigationDelegate {
         decisionHandler(.cancel)
     }
 
-    public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+    open func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
         if #available(iOS 15.0, *) {
             if !navigationResponse.canShowMIMEType {
                 decisionHandler(.download)
@@ -417,23 +417,23 @@ new Promise((resolve) => {
         }
     }
 
-    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    open func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         if let isPagecallMeeting = webView.url?.absoluteString.contains(PagecallMode.meet.baseURLString()), isPagecallMeeting {
             cleanupPagecallContext()
             initializePageContext()
         }
     }
 
-    public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+    open func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         cleanupPagecallContext()
     }
 
-    public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+    open func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         PagecallLogger.shared.capture(error: error)
         self.delegate?.pagecallDidEncounter(self, error: error)
     }
 
-    public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+    open func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         PagecallLogger.shared.capture(error: error)
     }
 }
