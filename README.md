@@ -13,7 +13,7 @@
 ### [SwiftUI Example](/examples/swiftui)
 
 ### [UIKit Example](/examples/uikit)
-It is not suppored to instantiate from a storyboard. You need to programatically create a PagecallWebView or PagecallWebViewController.
+It is not supported to instantiate from a storyboard. You need to programatically create a PagecallWebView or PagecallWebViewController.
 
 
 ## API References
