@@ -1,10 +1,7 @@
 import CallKit
+import AVFoundation
 
 class CallManager: NSObject, CXProviderDelegate {
-    func providerDidReset(_ provider: CXProvider) {
-        print("[CallManager] providerDidReset")
-    }
-
     static let shared = CallManager()
 
     let provider: CXProvider
@@ -61,4 +58,52 @@ class CallManager: NSObject, CXProviderDelegate {
             }
         }
     }
+
+    // MARK: CXProviderDelegate
+    func providerDidReset(_ provider: CXProvider) {
+        print("[CallManager] providerDidReset")
+    }
+
+    func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
+        print("[CallManager] providerPerformStartCall", action)
+        action.fulfill()
+    }
+
+    func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+        print("[CallManager] providerPerformAnswerCall", action)
+        action.fulfill()
+    }
+
+    func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
+        print("[CallManager] providerPerformEndCall", action)
+        action.fulfill()
+    }
+
+    func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
+        print("[CallManager] providerPerformSetHeldCall", action)
+        action.fulfill()
+    }
+
+    func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
+        print("[CallManager] providerPerformSetMutedCall", action)
+        action.fulfill()
+    }
+
+    func provider(_ provider: CXProvider, perform action: CXSetGroupCallAction) {
+        print("[CallManager] providerPerformSetGroupCall", action)
+        action.fulfill()
+    }
+
+    func provider(_ provider: CXProvider, timedOutPerforming action: CXAction) {
+        print("[CallManager] providerTimedOutPerforming", action)
+    }
+
+    func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
+        print("[CallManager] providerDidActivate")
+    }
+
+    func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
+        print("[CallManager] providerDidDeactivate")
+    }
+
 }
