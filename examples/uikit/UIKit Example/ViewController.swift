@@ -39,14 +39,20 @@ class ViewController: UIViewController {
 
 extension ViewController: PagecallDelegate {
     func pagecallDidTerminate(_ view: Pagecall.PagecallWebView, reason: Pagecall.TerminationReason) {
-        progressView.setProgress(0, animated: true)
+        DispatchQueue.main.async {
+            self.progressView.setProgress(0, animated: true)
+        }
     }
 
     func pagecallDidEncounter(_ view: PagecallWebView, error: Error) {
-        progressView.setProgress(0.25, animated: true)
+        DispatchQueue.main.async {
+            self.progressView.setProgress(0.25, animated: true)
+        }
     }
 
     func pagecallDidLoad(_ view: PagecallWebView) {
-        progressView.setProgress(1, animated: true)
+        DispatchQueue.main.async {
+            self.progressView.setProgress(1, animated: true)
+        }
     }
 }
