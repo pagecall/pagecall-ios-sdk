@@ -226,8 +226,22 @@ return true;
         }
     }
 
+    // MARK: UIPencilInteractionDelegate
+    private var downloadedPreviewItemUrl: URL?
+}
+
+// MARK: load methods
+extension PagecallWebView {
     public func load(roomId: String, mode: PagecallMode) -> WKNavigation? {
         return load(roomId: roomId, mode: mode, queryItems: [])
+    }
+
+    public func load(roomId: String, accessToken: String, mode: PagecallMode) -> WKNavigation? {
+        return self.load(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: [])
+    }
+
+    public func load(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]) -> WKNavigation? {
+        return self.load(roomId: roomId, mode: mode, queryItems: [URLQueryItem(name: "access_token", value: accessToken)] + queryItems)
     }
 
     public func load(roomId: String, mode: PagecallMode, queryItems: [URLQueryItem]) -> WKNavigation? {
@@ -237,6 +251,7 @@ return true;
         return super.load(URLRequest(url: urlComps.url!))
     }
 
+    @available(*, deprecated, message: "Please use load(roomId) instead")
     override open func load(_ request: URLRequest) -> WKNavigation? {
         if let url = request.url, let components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
             if let roomId = components.queryItems?.first(where: { item in item.name == "room_id" })?.value {
@@ -248,8 +263,15 @@ return true;
         return super.load(request)
     }
 
-    // MARK: - UIPencilInteractionDelegate
-    private var downloadedPreviewItemUrl: URL?
+    @available(*, deprecated, message: "Please use load(roomId) instead")
+    override open func loadHTMLString(_ string: String, baseURL: URL?) -> WKNavigation? {
+        return super.loadHTMLString(string, baseURL: baseURL)
+    }
+
+    @available(*, deprecated, message: "Please use load(roomId) instead")
+    override open func load(_ data: Data, mimeType MIMEType: String, characterEncodingName: String, baseURL: URL) -> WKNavigation? {
+        return super.load(data, mimeType: MIMEType, characterEncodingName: characterEncodingName, baseURL: baseURL)
+    }
 }
 
 extension PagecallWebView: WKScriptMessageHandler {
