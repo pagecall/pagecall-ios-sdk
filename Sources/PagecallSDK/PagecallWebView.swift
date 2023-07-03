@@ -92,7 +92,6 @@ open class PagecallWebView: WKWebView {
         configuration.mediaTypesRequiringUserActionForPlayback = []
         configuration.allowsInlineMediaPlayback = true
         configuration.suppressesIncrementalRendering = false
-        configuration.applicationNameForUserAgent = "PagecallIos"
         configuration.allowsAirPlayForMediaPlayback = true
         configuration.defaultWebpagePreferences.preferredContentMode = .mobile
 
@@ -114,12 +113,24 @@ open class PagecallWebView: WKWebView {
         uiDelegate = self
         navigationDelegate = self
         allowsBackForwardNavigationGestures = false
-        customUserAgent = [safariUserAgent, "PagecalliOSSDK/\(PagecallWebView.version)"].compactMap { $0 }.joined(separator: " ")
+        customUserAgent = nil // Trigger setting default value
         scrollView.contentInsetAdjustmentBehavior = .never
 
         let interaction = UIPencilInteraction()
         interaction.delegate = self
         addInteraction(interaction)
+    }
+
+    public override var customUserAgent: String? {
+        didSet {
+            let pagecallUserAgent = "PagecalliOSSDK/\(PagecallWebView.version)"
+            if let customUserAgent = customUserAgent, customUserAgent.count > 0 {
+                if customUserAgent.contains(pagecallUserAgent) { return }
+                self.customUserAgent = [customUserAgent, pagecallUserAgent].joined(separator: " ")
+            } else {
+                customUserAgent = [safariUserAgent, pagecallUserAgent].joined(separator: " ")
+            }
+        }
     }
 
     private var callbacks = [String: (Any?) -> Void]()
