@@ -83,10 +83,10 @@ class NativeBridge: Equatable {
 
         print("[NativeBridge] Bridge Action: \(bridgeAction)")
 
-        let respond: (Error?, Data?) -> Void = { error, data in
+        let respond: (PagecallError?, Data?) -> Void = { error, data in
             if let error = error {
                 if let requestId = requestId {
-                    self.emitter.response(requestId: requestId, errorMessage: error.localizedDescription)
+                    self.emitter.response(requestId: requestId, errorMessage: error.message)
                 } else {
                     self.emitter.error(error)
                 }
@@ -123,7 +123,8 @@ class NativeBridge: Equatable {
                     self.mediaController = miController
                     respond(nil, nil)
                 } catch {
-                    respond(error, nil)
+                    print("[NativeBridge] error creating miController", error)
+                    respond(PagecallError(message: error.localizedDescription), nil)
                 }
             }
 
@@ -169,7 +170,8 @@ class NativeBridge: Equatable {
                 let data = try JSONEncoder().encode(deviceList)
                 respond(nil, data)
             } catch {
-                respond(error, nil)
+                print("[NativeBridge] error encoding result of getAudioDevices", error)
+                respond(PagecallError(message: error.localizedDescription), nil)
             }
         case .requestAudioVolume:
             let respondVolume: (Float) -> Void = { volume in
@@ -208,7 +210,12 @@ class NativeBridge: Equatable {
             }
             mediaController.start { (error: Error?) in
                 self.synchronizePauseState()
-                respond(error, nil)
+                if let error = error {
+                    print("[NativeBridge] Failed to start controller", error)
+                    respond(PagecallError(message: error.localizedDescription), nil)
+                } else {
+                    respond(nil, nil)
+                }
             }
         case .dispose:
             self.disconnect()
@@ -231,7 +238,12 @@ class NativeBridge: Equatable {
                 return
             }
             chimeController.setAudioDevice(deviceId: deviceId.deviceId) { (error: Error?) in
-                respond(error, nil)
+                if let error = error {
+                    print("[NativeBridge] Failed to setAudioDevice", error)
+                    respond(PagecallError(message: error.localizedDescription), nil)
+                } else {
+                    respond(nil, nil)
+                }
             }
         case .consume:
             guard let mediaController = mediaController else {
@@ -241,7 +253,12 @@ class NativeBridge: Equatable {
             if let miController = mediaController as? MiController {
                 if let payloadData = payloadData {
                     miController.consume(data: payloadData) { error in
-                        respond(error, nil)
+                        if let error = error {
+                            print("[NativeBridge] Failed to consume", error)
+                            respond(PagecallError(message: error.localizedDescription), nil)
+                        } else {
+                            respond(nil, nil)
+                        }
                     }
                 } else {
                     respond(PagecallError(message: "Invalid payload"), nil)
