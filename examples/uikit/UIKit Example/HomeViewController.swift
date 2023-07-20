@@ -30,13 +30,15 @@ class HomeViewController: UIViewController {
     let enterButton = UIButton()
     let replayButton = UIButton()
     
-    var enterButtonConstraint: NSLayoutConstraint?
-    var replayButtonConstraint: NSLayoutConstraint?
+    var enterButtonBottomConstraint: NSLayoutConstraint?
+    var replayButtonBottomConstraint: NSLayoutConstraint?
+    var innerViewTopConstraint: NSLayoutConstraint?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpLayout()
         configureDesign()
+        buttonsAddTarget()
         
         //dismiss keyboard when touched around
         let tap = UITapGestureRecognizer(target: self, action: #selector(UIInputViewController.dismissKeyboard))
@@ -52,11 +54,13 @@ class HomeViewController: UIViewController {
     func setUpLayout() {
         view.addSubview(innerView)
         innerView.translatesAutoresizingMaskIntoConstraints = false
+        innerViewTopConstraint = innerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20)
+        
         NSLayoutConstraint.activate([
             innerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
             innerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
-            innerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            innerView.heightAnchor.constraint(equalToConstant: 334)
+            innerViewTopConstraint!,
+            innerView.heightAnchor.constraint(equalToConstant: 346)
         ])
         
         innerView.addSubview(pagecallLogoView)
@@ -162,23 +166,23 @@ class HomeViewController: UIViewController {
     }
     
     func setUpButtonLayout() {
-        innerView.addSubview(replayButton)
+        view.addSubview(replayButton)
         replayButton.translatesAutoresizingMaskIntoConstraints = false
-        replayButtonConstraint = replayButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -24)
+        replayButtonBottomConstraint = replayButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24)
         NSLayoutConstraint.activate([
             replayButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
             replayButton.widthAnchor.constraint(equalToConstant: (self.view.frame.size.width - 32*2 - 24)/2),
-            replayButtonConstraint!,
+            replayButtonBottomConstraint!,
             replayButton.heightAnchor.constraint(equalToConstant: 42)
         ])
         
-        innerView.addSubview(enterButton)
+        view.addSubview(enterButton)
         enterButton.translatesAutoresizingMaskIntoConstraints = false
-        enterButtonConstraint = enterButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -24)
+        enterButtonBottomConstraint = enterButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24)
         NSLayoutConstraint.activate([
             enterButton.leadingAnchor.constraint(equalTo: replayButton.trailingAnchor, constant: 24),
             enterButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
-            enterButtonConstraint!,
+            enterButtonBottomConstraint!,
             enterButton.heightAnchor.constraint(equalToConstant: 42)
         ])
     }
@@ -268,6 +272,11 @@ class HomeViewController: UIViewController {
         enterButton.titleLabel?.font = UIFont(name: "Pretendard-Medium", size: 14)
     }
     
+    func buttonsAddTarget() {
+        replayButton.addTarget(self, action: #selector(onReplayButtonTap), for: .touchUpInside)
+        enterButton.addTarget(self, action: #selector(onEnterButtonTap), for: .touchUpInside)
+    }
+    
     func addKeyboardNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow(notification:)), name:UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide(notification:)), name:UIResponder.keyboardWillHideNotification, object: nil)
@@ -289,13 +298,49 @@ extension HomeViewController {
             let keyboardRectangle = keyboardFrame.cgRectValue
             let keyboardHeight = keyboardRectangle.height
             
-            replayButtonConstraint?.constant = -keyboardHeight-24
-            enterButtonConstraint?.constant = -keyboardHeight-24
+            let buttonHeight = CGFloat(42)
+            let innerViewHeight = CGFloat(346)
+            let innerViewTop = CGFloat(20)
+
+            replayButtonBottomConstraint?.constant = -keyboardHeight
+            enterButtonBottomConstraint?.constant = -keyboardHeight
+            
+            let safeAreaHeight = self.view.safeAreaLayoutGuide.layoutFrame.height
+            
+            let buttonTopWhenKeyboardEnabled = safeAreaHeight - (keyboardHeight + buttonHeight)
+            
+            let innerViewBottom = innerViewTop + innerViewHeight
+            
+            if (innerViewBottom > buttonTopWhenKeyboardEnabled) { //when pushing up the innerView is necessary (button covering the text field)
+                innerViewTopConstraint?.constant = innerViewTop - (innerViewBottom - buttonTopWhenKeyboardEnabled) - 16
+            }
+            
         }
     }
     
     @objc func keyboardWillHide(notification:NSNotification){
-        replayButtonConstraint?.constant = -24
-        enterButtonConstraint?.constant = -24
+        //go back to original constraints
+        let buttonBottom = CGFloat(24)
+        let innerViewTop = CGFloat(20)
+        
+        replayButtonBottomConstraint?.constant = -buttonBottom
+        enterButtonBottomConstraint?.constant = -buttonBottom
+        innerViewTopConstraint?.constant = innerViewTop
+    }
+    
+    @objc func onReplayButtonTap() {
+        if let roomId = roomIdTextField.text, let accessToken = tokenTextField.text {
+            let vc = PagecallViewController(roomId: roomId, accessToken: accessToken, mode: .replay)
+            
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
+    @objc func onEnterButtonTap() {
+        if let roomId = roomIdTextField.text, let accessToken = tokenTextField.text {
+            let vc = PagecallViewController(roomId: roomId, accessToken: accessToken, mode: .meet)
+            
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
     }
 }

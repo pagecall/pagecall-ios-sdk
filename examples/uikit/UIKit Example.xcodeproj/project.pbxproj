@@ -15,6 +15,7 @@
 		4BD933412A160E4A008BD122 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BD933402A160E4A008BD122 /* Assets.xcassets */; };
 		4BD933442A160E4A008BD122 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BD933422A160E4A008BD122 /* LaunchScreen.storyboard */; };
 		5C71FBF32A67CBED004E3A6F /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 5C71FBF22A67CBED004E3A6F /* .swiftlint.yml */; };
+		5C71FBF72A68F1BE004E3A6F /* PagecallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C71FBF62A68F1BE004E3A6F /* PagecallViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		4BD933452A160E4A008BD122 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		54C7829D75F5BF0865EA120B /* Pods_UIKit_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_UIKit_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C71FBF22A67CBED004E3A6F /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
+		5C71FBF62A68F1BE004E3A6F /* PagecallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagecallViewController.swift; sourceTree = "<group>"; };
 		6CA2247DD5FD7A4DB42EBA82 /* Pods-UIKit Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UIKit Example.release.xcconfig"; path = "Target Support Files/Pods-UIKit Example/Pods-UIKit Example.release.xcconfig"; sourceTree = "<group>"; };
 		F38BCA9CFD2A2181D207F782 /* Pods-UIKit Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UIKit Example.debug.xcconfig"; path = "Target Support Files/Pods-UIKit Example/Pods-UIKit Example.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -78,6 +80,7 @@
 				4BD933372A160E49008BD122 /* AppDelegate.swift */,
 				4BD933392A160E49008BD122 /* SceneDelegate.swift */,
 				4BD9333B2A160E49008BD122 /* HomeViewController.swift */,
+				5C71FBF62A68F1BE004E3A6F /* PagecallViewController.swift */,
 				4BD9333D2A160E49008BD122 /* Main.storyboard */,
 				4BD933402A160E4A008BD122 /* Assets.xcassets */,
 				4BD933422A160E4A008BD122 /* LaunchScreen.storyboard */,
@@ -210,6 +213,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5C71FBF72A68F1BE004E3A6F /* PagecallViewController.swift in Sources */,
 				4BD9333C2A160E49008BD122 /* HomeViewController.swift in Sources */,
 				4BD933382A160E49008BD122 /* AppDelegate.swift in Sources */,
 				4BD9333A2A160E49008BD122 /* SceneDelegate.swift in Sources */,
