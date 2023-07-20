@@ -29,15 +29,24 @@ class HomeViewController: UIViewController {
 
     let enterButton = UIButton()
     let replayButton = UIButton()
+    
+    var enterButtonConstraint: NSLayoutConstraint?
+    var replayButtonConstraint: NSLayoutConstraint?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpLayout()
         configureDesign()
         
+        //dismiss keyboard when touched around
         let tap = UITapGestureRecognizer(target: self, action: #selector(UIInputViewController.dismissKeyboard))
         view.addGestureRecognizer(tap)
-
+       
+        addKeyboardNotifications()
+   }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        removeKeyboardNotifications()
     }
 
     func setUpLayout() {
@@ -49,6 +58,7 @@ class HomeViewController: UIViewController {
             innerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             innerView.heightAnchor.constraint(equalToConstant: 334)
         ])
+        
         innerView.addSubview(pagecallLogoView)
         pagecallLogoView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -57,6 +67,7 @@ class HomeViewController: UIViewController {
             pagecallLogoView.topAnchor.constraint(equalTo: innerView.topAnchor),
             pagecallLogoView.heightAnchor.constraint(equalToConstant: 28)
         ])
+        
         setUpRoomFieldLayout()
         setUpTokenFieldLayout()
         setUpQueryFieldLayout()
@@ -151,7 +162,25 @@ class HomeViewController: UIViewController {
     }
     
     func setUpButtonLayout() {
+        innerView.addSubview(replayButton)
+        replayButton.translatesAutoresizingMaskIntoConstraints = false
+        replayButtonConstraint = replayButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -24)
+        NSLayoutConstraint.activate([
+            replayButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
+            replayButton.widthAnchor.constraint(equalToConstant: (self.view.frame.size.width - 32*2 - 24)/2),
+            replayButtonConstraint!,
+            replayButton.heightAnchor.constraint(equalToConstant: 42)
+        ])
         
+        innerView.addSubview(enterButton)
+        enterButton.translatesAutoresizingMaskIntoConstraints = false
+        enterButtonConstraint = enterButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -24)
+        NSLayoutConstraint.activate([
+            enterButton.leadingAnchor.constraint(equalTo: replayButton.trailingAnchor, constant: 24),
+            enterButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
+            enterButtonConstraint!,
+            enterButton.heightAnchor.constraint(equalToConstant: 42)
+        ])
     }
 
     func configureDesign() {
@@ -178,7 +207,6 @@ class HomeViewController: UIViewController {
         roomIdTextField.layer.cornerRadius = 6
         roomIdTextField.layer.borderWidth = 1
         roomIdTextField.layer.borderColor = UIColor(red: 0.82, green: 0.836, blue: 0.86, alpha: 1).cgColor
-
         
         roomIdDivider.layer.borderWidth = 1
         roomIdDivider.layer.borderColor = UIColor(red: 0.82, green: 0.836, blue: 0.86, alpha: 1).cgColor
@@ -223,33 +251,51 @@ class HomeViewController: UIViewController {
     }
     
     func configureButtonDesign() {
+        replayButton.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
+        replayButton.layer.cornerRadius = 6
+        replayButton.layer.borderWidth = 1
+        replayButton.layer.borderColor = UIColor(red: 0.075, green: 0.38, blue: 1, alpha: 1).cgColor
         
+        replayButton.setTitleColor(UIColor(red: 0.075, green: 0.38, blue: 1, alpha: 1), for: .normal)
+        replayButton.setTitle("Replay", for: .normal)
+        replayButton.titleLabel?.font = UIFont(name: "Pretendard-Medium", size: 14)
+        
+        enterButton.backgroundColor = UIColor(red: 0.075, green: 0.38, blue: 1, alpha: 1)
+        enterButton.layer.cornerRadius = 6
+        
+        enterButton.setTitleColor(UIColor(red: 0.976, green: 0.98, blue: 0.984, alpha: 1), for: .normal)
+        enterButton.setTitle("Enter Room", for: .normal)
+        enterButton.titleLabel?.font = UIFont(name: "Pretendard-Medium", size: 14)
+    }
+    
+    func addKeyboardNotifications() {
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow(notification:)), name:UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide(notification:)), name:UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    func removeKeyboardNotifications() {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification , object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 }
 
-// extension ViewController: PagecallDelegate {
-//    func pagecallDidTerminate(_ view: Pagecall.PagecallWebView, reason: Pagecall.TerminationReason) {
-//        DispatchQueue.main.async {
-//            self.progressView.setProgress(0, animated: true)
-//        }
-//    }
-//
-//    func pagecallDidEncounter(_ view: PagecallWebView, error: Error) {
-//        DispatchQueue.main.async {
-//            self.progressView.setProgress(0.25, animated: true)
-//        }
-//    }
-//
-//    func pagecallDidLoad(_ view: PagecallWebView) {
-//        DispatchQueue.main.async {
-//            self.progressView.setProgress(1, animated: true)
-//        }
-//    }
-// }
-
 extension HomeViewController {
     @objc func dismissKeyboard() {
-        //Causes the view (or one of its embedded text fields) to resign the first responder status.
         view.endEditing(true)
+    }
+    
+    @objc func keyboardWillShow(notification:NSNotification){
+        if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+            let keyboardRectangle = keyboardFrame.cgRectValue
+            let keyboardHeight = keyboardRectangle.height
+            
+            replayButtonConstraint?.constant = -keyboardHeight-24
+            enterButtonConstraint?.constant = -keyboardHeight-24
+        }
+    }
+    
+    @objc func keyboardWillHide(notification:NSNotification){
+        replayButtonConstraint?.constant = -24
+        enterButtonConstraint?.constant = -24
     }
 }
