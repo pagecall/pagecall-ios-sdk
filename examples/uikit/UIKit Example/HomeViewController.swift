@@ -1,11 +1,6 @@
 import UIKit
 import Pagecall
 
-struct EmojiMessage: Codable {
-    let emoji: String
-    let sender: String
-}
-
 class HomeViewController: UIViewController {
     let innerView = UIView()
 
@@ -30,8 +25,6 @@ class HomeViewController: UIViewController {
     let enterButton = UIButton()
     let replayButton = UIButton()
     
-    var enterButtonBottomConstraint: NSLayoutConstraint?
-    var replayButtonBottomConstraint: NSLayoutConstraint?
     var innerViewTopConstraint: NSLayoutConstraint?
 
     override func viewDidLoad() {
@@ -47,10 +40,6 @@ class HomeViewController: UIViewController {
         addKeyboardNotifications()
    }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        removeKeyboardNotifications()
-    }
-
     func setUpLayout() {
         view.addSubview(innerView)
         innerView.translatesAutoresizingMaskIntoConstraints = false
@@ -83,7 +72,7 @@ class HomeViewController: UIViewController {
         roomIdLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             roomIdLabel.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
-            roomIdLabel.widthAnchor.constraint(equalToConstant: 65),
+            roomIdLabel.widthAnchor.constraint(equalToConstant: 70),
             roomIdLabel.topAnchor.constraint(equalTo: pagecallLogoView.bottomAnchor, constant: 44),
             roomIdLabel.heightAnchor.constraint(equalToConstant: 24)
         ])
@@ -112,7 +101,7 @@ class HomeViewController: UIViewController {
         tokenLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             tokenLabel.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
-            tokenLabel.widthAnchor.constraint(equalToConstant: 105),
+            tokenLabel.widthAnchor.constraint(equalToConstant: 110),
             tokenLabel.topAnchor.constraint(equalTo: roomIdTextField.bottomAnchor, constant: 20),
             tokenLabel.heightAnchor.constraint(equalToConstant: 24)
         ])
@@ -141,7 +130,7 @@ class HomeViewController: UIViewController {
         queryLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             queryLabel.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
-            queryLabel.widthAnchor.constraint(equalToConstant: 175),
+            queryLabel.widthAnchor.constraint(equalToConstant: 185),
             queryLabel.topAnchor.constraint(equalTo: tokenTextField.bottomAnchor, constant: 20),
             queryLabel.heightAnchor.constraint(equalToConstant: 24)
         ])
@@ -168,21 +157,19 @@ class HomeViewController: UIViewController {
     func setUpButtonLayout() {
         view.addSubview(replayButton)
         replayButton.translatesAutoresizingMaskIntoConstraints = false
-        replayButtonBottomConstraint = replayButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24)
         NSLayoutConstraint.activate([
             replayButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
             replayButton.widthAnchor.constraint(equalToConstant: (self.view.frame.size.width - 32*2 - 24)/2),
-            replayButtonBottomConstraint!,
+            replayButton.topAnchor.constraint(equalTo: innerView.bottomAnchor, constant: 44),
             replayButton.heightAnchor.constraint(equalToConstant: 42)
         ])
         
         view.addSubview(enterButton)
         enterButton.translatesAutoresizingMaskIntoConstraints = false
-        enterButtonBottomConstraint = enterButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24)
         NSLayoutConstraint.activate([
             enterButton.leadingAnchor.constraint(equalTo: replayButton.trailingAnchor, constant: 24),
             enterButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
-            enterButtonBottomConstraint!,
+            enterButton.topAnchor.constraint(equalTo: innerView.bottomAnchor, constant: 44),
             enterButton.heightAnchor.constraint(equalToConstant: 42)
         ])
     }
@@ -281,11 +268,6 @@ class HomeViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow(notification:)), name:UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide(notification:)), name:UIResponder.keyboardWillHideNotification, object: nil)
     }
-    
-    func removeKeyboardNotifications() {
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification , object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
 }
 
 extension HomeViewController {
@@ -298,33 +280,26 @@ extension HomeViewController {
             let keyboardRectangle = keyboardFrame.cgRectValue
             let keyboardHeight = keyboardRectangle.height
             
-            let buttonHeight = CGFloat(42)
-            let innerViewHeight = CGFloat(346)
-            let innerViewTop = CGFloat(20)
-
-            replayButtonBottomConstraint?.constant = -keyboardHeight
-            enterButtonBottomConstraint?.constant = -keyboardHeight
-            
+            let window = UIApplication.shared.windows.first
+            let safeAreaBottom = (window != nil) ? window!.safeAreaInsets.bottom : 0
+            let safeAreaTop = (window != nil) ? window!.safeAreaInsets.top : 0
             let safeAreaHeight = self.view.safeAreaLayoutGuide.layoutFrame.height
             
-            let buttonTopWhenKeyboardEnabled = safeAreaHeight - (keyboardHeight + buttonHeight)
+            let buttonBottom = CGFloat(346 + 44 + 42) + safeAreaTop
+            let innerViewTop = CGFloat(20) + safeAreaTop
+
+            let keyboardTop = safeAreaHeight - keyboardHeight - safeAreaTop + safeAreaBottom
             
-            let innerViewBottom = innerViewTop + innerViewHeight
-            
-            if (innerViewBottom > buttonTopWhenKeyboardEnabled) { //when pushing up the innerView is necessary (button covering the text field)
-                innerViewTopConstraint?.constant = innerViewTop - (innerViewBottom - buttonTopWhenKeyboardEnabled) - 16
+            if (buttonBottom > keyboardTop) { //when pushing up the innerView is necessary
+                innerViewTopConstraint?.constant = innerViewTop - (buttonBottom - keyboardTop) - 16
             }
-            
         }
     }
     
     @objc func keyboardWillHide(notification:NSNotification){
         //go back to original constraints
-        let buttonBottom = CGFloat(24)
         let innerViewTop = CGFloat(20)
         
-        replayButtonBottomConstraint?.constant = -buttonBottom
-        enterButtonBottomConstraint?.constant = -buttonBottom
         innerViewTopConstraint?.constant = innerViewTop
     }
     
