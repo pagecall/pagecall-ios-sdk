@@ -1,6 +1,24 @@
 import UIKit
 import Pagecall
 
+struct Constants {
+    struct Layout {
+        static let LeftRightPadding = CGFloat(32)
+        static let UpDownPadding = CGFloat(44)
+        static let InnerViewHeight = CGFloat(346)
+        static let InnerViewTop = CGFloat(20)
+        static let LogoWidth = CGFloat(128)
+        static let LogoHeight = CGFloat(28)
+        static let LabelHeight = CGFloat(24)
+        static let TextFieldHeight = CGFloat(42)
+        static let PaddingAboveLabel = CGFloat(20)
+        static let PaddingAboveTextField = CGFloat(12)
+        static let PaddingBtwLabelAndDivider = CGFloat(8)
+        static let ButtonHeight = CGFloat(42)
+        static let PaddingBtwButtons = CGFloat(24)
+    }
+}
+
 class HomeViewController: UIViewController {
     let innerView = UIView()
 
@@ -43,22 +61,22 @@ class HomeViewController: UIViewController {
     func setUpLayout() {
         view.addSubview(innerView)
         innerView.translatesAutoresizingMaskIntoConstraints = false
-        innerViewTopConstraint = innerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20)
+        innerViewTopConstraint = innerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Constants.Layout.InnerViewTop)
         
         NSLayoutConstraint.activate([
-            innerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
-            innerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
+            innerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Constants.Layout.LeftRightPadding),
+            innerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Constants.Layout.LeftRightPadding),
             innerViewTopConstraint!,
-            innerView.heightAnchor.constraint(equalToConstant: 346)
+            innerView.heightAnchor.constraint(equalToConstant: Constants.Layout.InnerViewHeight)
         ])
         
         innerView.addSubview(pagecallLogoView)
         pagecallLogoView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             pagecallLogoView.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
-            pagecallLogoView.widthAnchor.constraint(equalToConstant: 128),
+            pagecallLogoView.widthAnchor.constraint(equalToConstant: Constants.Layout.LogoWidth),
             pagecallLogoView.topAnchor.constraint(equalTo: innerView.topAnchor),
-            pagecallLogoView.heightAnchor.constraint(equalToConstant: 28)
+            pagecallLogoView.heightAnchor.constraint(equalToConstant: Constants.Layout.LogoHeight)
         ])
         
         setUpRoomFieldLayout()
@@ -73,8 +91,8 @@ class HomeViewController: UIViewController {
         NSLayoutConstraint.activate([
             roomIdLabel.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
             roomIdLabel.widthAnchor.constraint(equalToConstant: 70),
-            roomIdLabel.topAnchor.constraint(equalTo: pagecallLogoView.bottomAnchor, constant: 44),
-            roomIdLabel.heightAnchor.constraint(equalToConstant: 24)
+            roomIdLabel.topAnchor.constraint(equalTo: pagecallLogoView.bottomAnchor, constant: Constants.Layout.UpDownPadding),
+            roomIdLabel.heightAnchor.constraint(equalToConstant: Constants.Layout.LabelHeight)
         ])
         
         innerView.addSubview(roomIdTextField)
@@ -82,14 +100,14 @@ class HomeViewController: UIViewController {
         NSLayoutConstraint.activate([
             roomIdTextField.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
             roomIdTextField.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
-            roomIdTextField.topAnchor.constraint(equalTo: roomIdLabel.bottomAnchor, constant: 12),
-            roomIdTextField.heightAnchor.constraint(equalToConstant: 42)
+            roomIdTextField.topAnchor.constraint(equalTo: roomIdLabel.bottomAnchor, constant: Constants.Layout.PaddingAboveTextField),
+            roomIdTextField.heightAnchor.constraint(equalToConstant: Constants.Layout.TextFieldHeight)
         ])
         
         innerView.addSubview(roomIdDivider)
         roomIdDivider.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            roomIdDivider.leadingAnchor.constraint(equalTo: roomIdLabel.trailingAnchor, constant: 8),
+            roomIdDivider.leadingAnchor.constraint(equalTo: roomIdLabel.trailingAnchor, constant: Constants.Layout.PaddingBtwLabelAndDivider),
             roomIdDivider.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
             roomIdDivider.centerYAnchor.constraint(equalTo: roomIdLabel.centerYAnchor),
             roomIdDivider.heightAnchor.constraint(equalToConstant: 1)
@@ -102,8 +120,8 @@ class HomeViewController: UIViewController {
         NSLayoutConstraint.activate([
             tokenLabel.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
             tokenLabel.widthAnchor.constraint(equalToConstant: 110),
-            tokenLabel.topAnchor.constraint(equalTo: roomIdTextField.bottomAnchor, constant: 20),
-            tokenLabel.heightAnchor.constraint(equalToConstant: 24)
+            tokenLabel.topAnchor.constraint(equalTo: roomIdTextField.bottomAnchor, constant: Constants.Layout.PaddingAboveLabel),
+            tokenLabel.heightAnchor.constraint(equalToConstant: Constants.Layout.LabelHeight)
         ])
 
         innerView.addSubview(tokenTextField)
@@ -111,14 +129,14 @@ class HomeViewController: UIViewController {
         NSLayoutConstraint.activate([
             tokenTextField.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
             tokenTextField.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
-            tokenTextField.topAnchor.constraint(equalTo: tokenLabel.bottomAnchor, constant: 12),
-            tokenTextField.heightAnchor.constraint(equalToConstant: 42)
+            tokenTextField.topAnchor.constraint(equalTo: tokenLabel.bottomAnchor, constant:  Constants.Layout.PaddingAboveTextField),
+            tokenTextField.heightAnchor.constraint(equalToConstant: Constants.Layout.TextFieldHeight)
         ])
 
         innerView.addSubview(tokenDivider)
         tokenDivider.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            tokenDivider.leadingAnchor.constraint(equalTo: tokenLabel.trailingAnchor, constant: 8),
+            tokenDivider.leadingAnchor.constraint(equalTo: tokenLabel.trailingAnchor, constant: Constants.Layout.PaddingBtwLabelAndDivider),
             tokenDivider.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
             tokenDivider.centerYAnchor.constraint(equalTo: tokenLabel.centerYAnchor),
             tokenDivider.heightAnchor.constraint(equalToConstant: 1)
@@ -131,8 +149,8 @@ class HomeViewController: UIViewController {
         NSLayoutConstraint.activate([
             queryLabel.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
             queryLabel.widthAnchor.constraint(equalToConstant: 185),
-            queryLabel.topAnchor.constraint(equalTo: tokenTextField.bottomAnchor, constant: 20),
-            queryLabel.heightAnchor.constraint(equalToConstant: 24)
+            queryLabel.topAnchor.constraint(equalTo: tokenTextField.bottomAnchor, constant: Constants.Layout.PaddingAboveLabel),
+            queryLabel.heightAnchor.constraint(equalToConstant: Constants.Layout.LabelHeight)
         ])
         
         innerView.addSubview(queryTextField)
@@ -140,14 +158,14 @@ class HomeViewController: UIViewController {
         NSLayoutConstraint.activate([
             queryTextField.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
             queryTextField.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
-            queryTextField.topAnchor.constraint(equalTo: queryLabel.bottomAnchor, constant: 12),
-            queryTextField.heightAnchor.constraint(equalToConstant: 42)
+            queryTextField.topAnchor.constraint(equalTo: queryLabel.bottomAnchor, constant:  Constants.Layout.PaddingAboveTextField),
+            queryTextField.heightAnchor.constraint(equalToConstant: Constants.Layout.TextFieldHeight)
         ])
 
         innerView.addSubview(queryDivider)
         queryDivider.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            queryDivider.leadingAnchor.constraint(equalTo: queryLabel.trailingAnchor, constant: 8),
+            queryDivider.leadingAnchor.constraint(equalTo: queryLabel.trailingAnchor, constant: Constants.Layout.PaddingBtwLabelAndDivider),
             queryDivider.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
             queryDivider.centerYAnchor.constraint(equalTo: queryLabel.centerYAnchor),
             queryDivider.heightAnchor.constraint(equalToConstant: 1)
@@ -158,19 +176,19 @@ class HomeViewController: UIViewController {
         view.addSubview(replayButton)
         replayButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            replayButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
-            replayButton.widthAnchor.constraint(equalToConstant: (self.view.frame.size.width - 32*2 - 24)/2),
-            replayButton.topAnchor.constraint(equalTo: innerView.bottomAnchor, constant: 44),
-            replayButton.heightAnchor.constraint(equalToConstant: 42)
+            replayButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Constants.Layout.LeftRightPadding),
+            replayButton.widthAnchor.constraint(equalToConstant: (self.view.frame.size.width - Constants.Layout.LeftRightPadding*2 - Constants.Layout.PaddingBtwButtons)/2),
+            replayButton.topAnchor.constraint(equalTo: innerView.bottomAnchor, constant: Constants.Layout.UpDownPadding),
+            replayButton.heightAnchor.constraint(equalToConstant: Constants.Layout.ButtonHeight)
         ])
         
         view.addSubview(enterButton)
         enterButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            enterButton.leadingAnchor.constraint(equalTo: replayButton.trailingAnchor, constant: 24),
-            enterButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
-            enterButton.topAnchor.constraint(equalTo: innerView.bottomAnchor, constant: 44),
-            enterButton.heightAnchor.constraint(equalToConstant: 42)
+            enterButton.leadingAnchor.constraint(equalTo: replayButton.trailingAnchor, constant: Constants.Layout.PaddingBtwButtons),
+            enterButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Constants.Layout.LeftRightPadding),
+            enterButton.topAnchor.constraint(equalTo: innerView.bottomAnchor, constant: Constants.Layout.UpDownPadding),
+            enterButton.heightAnchor.constraint(equalToConstant: Constants.Layout.ButtonHeight)
         ])
     }
 
@@ -285,8 +303,8 @@ extension HomeViewController {
             let safeAreaTop = (window != nil) ? window!.safeAreaInsets.top : 0
             let safeAreaHeight = self.view.safeAreaLayoutGuide.layoutFrame.height
             
-            let buttonBottom = CGFloat(346 + 44 + 42) + safeAreaTop
-            let innerViewTop = CGFloat(20) + safeAreaTop
+            let buttonBottom = Constants.Layout.InnerViewHeight + Constants.Layout.UpDownPadding + Constants.Layout.ButtonHeight
+            let innerViewTop = Constants.Layout.InnerViewTop
 
             let keyboardTop = safeAreaHeight - keyboardHeight - safeAreaTop + safeAreaBottom
             
@@ -298,7 +316,7 @@ extension HomeViewController {
     
     @objc func keyboardWillHide(notification:NSNotification){
         //go back to original constraints
-        let innerViewTop = CGFloat(20)
+        let innerViewTop = Constants.Layout.InnerViewTop
         
         innerViewTopConstraint?.constant = innerViewTop
     }
