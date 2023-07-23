@@ -459,6 +459,17 @@ extension HomeViewController {
     }
     
     func parseQueryItems() -> [URLQueryItem]? {
+        if (queryTextField.text != "") {
+            if let queryText = queryTextField.text {
+                return queryText.components(separatedBy: "&")
+                    .map {
+                        $0.components(separatedBy: "=")
+                    }
+                    .map {
+                        URLQueryItem(name: $0[0], value: $0[1])
+                    }
+            }
+        }
         return nil
     }
 }
