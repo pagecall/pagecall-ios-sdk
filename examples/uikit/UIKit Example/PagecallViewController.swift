@@ -20,7 +20,7 @@ struct PagecallViewConstants {
         static let PencilHeight = CGFloat(58)
         static let PencilWidth = CGFloat(56)
     }
-    
+
     struct Color {
         static let Navy = UIColor(red: 0.216, green: 0.255, blue: 0.318, alpha: 1)
         static let TextBlack = UIColor(red: 0.294, green: 0.333, blue: 0.388, alpha: 1)
@@ -33,20 +33,20 @@ class PagecallViewController: UIViewController {
     let accessToken: String
     let queryItems: [URLQueryItem]?
     let mode: PagecallMode
-    
+
     let loadingView = UIView()
     let topSafeAreaView = UIView()
     let loadingLabel = UILabel()
     let progressView = UIProgressView()
-    
+
     let pencilImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "Pencil")
         return imageView
     }()
-    
+
     let pagecallWebView = PagecallWebView()
-    
+
     init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?) {
         self.roomId = roomId
         self.accessToken = accessToken
@@ -54,11 +54,11 @@ class PagecallViewController: UIViewController {
         self.queryItems = queryItems
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         setUpNavigationBar()
         setUpLayout()
@@ -66,14 +66,14 @@ class PagecallViewController: UIViewController {
         pagecallWebView.delegate = self
         enterRoom()
     }
-    
+
     func setUpNavigationBar() {
         navigationController?.navigationBar.topItem?.title = ""
         navigationController?.navigationBar.tintColor = .white
         navigationController?.navigationBar.backgroundColor = PagecallViewConstants.Color.Navy
         navigationController?.navigationBar.isTranslucent = false
     }
-    
+
     func setUpLayout() {
         view.addSubview(topSafeAreaView)
         topSafeAreaView.translatesAutoresizingMaskIntoConstraints = false
@@ -83,7 +83,7 @@ class PagecallViewController: UIViewController {
             topSafeAreaView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             topSafeAreaView.heightAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.SafeAreaCover)
         ])
-        
+
         view.addSubview(pagecallWebView)
         pagecallWebView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -92,7 +92,7 @@ class PagecallViewController: UIViewController {
             pagecallWebView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             pagecallWebView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
-        
+
         let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow })!
         keyWindow.addSubview(loadingView)
         loadingView.translatesAutoresizingMaskIntoConstraints = false
@@ -102,7 +102,7 @@ class PagecallViewController: UIViewController {
             loadingView.topAnchor.constraint(equalTo: keyWindow.topAnchor),
             loadingView.bottomAnchor.constraint(equalTo: keyWindow.bottomAnchor)
         ])
-        
+
         loadingView.addSubview(progressView)
         progressView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -111,7 +111,7 @@ class PagecallViewController: UIViewController {
             progressView.centerYAnchor.constraint(equalTo: loadingView.centerYAnchor),
             progressView.heightAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.ProgressViewHeight)
         ])
-        
+
         loadingView.addSubview(loadingLabel)
         loadingLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -120,7 +120,7 @@ class PagecallViewController: UIViewController {
             loadingLabel.topAnchor.constraint(equalTo: progressView.bottomAnchor, constant: PagecallViewConstants.Layout.PaddingAboveLoadingLabel),
             loadingLabel.heightAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.LoadingLabelHeight)
         ])
-        
+
         loadingView.addSubview(pencilImageView)
         pencilImageView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -130,12 +130,12 @@ class PagecallViewController: UIViewController {
             pencilImageView.heightAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.PencilHeight)
         ])
     }
-    
+
     func configureDesign() {
         loadingView.backgroundColor = .white
         topSafeAreaView.backgroundColor = PagecallViewConstants.Color.Navy
         progressView.progressTintColor = PagecallViewConstants.Color.Blue
-        
+
         loadingLabel.textColor = PagecallViewConstants.Color.TextBlack
         loadingLabel.font = UIFont(name: "Pretendard-Medium", size: 14)
         let paragraphStyle = NSMutableParagraphStyle()
@@ -143,7 +143,7 @@ class PagecallViewController: UIViewController {
         loadingLabel.attributedText = NSMutableAttributedString(string: "Now Loading...", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
         loadingLabel.sizeToFit()
     }
-    
+
     func enterRoom() {
         progressView.setProgress(0.0, animated: true)
         if let queryItems = queryItems {
@@ -152,7 +152,7 @@ class PagecallViewController: UIViewController {
             _ = pagecallWebView.load(roomId: roomId, accessToken: accessToken, mode: mode)
         }
     }
-    
+
     func movePencil() {
         UIView.animate(withDuration: 1.1, delay: 0, options: [], animations: {
             self.pencilImageView.center.x += self.view.frame.width - 2*PagecallViewConstants.Layout.ProgressViewLeftRightPadding
@@ -167,7 +167,7 @@ extension PagecallViewController: PagecallDelegate {
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(1)) {
             self.loadingView.isHidden = true
         }
-    
+
     }
 
     func pagecallDidEncounter(_ view: PagecallWebView, error: Error) {
