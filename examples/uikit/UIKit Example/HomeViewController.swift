@@ -24,6 +24,7 @@ struct HomeViewConstants {
         static let PaddingBtwXImageAndAlertLabel = CGFloat(12)
         static let XImageHeight = CGFloat(20)
         static let XImageWidth = CGFloat(20)
+        static let SubviewHeight = CGFloat(76)
     }
 
     struct Color {
@@ -40,7 +41,7 @@ struct HomeViewConstants {
 class HomeViewController: UIViewController {
     let innerView = UIView()
     let topSafeAreaView = UIView()
-    let alertView = UIView()
+    let alertView = AlertView()
 
     let pagecallLogoView: UIImageView = {
         let imageView = UIImageView()
@@ -48,32 +49,12 @@ class HomeViewController: UIViewController {
         return imageView
     }()
 
-    let roomIdLabel = UILabel()
-    let roomIdTextField = UITextField()
-    let roomIdDivider = UIView()
-
-    let tokenLabel = UILabel()
-    let tokenTextField = UITextField()
-    let tokenDivider = UIView()
-
-    let queryLabel = UILabel()
-    let queryTextField = UITextField()
-    let queryDivider = UIView()
+    let roomSubview = LabelAndTextFieldView(labelText: "Room ID")
+    let tokenSubview = LabelAndTextFieldView(labelText: "Access Token")
+    let querySubview = LabelAndTextFieldView(labelText: "Query (Only for debug)")
 
     let enterButton = UIButton()
     let replayButton = UIButton()
-
-    let alertLabel = UILabel()
-    let circledXView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "circled X")
-        return imageView
-    }()
-    let xView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "X")
-        return imageView
-    }()
 
     var innerViewTopConstraint: NSLayoutConstraint?
     var alertViewBottomConstraint: NSLayoutConstraint?
@@ -123,97 +104,43 @@ class HomeViewController: UIViewController {
             pagecallLogoView.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.LogoHeight)
         ])
 
-        setUpRoomFieldLayout()
-        setUpTokenFieldLayout()
-        setUpQueryFieldLayout()
+        setUpRoomSubviewLayout()
+        setUpTokenSubviewLayout()
+        setUpQuerySubviewLayout()
         setUpButtonLayout()
         setUpAlertLayout()
     }
 
-    func setUpRoomFieldLayout() {
-        innerView.addSubview(roomIdLabel)
-        roomIdLabel.translatesAutoresizingMaskIntoConstraints = false
+    func setUpRoomSubviewLayout() {
+        innerView.addSubview(roomSubview)
+        roomSubview.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            roomIdLabel.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
-            roomIdLabel.widthAnchor.constraint(equalToConstant: 70),
-            roomIdLabel.topAnchor.constraint(equalTo: pagecallLogoView.bottomAnchor, constant: HomeViewConstants.Layout.UpDownPadding),
-            roomIdLabel.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.LabelHeight)
-        ])
-
-        innerView.addSubview(roomIdTextField)
-        roomIdTextField.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            roomIdTextField.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
-            roomIdTextField.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
-            roomIdTextField.topAnchor.constraint(equalTo: roomIdLabel.bottomAnchor, constant: HomeViewConstants.Layout.PaddingAboveTextField),
-            roomIdTextField.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.TextFieldHeight)
-        ])
-
-        innerView.addSubview(roomIdDivider)
-        roomIdDivider.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            roomIdDivider.leadingAnchor.constraint(equalTo: roomIdLabel.trailingAnchor, constant: HomeViewConstants.Layout.PaddingBtwLabelAndDivider),
-            roomIdDivider.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
-            roomIdDivider.centerYAnchor.constraint(equalTo: roomIdLabel.centerYAnchor),
-            roomIdDivider.heightAnchor.constraint(equalToConstant: 1)
+            roomSubview.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
+            roomSubview.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
+            roomSubview.topAnchor.constraint(equalTo: pagecallLogoView.bottomAnchor, constant: 44),
+            roomSubview.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.SubviewHeight)
         ])
     }
 
-    func setUpTokenFieldLayout() {
-        innerView.addSubview(tokenLabel)
-        tokenLabel.translatesAutoresizingMaskIntoConstraints = false
+    func setUpTokenSubviewLayout() {
+        innerView.addSubview(tokenSubview)
+        tokenSubview.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            tokenLabel.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
-            tokenLabel.widthAnchor.constraint(equalToConstant: 110),
-            tokenLabel.topAnchor.constraint(equalTo: roomIdTextField.bottomAnchor, constant: HomeViewConstants.Layout.PaddingAboveLabel),
-            tokenLabel.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.LabelHeight)
-        ])
-
-        innerView.addSubview(tokenTextField)
-        tokenTextField.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            tokenTextField.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
-            tokenTextField.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
-            tokenTextField.topAnchor.constraint(equalTo: tokenLabel.bottomAnchor, constant: HomeViewConstants.Layout.PaddingAboveTextField),
-            tokenTextField.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.TextFieldHeight)
-        ])
-
-        innerView.addSubview(tokenDivider)
-        tokenDivider.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            tokenDivider.leadingAnchor.constraint(equalTo: tokenLabel.trailingAnchor, constant: HomeViewConstants.Layout.PaddingBtwLabelAndDivider),
-            tokenDivider.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
-            tokenDivider.centerYAnchor.constraint(equalTo: tokenLabel.centerYAnchor),
-            tokenDivider.heightAnchor.constraint(equalToConstant: 1)
+            tokenSubview.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
+            tokenSubview.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
+            tokenSubview.topAnchor.constraint(equalTo: roomSubview.bottomAnchor, constant: HomeViewConstants.Layout.PaddingAboveLabel),
+            tokenSubview.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.SubviewHeight)
         ])
     }
 
-    func setUpQueryFieldLayout() {
-        innerView.addSubview(queryLabel)
-        queryLabel.translatesAutoresizingMaskIntoConstraints = false
+    func setUpQuerySubviewLayout() {
+        innerView.addSubview(querySubview)
+        querySubview.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            queryLabel.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
-            queryLabel.widthAnchor.constraint(equalToConstant: 185),
-            queryLabel.topAnchor.constraint(equalTo: tokenTextField.bottomAnchor, constant: HomeViewConstants.Layout.PaddingAboveLabel),
-            queryLabel.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.LabelHeight)
-        ])
-
-        innerView.addSubview(queryTextField)
-        queryTextField.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            queryTextField.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
-            queryTextField.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
-            queryTextField.topAnchor.constraint(equalTo: queryLabel.bottomAnchor, constant: HomeViewConstants.Layout.PaddingAboveTextField),
-            queryTextField.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.TextFieldHeight)
-        ])
-
-        innerView.addSubview(queryDivider)
-        queryDivider.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            queryDivider.leadingAnchor.constraint(equalTo: queryLabel.trailingAnchor, constant: HomeViewConstants.Layout.PaddingBtwLabelAndDivider),
-            queryDivider.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
-            queryDivider.centerYAnchor.constraint(equalTo: queryLabel.centerYAnchor),
-            queryDivider.heightAnchor.constraint(equalToConstant: 1)
+            querySubview.leadingAnchor.constraint(equalTo: innerView.leadingAnchor),
+            querySubview.trailingAnchor.constraint(equalTo: innerView.trailingAnchor),
+            querySubview.topAnchor.constraint(equalTo: tokenSubview.bottomAnchor, constant: HomeViewConstants.Layout.PaddingAboveLabel),
+            querySubview.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.SubviewHeight)
         ])
     }
 
@@ -247,33 +174,6 @@ class HomeViewController: UIViewController {
             alertViewBottomConstraint!,
             alertView.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.AlertHeight)
         ])
-
-        alertView.addSubview(circledXView)
-        circledXView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            circledXView.leadingAnchor.constraint(equalTo: alertView.leadingAnchor, constant: HomeViewConstants.Layout.AlertViewPadding),
-            circledXView.widthAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageWidth),
-            circledXView.centerYAnchor.constraint(equalTo: alertView.centerYAnchor),
-            circledXView.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageHeight)
-        ])
-
-        alertView.addSubview(xView)
-        xView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            xView.widthAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageWidth),
-            xView.trailingAnchor.constraint(equalTo: alertView.trailingAnchor, constant: -HomeViewConstants.Layout.AlertViewPadding),
-            xView.centerYAnchor.constraint(equalTo: alertView.centerYAnchor),
-            xView.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageHeight)
-        ])
-
-        alertView.addSubview(alertLabel)
-        alertLabel.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            alertLabel.leadingAnchor.constraint(equalTo: circledXView.trailingAnchor, constant: HomeViewConstants.Layout.PaddingBtwXImageAndAlertLabel),
-            alertLabel.trailingAnchor.constraint(equalTo: xView.leadingAnchor, constant: -HomeViewConstants.Layout.PaddingBtwXImageAndAlertLabel),
-            alertLabel.centerYAnchor.constraint(equalTo: alertView.centerYAnchor),
-            alertLabel.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.AlertLabelHeight)
-        ])
     }
 
     func configureDesign() {
@@ -281,68 +181,7 @@ class HomeViewController: UIViewController {
         innerView.backgroundColor = HomeViewConstants.Color.LightGray
         topSafeAreaView.backgroundColor = HomeViewConstants.Color.LightGray
 
-        configureRoomFieldDesign()
-        configureTokenFieldDesign()
-        configureQueryFieldDesign()
         configureButtonDesign()
-        configureAlertDesign()
-    }
-
-    func configureRoomFieldDesign() {
-        roomIdLabel.textColor = HomeViewConstants.Color.TextBlack
-        roomIdLabel.font = UIFont(name: "Pretendard-Medium", size: 14)
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 1.2
-        roomIdLabel.attributedText = NSMutableAttributedString(string: "Room ID", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
-        roomIdLabel.sizeToFit()
-
-        roomIdTextField.autocapitalizationType = .none
-        roomIdTextField.autocorrectionType = .no
-        roomIdTextField.backgroundColor = .white
-        roomIdTextField.layer.cornerRadius = 6
-        roomIdTextField.layer.borderWidth = 1
-        roomIdTextField.layer.borderColor = HomeViewConstants.Color.BorderGray.cgColor
-
-        roomIdDivider.layer.borderWidth = 1
-        roomIdDivider.layer.borderColor = HomeViewConstants.Color.BorderGray.cgColor
-    }
-
-    func configureTokenFieldDesign() {
-        tokenLabel.textColor = HomeViewConstants.Color.TextBlack
-        tokenLabel.font = UIFont(name: "Pretendard-Medium", size: 14)
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 1.2
-        tokenLabel.attributedText = NSMutableAttributedString(string: "Access Token", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
-        tokenLabel.sizeToFit()
-
-        tokenTextField.autocapitalizationType = .none
-        tokenTextField.autocorrectionType = .no
-        tokenTextField.backgroundColor = .white
-        tokenTextField.layer.cornerRadius = 6
-        tokenTextField.layer.borderWidth = 1
-        tokenTextField.layer.borderColor = HomeViewConstants.Color.BorderGray.cgColor
-
-        tokenDivider.layer.borderWidth = 1
-        tokenDivider.layer.borderColor = HomeViewConstants.Color.BorderGray.cgColor
-    }
-
-    func configureQueryFieldDesign() {
-        queryLabel.textColor = HomeViewConstants.Color.TextBlack
-        queryLabel.font = UIFont(name: "Pretendard-Medium", size: 14)
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 1.2
-        queryLabel.attributedText = NSMutableAttributedString(string: "Query (Only for debug)", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
-        queryLabel.sizeToFit()
-
-        queryTextField.autocapitalizationType = .none
-        queryTextField.autocorrectionType = .no
-        queryTextField.backgroundColor = .white
-        queryTextField.layer.cornerRadius = 6
-        queryTextField.layer.borderWidth = 1
-        queryTextField.layer.borderColor = HomeViewConstants.Color.BorderGray.cgColor
-
-        queryDivider.layer.borderWidth = 1
-        queryDivider.layer.borderColor = HomeViewConstants.Color.BorderGray.cgColor
     }
 
     func configureButtonDesign() {
@@ -368,28 +207,6 @@ class HomeViewController: UIViewController {
         enterButton.addTarget(self, action: #selector(onEnterButtonTap), for: .touchUpInside)
     }
 
-    func configureAlertDesign() {
-        alertView.layer.backgroundColor = HomeViewConstants.Color.LightRed.cgColor
-        alertView.layer.cornerRadius = 6
-        alertView.layer.borderWidth = 1
-        alertView.layer.borderColor = HomeViewConstants.Color.BorderRed.cgColor
-
-        alertLabel.textColor = HomeViewConstants.Color.TextRed
-        alertLabel.font = UIFont(name: "Pretendard-Medium", size: 14)
-        let paragraphStyle = NSMutableParagraphStyle()
-        alertLabel.attributedText = NSMutableAttributedString(string: "입력 값이 필요합니다.", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
-    }
-
-    func addTapGestures() {
-        // dismiss keyboard when touched around
-        let tap = UITapGestureRecognizer(target: self, action: #selector(UIInputViewController.dismissKeyboard))
-        view.addGestureRecognizer(tap)
-
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissAlert))
-        xView.addGestureRecognizer(tapGesture)
-        xView.isUserInteractionEnabled = true
-    }
-
     func addKeyboardNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -399,10 +216,6 @@ class HomeViewController: UIViewController {
 extension HomeViewController {
     @objc func dismissKeyboard() {
         view.endEditing(true)
-    }
-
-    @objc func dismissAlert() {
-        alertView.isHidden = true
     }
 
     @objc func keyboardWillShow(notification: NSNotification) {
@@ -437,9 +250,9 @@ extension HomeViewController {
     }
 
     @objc func onReplayButtonTap() {
-        if roomIdTextField.text != "" && tokenTextField.text != "" {
+        if roomSubview.text != "" && tokenSubview.text != "" {
             let queryItems = parseQueryItems()
-            let vc = PagecallViewController(roomId: roomIdTextField.text!, accessToken: tokenTextField.text!, mode: .replay, queryItems: queryItems)
+            let vc = PagecallViewController(roomId: roomSubview.text, accessToken: tokenSubview.text, mode: .replay, queryItems: queryItems)
 
             self.navigationController?.pushViewController(vc, animated: true)
         } else {
@@ -448,9 +261,9 @@ extension HomeViewController {
     }
 
     @objc func onEnterButtonTap() {
-        if roomIdTextField.text != "" && tokenTextField.text != "" {
+        if roomSubview.text != "" && tokenSubview.text != "" {
             let queryItems = parseQueryItems()
-            let vc = PagecallViewController(roomId: roomIdTextField.text!, accessToken: tokenTextField.text!, mode: .meet, queryItems: queryItems)
+            let vc = PagecallViewController(roomId: roomSubview.text, accessToken: tokenSubview.text, mode: .meet, queryItems: queryItems)
 
             self.navigationController?.pushViewController(vc, animated: true)
         } else {
@@ -458,17 +271,21 @@ extension HomeViewController {
         }
     }
 
+    func addTapGestures() {
+        // dismiss keyboard when touched around
+        let tap = UITapGestureRecognizer(target: self, action: #selector(UIInputViewController.dismissKeyboard))
+        view.addGestureRecognizer(tap)
+    }
+
     func parseQueryItems() -> [URLQueryItem]? {
-        if queryTextField.text != "" {
-            if let queryText = queryTextField.text {
-                return queryText.components(separatedBy: "&")
-                    .map {
-                        $0.components(separatedBy: "=")
-                    }
-                    .map {
-                        URLQueryItem(name: $0[0], value: $0[1])
-                    }
-            }
+        if querySubview.text != "" {
+            return querySubview.text.components(separatedBy: "&")
+                .map {
+                    $0.components(separatedBy: "=")
+                }
+                .map {
+                    URLQueryItem(name: $0[0], value: $0[1])
+                }
         }
         return nil
     }
