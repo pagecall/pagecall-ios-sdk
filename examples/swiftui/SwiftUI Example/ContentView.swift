@@ -1,32 +1,59 @@
 import SwiftUI
 import PagecallCore
 
-struct ContentView: View {
-    @State var inputRoomId = ""
-    @State var roomId: String?
-    @State var isLoading = false
+struct Background<Content: View>: View {
+    private var content: Content
+
+    init(@ViewBuilder content: @escaping () -> Content) {
+        self.content = content()
+    }
 
     var body: some View {
-        if let roomId = roomId {
-            ZStack {
-                PagecallView(roomId: roomId, mode: .meet) {
-                    isLoading = false
-                } onTerminate: { _ in
-                    self.roomId = nil
-                }
-                if isLoading {
-                    ProgressView()
-                }
-            }
-        } else {
+        Color(red: 0.98, green: 0.98, blue: 0.98)
+        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+        .overlay(content)
+    }
+}
+
+struct ContentView: View {
+    @State private var roomId: String = ""
+    @State private var accessToken: String = ""
+    @State private var query: String = ""
+
+    var body: some View {
+        Background {
             VStack {
-                TextField("Room ID", text: $inputRoomId)
-                Button("Enter") {
-                    roomId = inputRoomId
+                VStack(alignment: .leading) {
+                    Image("Pagecall Logo")
+                        .resizable()
+                        .frame(width: 128, height: 28)
+                        .padding(.vertical, 44)
+
+                    VStack(alignment: .leading, spacing: 20) {
+                        LabelAndTextFieldView(text: $roomId, label: "Room ID")
+
+                        LabelAndTextFieldView(text: $accessToken, label: "Access Token")
+
+                        LabelAndTextFieldView(text: $query, label: "Query (Only for debug)")
+                    }
                 }
-            }.padding().frame(maxWidth: 540).onAppear {
+                .padding(.bottom, 44)
+
+                HStack(spacing: 12) {
+                    ReplayButton()
+                    EnterButton()
+                }
             }
-        }
+            .padding(.horizontal, 32)
+            .padding(.top, 48)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }.onTapGesture {
+                self.endEditing() // dismiss keyboard when touched around
+            }
+    }
+
+    private func endEditing() {
+        UIApplication.shared.endEditing()
     }
 }
 

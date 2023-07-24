@@ -13,6 +13,11 @@
 		4B59A90929F1472C00DF2B46 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B59A90829F1472C00DF2B46 /* Preview Assets.xcassets */; };
 		4B59A91829F1481600DF2B46 /* PagecallCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4B59A91729F1481600DF2B46 /* PagecallCore */; };
 		4BA5316F2A20BAEF0002FCED /* PagecallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA5316E2A20BAEF0002FCED /* PagecallView.swift */; };
+		5CC7560F2A6E3230008262D9 /* LabelAndTextFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7560E2A6E3230008262D9 /* LabelAndTextFieldView.swift */; };
+		5CC756112A6E340A008262D9 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756102A6E340A008262D9 /* Constants.swift */; };
+		5CC756132A6E477B008262D9 /* EnterButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756122A6E477B008262D9 /* EnterButton.swift */; };
+		5CC756152A6E478A008262D9 /* ReplayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756142A6E478A008262D9 /* ReplayButton.swift */; };
+		5CC756182A6E51F0008262D9 /* UIApplication+endEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756172A6E51F0008262D9 /* UIApplication+endEditing.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +29,11 @@
 		4B59A91429F147CD00DF2B46 /* pagecall-ios-sdk */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "pagecall-ios-sdk"; path = ../..; sourceTree = "<group>"; };
 		4B59A91529F147D000DF2B46 /* SwiftUI-Example-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "SwiftUI-Example-Info.plist"; sourceTree = SOURCE_ROOT; };
 		4BA5316E2A20BAEF0002FCED /* PagecallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagecallView.swift; sourceTree = "<group>"; };
+		5CC7560E2A6E3230008262D9 /* LabelAndTextFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelAndTextFieldView.swift; sourceTree = "<group>"; };
+		5CC756102A6E340A008262D9 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		5CC756122A6E477B008262D9 /* EnterButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterButton.swift; sourceTree = "<group>"; };
+		5CC756142A6E478A008262D9 /* ReplayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayButton.swift; sourceTree = "<group>"; };
+		5CC756172A6E51F0008262D9 /* UIApplication+endEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+endEditing.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,9 +72,14 @@
 				4B59A91529F147D000DF2B46 /* SwiftUI-Example-Info.plist */,
 				4B59A90129F1472B00DF2B46 /* SwiftUI_ExampleApp.swift */,
 				4B59A90329F1472B00DF2B46 /* ContentView.swift */,
+				5CC7560E2A6E3230008262D9 /* LabelAndTextFieldView.swift */,
+				5CC756122A6E477B008262D9 /* EnterButton.swift */,
+				5CC756142A6E478A008262D9 /* ReplayButton.swift */,
 				4BA5316E2A20BAEF0002FCED /* PagecallView.swift */,
 				4B59A90529F1472C00DF2B46 /* Assets.xcassets */,
+				5CC756172A6E51F0008262D9 /* UIApplication+endEditing.swift */,
 				4B59A90729F1472C00DF2B46 /* Preview Content */,
+				5CC756102A6E340A008262D9 /* Constants.swift */,
 			);
 			path = "SwiftUI Example";
 			sourceTree = "<group>";
@@ -99,6 +114,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4B59A90C29F1472C00DF2B46 /* Build configuration list for PBXNativeTarget "SwiftUI Example" */;
 			buildPhases = (
+				5CC756162A6E4F8A008262D9 /* ShellScript */,
 				4B59A8FA29F1472B00DF2B46 /* Sources */,
 				4B59A8FB29F1472B00DF2B46 /* Frameworks */,
 				4B59A8FC29F1472B00DF2B46 /* Resources */,
@@ -160,11 +176,36 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		5CC756162A6E4F8A008262D9 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nalias swiftlint=\"/opt/homebrew/bin/swiftlint\"\n\nif swiftlint >/dev/null; \n    then swiftlint --fix\nelse     \n    echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\" \nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		4B59A8FA29F1472B00DF2B46 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5CC756112A6E340A008262D9 /* Constants.swift in Sources */,
+				5CC756182A6E51F0008262D9 /* UIApplication+endEditing.swift in Sources */,
+				5CC7560F2A6E3230008262D9 /* LabelAndTextFieldView.swift in Sources */,
+				5CC756152A6E478A008262D9 /* ReplayButton.swift in Sources */,
+				5CC756132A6E477B008262D9 /* EnterButton.swift in Sources */,
 				4B59A90429F1472B00DF2B46 /* ContentView.swift in Sources */,
 				4BA5316F2A20BAEF0002FCED /* PagecallView.swift in Sources */,
 				4B59A90229F1472B00DF2B46 /* SwiftUI_ExampleApp.swift in Sources */,
