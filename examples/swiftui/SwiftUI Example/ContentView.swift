@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var roomId: String = ""
     @State private var accessToken: String = ""
     @State private var query: String = ""
+    @State private var isAlertOn: Bool = false
 
     var body: some View {
         Background {
@@ -40,13 +41,19 @@ struct ContentView: View {
                 .padding(.bottom, 44)
 
                 HStack(spacing: 12) {
-                    ReplayButton()
-                    EnterButton()
+                    ReplayButton(roomId: $roomId, accessToken: $accessToken, query: $query, isAlertOn: $isAlertOn)
+                    EnterButton(roomId: $roomId, accessToken: $accessToken, query: $query, isAlertOn: $isAlertOn)
                 }
             }
             .padding(.horizontal, 32)
             .padding(.top, 48)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            
+            VStack {
+                Alert(isAlertOn: $isAlertOn)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .padding(.bottom, 40)
             }.onTapGesture {
                 self.endEditing() // dismiss keyboard when touched around
             }

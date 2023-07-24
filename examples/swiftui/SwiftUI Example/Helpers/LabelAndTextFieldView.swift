@@ -26,7 +26,8 @@ struct LabelAndTextFieldView: View {
             }
 
             TextField("", text: $text)
-                .frame(width: .infinity, height: 42)
+                .frame(maxWidth: .infinity)
+                .frame(height: 42)
                 .overlay(
                     RoundedRectangle(cornerRadius: 6)
                         .stroke(Color.gray, lineWidth: 1)
