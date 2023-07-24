@@ -1,5 +1,6 @@
 import SwiftUI
 import PagecallCore
+import Combine
 
 struct Background<Content: View>: View {
     private var content: Content
@@ -20,6 +21,7 @@ struct ContentView: View {
     @State private var accessToken: String = ""
     @State private var query: String = ""
     @State private var isAlertOn: Bool = false
+    @State private var keyboardHeight: CGFloat = 0
 
     var body: some View {
         Background {
@@ -48,12 +50,17 @@ struct ContentView: View {
             .padding(.horizontal, 32)
             .padding(.top, 48)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            
+
             VStack {
                 Alert(isAlertOn: $isAlertOn)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            .padding(.bottom, 40)
+            .padding(.horizontal, 32)
+            .padding(.bottom, keyboardHeight == 0 ? 40 : keyboardHeight)
+            .ignoresSafeArea(.keyboard, edges: .bottom)
+            .onReceive(Publishers.keyboardHeight) {
+                self.keyboardHeight = $0
+            }
             }.onTapGesture {
                 self.endEditing() // dismiss keyboard when touched around
             }

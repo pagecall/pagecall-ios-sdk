@@ -12,7 +12,7 @@ struct EnterButton: View {
     @Binding var accessToken: String
     @Binding var query: String
     @Binding var isAlertOn: Bool
-    
+
     var body: some View {
         Button(action: {
             if roomId == "" || accessToken == "" {
@@ -40,7 +40,7 @@ struct EnterButton: View {
 struct EnterButton_Previews: PreviewProvider {
     @State static private var text = ""
     @State static private var isAlertOn = false
-    
+
     static var previews: some View {
         EnterButton(roomId: $text, accessToken: $text, query: $text, isAlertOn: $isAlertOn)
     }

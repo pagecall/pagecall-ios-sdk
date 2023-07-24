@@ -19,6 +19,8 @@
 		5CC756152A6E478A008262D9 /* ReplayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756142A6E478A008262D9 /* ReplayButton.swift */; };
 		5CC756182A6E51F0008262D9 /* UIApplication+endEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756172A6E51F0008262D9 /* UIApplication+endEditing.swift */; };
 		5CC7562B2A6E736B008262D9 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7562A2A6E736B008262D9 /* Alert.swift */; };
+		5CC7562E2A6E7C67008262D9 /* Publishers + keyboardHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7562D2A6E7C67008262D9 /* Publishers + keyboardHeight.swift */; };
+		5CC756302A6E7CA6008262D9 /* Notification + keyboardHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7562F2A6E7CA6008262D9 /* Notification + keyboardHeight.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +38,8 @@
 		5CC756142A6E478A008262D9 /* ReplayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayButton.swift; sourceTree = "<group>"; };
 		5CC756172A6E51F0008262D9 /* UIApplication+endEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+endEditing.swift"; sourceTree = "<group>"; };
 		5CC7562A2A6E736B008262D9 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
+		5CC7562D2A6E7C67008262D9 /* Publishers + keyboardHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publishers + keyboardHeight.swift"; sourceTree = "<group>"; };
+		5CC7562F2A6E7CA6008262D9 /* Notification + keyboardHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification + keyboardHeight.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +75,7 @@
 		4B59A90029F1472B00DF2B46 /* SwiftUI Example */ = {
 			isa = PBXGroup;
 			children = (
+				5CC7562C2A6E7C51008262D9 /* Extensions */,
 				5CC756292A6E7354008262D9 /* Helpers */,
 				4B59A91529F147D000DF2B46 /* SwiftUI-Example-Info.plist */,
 				4B59A90129F1472B00DF2B46 /* SwiftUI_ExampleApp.swift */,
@@ -116,6 +121,15 @@
 				5CC7562A2A6E736B008262D9 /* Alert.swift */,
 			);
 			path = Helpers;
+			sourceTree = "<group>";
+		};
+		5CC7562C2A6E7C51008262D9 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				5CC7562D2A6E7C67008262D9 /* Publishers + keyboardHeight.swift */,
+				5CC7562F2A6E7CA6008262D9 /* Notification + keyboardHeight.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -218,6 +232,8 @@
 				5CC7560F2A6E3230008262D9 /* LabelAndTextFieldView.swift in Sources */,
 				5CC756152A6E478A008262D9 /* ReplayButton.swift in Sources */,
 				5CC756132A6E477B008262D9 /* EnterButton.swift in Sources */,
+				5CC7562E2A6E7C67008262D9 /* Publishers + keyboardHeight.swift in Sources */,
+				5CC756302A6E7CA6008262D9 /* Notification + keyboardHeight.swift in Sources */,
 				4B59A90429F1472B00DF2B46 /* ContentView.swift in Sources */,
 				4BA5316F2A20BAEF0002FCED /* PagecallView.swift in Sources */,
 				4B59A90229F1472B00DF2B46 /* SwiftUI_ExampleApp.swift in Sources */,
