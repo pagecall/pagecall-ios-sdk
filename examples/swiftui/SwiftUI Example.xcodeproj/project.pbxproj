@@ -23,6 +23,7 @@
 		5CC756302A6E7CA6008262D9 /* Notification + keyboardHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7562F2A6E7CA6008262D9 /* Notification + keyboardHeight.swift */; };
 		5CC756322A6F57BF008262D9 /* Loading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756312A6F57BF008262D9 /* Loading.swift */; };
 		5CC756342A6F5FF0008262D9 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756332A6F5FF0008262D9 /* Background.swift */; };
+		5CDBB2EE2A6F79A2006232B4 /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CDBB2ED2A6F79A2006232B4 /* ProgressBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		5CC7562F2A6E7CA6008262D9 /* Notification + keyboardHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification + keyboardHeight.swift"; sourceTree = "<group>"; };
 		5CC756312A6F57BF008262D9 /* Loading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loading.swift; sourceTree = "<group>"; };
 		5CC756332A6F5FF0008262D9 /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
+		5CDBB2ED2A6F79A2006232B4 /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +127,7 @@
 				5CC7562A2A6E736B008262D9 /* Alert.swift */,
 				5CC756312A6F57BF008262D9 /* Loading.swift */,
 				5CC756332A6F5FF0008262D9 /* Background.swift */,
+				5CDBB2ED2A6F79A2006232B4 /* ProgressBar.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -238,6 +241,7 @@
 				5CC7560F2A6E3230008262D9 /* LabelAndTextFieldView.swift in Sources */,
 				5CC756152A6E478A008262D9 /* ReplayButton.swift in Sources */,
 				5CC756132A6E477B008262D9 /* EnterButton.swift in Sources */,
+				5CDBB2EE2A6F79A2006232B4 /* ProgressBar.swift in Sources */,
 				5CC7562E2A6E7C67008262D9 /* Publishers + keyboardHeight.swift in Sources */,
 				5CC756302A6E7CA6008262D9 /* Notification + keyboardHeight.swift in Sources */,
 				4B59A90429F1472B00DF2B46 /* ContentView.swift in Sources */,
