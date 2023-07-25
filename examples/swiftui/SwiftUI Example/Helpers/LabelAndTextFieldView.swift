@@ -32,6 +32,8 @@ struct LabelAndTextFieldView: View {
                     .frame(height: 42)
 
                 TextField("", text: $text)
+                    .autocorrectionDisabled()
+                    .autocapitalization(.none)
                     .frame(maxWidth: .infinity)
                     .frame(height: 42)
                     .padding(.horizontal, 13)

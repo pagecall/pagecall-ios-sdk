@@ -8,16 +8,15 @@
 import SwiftUI
 
 struct EnterButton: View {
-    @Binding var roomId: String
-    @Binding var accessToken: String
-    @Binding var query: String
-    @Binding var isAlertOn: Bool
-
+    private var onTap: () -> (Void)
+    
+    init(onTap: @escaping () -> (Void)) {
+        self.onTap = onTap
+    }
+    
     var body: some View {
         Button(action: {
-            if roomId == "" || accessToken == "" {
-                isAlertOn = true
-            }
+            onTap()
         }) {
             Text("Enter Room")
                 .font(Font.custom("Pretendard", size: 14).weight(.medium))
@@ -38,10 +37,7 @@ struct EnterButton: View {
 }
 
 struct EnterButton_Previews: PreviewProvider {
-    @State static private var text = ""
-    @State static private var isAlertOn = false
-
     static var previews: some View {
-        EnterButton(roomId: $text, accessToken: $text, query: $text, isAlertOn: $isAlertOn)
+        EnterButton(onTap: {})
     }
 }

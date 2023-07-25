@@ -1,0 +1,98 @@
+import SwiftUI
+import PagecallCore
+import Combine
+
+struct HomeView: View {
+    @State private var roomId: String = ""
+    @State private var accessToken: String = ""
+    @State private var query: String = ""
+    @State private var isAlertOn: Bool = false
+    @State private var keyboardHeight: CGFloat = 0
+    
+    @State private var isPagecallActive = false
+
+    var body: some View {
+        NavigationView {
+            Background {
+                VStack {
+                    VStack(alignment: .leading) {
+                        Image("Pagecall Logo")
+                            .resizable()
+                            .frame(width: 128, height: 28)
+                            .padding(.vertical, 44)
+
+                        VStack(alignment: .leading, spacing: 20) {
+                            LabelAndTextFieldView(text: $roomId, label: "Room ID")
+
+                            LabelAndTextFieldView(text: $accessToken, label: "Access Token")
+
+                            LabelAndTextFieldView(text: $query, label: "Query (Only for debug)")
+                        }
+                    }
+                    .padding(.bottom, 44)
+
+                    HStack(spacing: 12) {
+                        ReplayButton(onTap: onButtonTap)
+                        EnterButton(onTap: onButtonTap)
+                    }
+                }
+                .padding(.horizontal, 32)
+                .padding(.top, 48)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+                VStack {
+                    Alert(isAlertOn: $isAlertOn)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .padding(.horizontal, 32)
+                .padding(.bottom, keyboardHeight == 0 ? 40 : keyboardHeight)
+                .ignoresSafeArea(.keyboard, edges: .bottom)
+                .onReceive(Publishers.keyboardHeight) {
+                    self.keyboardHeight = $0
+                }
+                
+                NavigationLink(
+                    destination: PagecallView(roomId: roomId, accessToken: accessToken, queryItems: parseQueryItems()),
+                    isActive: $isPagecallActive,
+                    label: { EmptyView() }
+                )
+                .hidden()
+            }
+            .onTapGesture {
+                self.endEditing() // dismiss keyboard when touched around
+            }
+        }
+    }
+
+    private func endEditing() {
+        UIApplication.shared.endEditing()
+    }
+    
+    private func onButtonTap() {
+        if roomId == "" || accessToken == "" {
+            isAlertOn = true
+        } else {
+            isAlertOn = false
+            isPagecallActive = true
+        }
+    }
+    
+    private func parseQueryItems() -> [URLQueryItem]? {
+        if query != "" {
+            return query.components(separatedBy: "&")
+                .map {
+                    $0.components(separatedBy: "=")
+                }
+                .map {
+                    URLQueryItem(name: $0[0], value: $0[1])
+                }
+        }
+        return nil
+    }
+}
+
+struct HomeView_Previews: PreviewProvider {
+    static var previews: some View {
+        HomeView()
+    }
+}
