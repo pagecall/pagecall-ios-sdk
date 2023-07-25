@@ -2,20 +2,6 @@ import SwiftUI
 import PagecallCore
 import Combine
 
-struct Background<Content: View>: View {
-    private var content: Content
-
-    init(@ViewBuilder content: @escaping () -> Content) {
-        self.content = content()
-    }
-
-    var body: some View {
-        Color(red: 0.98, green: 0.98, blue: 0.98)
-        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-        .overlay(content)
-    }
-}
-
 struct ContentView: View {
     @State private var roomId: String = ""
     @State private var accessToken: String = ""
@@ -61,9 +47,10 @@ struct ContentView: View {
             .onReceive(Publishers.keyboardHeight) {
                 self.keyboardHeight = $0
             }
-            }.onTapGesture {
-                self.endEditing() // dismiss keyboard when touched around
-            }
+        }
+        .onTapGesture {
+            self.endEditing() // dismiss keyboard when touched around
+        }
     }
 
     private func endEditing() {

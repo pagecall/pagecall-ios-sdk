@@ -25,13 +25,18 @@ struct LabelAndTextFieldView: View {
                     .frame(height: 1)
             }
 
-            TextField("", text: $text)
-                .frame(maxWidth: .infinity)
-                .frame(height: 42)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color.gray, lineWidth: 1)
-                )
+            ZStack {
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(Color.gray, lineWidth: 1)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 42)
+
+                TextField("", text: $text)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 42)
+                    .padding(.horizontal, 13)
+                    .padding(.vertical, 11)
+            }
         }
     }
 }

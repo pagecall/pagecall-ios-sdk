@@ -21,6 +21,8 @@
 		5CC7562B2A6E736B008262D9 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7562A2A6E736B008262D9 /* Alert.swift */; };
 		5CC7562E2A6E7C67008262D9 /* Publishers + keyboardHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7562D2A6E7C67008262D9 /* Publishers + keyboardHeight.swift */; };
 		5CC756302A6E7CA6008262D9 /* Notification + keyboardHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7562F2A6E7CA6008262D9 /* Notification + keyboardHeight.swift */; };
+		5CC756322A6F57BF008262D9 /* Loading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756312A6F57BF008262D9 /* Loading.swift */; };
+		5CC756342A6F5FF0008262D9 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756332A6F5FF0008262D9 /* Background.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +42,8 @@
 		5CC7562A2A6E736B008262D9 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
 		5CC7562D2A6E7C67008262D9 /* Publishers + keyboardHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publishers + keyboardHeight.swift"; sourceTree = "<group>"; };
 		5CC7562F2A6E7CA6008262D9 /* Notification + keyboardHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification + keyboardHeight.swift"; sourceTree = "<group>"; };
+		5CC756312A6F57BF008262D9 /* Loading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loading.swift; sourceTree = "<group>"; };
+		5CC756332A6F5FF0008262D9 /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +123,8 @@
 				5CC756122A6E477B008262D9 /* EnterButton.swift */,
 				5CC756142A6E478A008262D9 /* ReplayButton.swift */,
 				5CC7562A2A6E736B008262D9 /* Alert.swift */,
+				5CC756312A6F57BF008262D9 /* Loading.swift */,
+				5CC756332A6F5FF0008262D9 /* Background.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -236,6 +242,8 @@
 				5CC756302A6E7CA6008262D9 /* Notification + keyboardHeight.swift in Sources */,
 				4B59A90429F1472B00DF2B46 /* ContentView.swift in Sources */,
 				4BA5316F2A20BAEF0002FCED /* PagecallView.swift in Sources */,
+				5CC756322A6F57BF008262D9 /* Loading.swift in Sources */,
+				5CC756342A6F5FF0008262D9 /* Background.swift in Sources */,
 				4B59A90229F1472B00DF2B46 /* SwiftUI_ExampleApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
