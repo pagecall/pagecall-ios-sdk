@@ -227,7 +227,7 @@ return true;
         }
     }
 
-    public func listenMessage(subscriber: @escaping (String) -> Void) -> () -> Void {
+    private func listenMessage(subscriber: @escaping (String) -> Void) -> () -> Void {
         return subscribe(target: "PagecallUI.customMessage$") { payload in
             if let payload = payload as? String {
                 subscriber(payload)
@@ -289,14 +289,32 @@ extension PagecallWebView: WKScriptMessageHandler {
     open func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard message.name == self.controllerName else { return }
         if let body = message.body as? [String: Any] {
-            guard let type = body["type"] as? String, let payload = body["payload"] as? [String: Any], let id = payload["id"] as? String else { return }
+            guard let type = body["type"] as? String else { return }
             switch type {
+            case "PagecallEvent":
+                guard let action = body["action"] as? String else { return }
+                if action == "loaded" {
+                    delegate?.pagecallDidLoad(self);
+                } else if action == "terminated" {
+                    if let payload = body["payload"] as? [String: String], let reason = payload["reason"] {
+                        if reason == "internal" {
+                            delegate?.pagecallDidTerminate(self, reason: .internal)
+                        } else {
+                            delegate?.pagecallDidTerminate(self, reason: .other(reason))
+                        }
+                    } else {
+                        delegate?.pagecallDidTerminate(self, reason: .other("unknown"))
+                    }
+                } else if action == "message" {
+                    guard let payload = body["payload"] as? [String: String], let message = payload["message"] else { return }
+                    delegate?.pagecallDidReceive(self, message: message)
+                }
             case "return":
-                guard let callback = callbacks[id] else { return }
+                guard let payload = body["payload"] as? [String: Any], let id = payload["id"] as? String, let callback = callbacks[id] else { return }
                 callbacks.removeValue(forKey: id)
                 callback(payload["value"])
             case "subscription":
-                guard let subscriber = subscribers[id] else { return }
+                guard let payload = body["payload"] as? [String: Any], let id = payload["id"] as? String, let subscriber = subscribers[id] else { return }
                 subscriber(payload["value"])
             default:
                 print("[PagecallWebView] Unknown message type: \(type)")
@@ -395,59 +413,6 @@ extension PagecallWebView: WKNavigationDelegate {
                 self.nativeBridge = nil
             }
         })
-
-        getReturnValue(script: """
-new Promise((resolve) => {
-  function detectPagecallUI(trialCount) {
-    if (window.PagecallUI) {
-        resolve(true);
-        return;
-    }
-    if (trialCount >= 60) {
-        resolve(false);
-        return;
-    }
-    setTimeout(() => detectPagecallUI(trialCount + 1), 1000);
-  }
-  detectPagecallUI(0);
-})
-""") { success in
-            guard let success = success as? Bool, success else {
-                let error = PagecallError(message: "Failed to detect PagecallUI")
-                PagecallLogger.shared.capture(error: error)
-                self.delegate?.pagecallDidEncounter(self, error: error)
-                return
-            }
-
-            _ = self.subscribe(target: "window.PagecallUI.get$('terminationState')") { state in
-                guard let state = state as? [String: String] else { return }
-                self.cleanupPagecallContext()
-                if let reason = state["state"] {
-                    if reason == "internal" {
-                        self.delegate?.pagecallDidTerminate(self, reason: .internal)
-                    } else {
-                        self.delegate?.pagecallDidTerminate(self, reason: .other(reason))
-                    }
-                } else {
-                    self.delegate?.pagecallDidTerminate(self, reason: .other("unknown"))
-                }
-            }
-            self.getReturnValue(script: """
-    new Promise((resolve) => {
-        const subscription = window.PagecallUI.controller$.subscribe((controller) => {
-            if (!controller) return;
-            resolve();
-            subscription.unsubscribe();
-        });
-    })
-    """) { _ in
-                self.delegate?.pagecallDidLoad(self)
-                let messageUnsubscriber = self.listenMessage(subscriber: { message in
-                    self.delegate?.pagecallDidReceive(self, message: message)
-                })
-                self.cleanups.append(messageUnsubscriber)
-            }
-        }
     }
 
     open func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
