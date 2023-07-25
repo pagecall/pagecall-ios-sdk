@@ -8,8 +8,9 @@ struct HomeView: View {
     @State private var query: String = ""
     @State private var isAlertOn: Bool = false
     @State private var keyboardHeight: CGFloat = 0
-    
-    @State private var isPagecallActive = false
+    @State private var mode = PagecallMode.meet
+
+    @State private var isShowingPagecallView = false
 
     var body: some View {
         NavigationView {
@@ -32,8 +33,8 @@ struct HomeView: View {
                     .padding(.bottom, 44)
 
                     HStack(spacing: 12) {
-                        ReplayButton(onTap: onButtonTap)
-                        EnterButton(onTap: onButtonTap)
+                        ReplayButton(onTap: onReplayButtonTap)
+                        EnterButton(onTap: onEnterButtonTap)
                     }
                 }
                 .padding(.horizontal, 32)
@@ -50,10 +51,10 @@ struct HomeView: View {
                 .onReceive(Publishers.keyboardHeight) {
                     self.keyboardHeight = $0
                 }
-                
+
                 NavigationLink(
-                    destination: PagecallView(roomId: roomId, accessToken: accessToken, queryItems: parseQueryItems()),
-                    isActive: $isPagecallActive,
+                    destination: PagecallView(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: parseQueryItems(), isShowingPagecallView: $isShowingPagecallView),
+                    isActive: $isShowingPagecallView,
                     label: { EmptyView() }
                 )
                 .hidden()
@@ -67,16 +68,27 @@ struct HomeView: View {
     private func endEditing() {
         UIApplication.shared.endEditing()
     }
-    
-    private func onButtonTap() {
+
+    private func onReplayButtonTap() {
         if roomId == "" || accessToken == "" {
             isAlertOn = true
         } else {
+            mode = .replay
             isAlertOn = false
-            isPagecallActive = true
+            isShowingPagecallView = true
         }
     }
-    
+
+    private func onEnterButtonTap() {
+        if roomId == "" || accessToken == "" {
+            isAlertOn = true
+        } else {
+            mode = .meet
+            isAlertOn = false
+            isShowingPagecallView = true
+        }
+    }
+
     private func parseQueryItems() -> [URLQueryItem]? {
         if query != "" {
             return query.components(separatedBy: "&")

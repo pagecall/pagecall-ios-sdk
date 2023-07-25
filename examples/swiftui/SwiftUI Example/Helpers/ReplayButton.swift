@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct ReplayButton: View {
-    private var onTap: () -> (Void)
-    
-    init(onTap: @escaping () -> (Void)) {
+    private var onTap: () -> Void
+
+    init(onTap: @escaping () -> Void) {
         self.onTap = onTap
     }
 

@@ -23,7 +23,8 @@ public struct Pagecall: UIViewControllerRepresentable {
     let roomId: String
     let accessToken: String
     let queryItems: [URLQueryItem]?
-    
+    let view = PagecallWebView()
+
     let mode: PagecallMode
     let delegate: PagecallManager
 
@@ -31,14 +32,13 @@ public struct Pagecall: UIViewControllerRepresentable {
         self.roomId = roomId
         self.accessToken = accessToken
         self.queryItems = queryItems
-        
+
         self.mode = mode
         self.delegate = PagecallManager(onLoad: onLoad, onTerminate: onTerminate)
     }
 
     public func makeUIViewController(context: Context) -> some UIViewController {
         let controller = UIViewController()
-        let view = PagecallWebView()
         controller.view.addSubview(view)
 
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -49,7 +49,11 @@ public struct Pagecall: UIViewControllerRepresentable {
             view.bottomAnchor.constraint(equalTo: controller.view.safeAreaLayoutGuide.bottomAnchor)
         ])
         view.delegate = self.delegate
-        _ = view.load(roomId: roomId, mode: mode)
+        if let queryItems = queryItems {
+            _ = view.load(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems)
+        } else {
+            _ = view.load(roomId: roomId, accessToken: accessToken, mode: mode)
+        }
         return controller
     }
 
