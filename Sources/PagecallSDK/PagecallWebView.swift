@@ -419,6 +419,13 @@ extension PagecallWebView: WKNavigationDelegate {
         if let isPagecallMeeting = webView.url?.absoluteString.contains(PagecallMode.meet.baseURLString()), isPagecallMeeting {
             cleanupPagecallContext()
             initializePageContext()
+        } else if let isPagecallReplay = webView.url?.absoluteString.contains(PagecallMode.replay.baseURLString()), isPagecallReplay {
+            cleanupPagecallContext()
+            
+            configuration.userContentController.add(LeakAvoider(delegate: self), name: self.controllerName)
+            cleanups.append({
+                self.configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
+            })
         }
     }
 
