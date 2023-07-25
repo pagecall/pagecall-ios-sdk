@@ -11,6 +11,7 @@ import UIKit
 final class LabelAndTextFieldView: UIView {
     private let label = UILabel()
     private let textField = UITextField()
+    private let textFieldOverlay = UIView()
     private let divider = UIView()
 
     var text: String {
@@ -38,12 +39,14 @@ final class LabelAndTextFieldView: UIView {
         label.attributedText = NSMutableAttributedString(string: labelText, attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
         label.sizeToFit()
 
+        textFieldOverlay.layer.cornerRadius = 6
+        textFieldOverlay.layer.borderWidth = 1
+        textFieldOverlay.backgroundColor = .white
+        textFieldOverlay.layer.borderColor = HomeViewConstants.Color.BorderGray.cgColor
+
         textField.autocapitalizationType = .none
         textField.autocorrectionType = .no
         textField.backgroundColor = .white
-        textField.layer.cornerRadius = 6
-        textField.layer.borderWidth = 1
-        textField.layer.borderColor = HomeViewConstants.Color.BorderGray.cgColor
 
         divider.layer.borderWidth = 1
         divider.layer.borderColor = HomeViewConstants.Color.BorderGray.cgColor
@@ -58,13 +61,22 @@ final class LabelAndTextFieldView: UIView {
             label.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.LabelHeight)
         ])
 
-        self.addSubview(textField)
+        self.addSubview(textFieldOverlay)
+        textFieldOverlay.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            textFieldOverlay.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            textFieldOverlay.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            textFieldOverlay.topAnchor.constraint(equalTo: label.bottomAnchor, constant: HomeViewConstants.Layout.PaddingAboveTextField),
+            textFieldOverlay.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.TextFieldHeight)
+        ])
+
+        textFieldOverlay.addSubview(textField)
         textField.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            textField.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            textField.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            textField.topAnchor.constraint(equalTo: label.bottomAnchor, constant: HomeViewConstants.Layout.PaddingAboveTextField),
-            textField.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.TextFieldHeight)
+            textField.leadingAnchor.constraint(equalTo: textFieldOverlay.leadingAnchor, constant: 13),
+            textField.trailingAnchor.constraint(equalTo: textFieldOverlay.trailingAnchor, constant: -13),
+            textField.topAnchor.constraint(equalTo: textFieldOverlay.topAnchor, constant: 11),
+            textField.bottomAnchor.constraint(equalTo: textFieldOverlay.bottomAnchor, constant: -11)
         ])
 
         self.addSubview(divider)
