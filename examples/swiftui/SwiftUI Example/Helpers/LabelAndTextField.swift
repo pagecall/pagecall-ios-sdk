@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct LabelAndTextFieldView: View {
+struct LabelAndTextField: View {
     @Binding var text: String
     var label: String
 
@@ -47,6 +47,6 @@ struct LabelAndTextFieldView_Previews: PreviewProvider {
     @State static private var text = ""
 
     static var previews: some View {
-        LabelAndTextFieldView(text: $text, label: "Room ID")
+        LabelAndTextField(text: $text, label: "Room ID")
     }
 }

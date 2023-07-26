@@ -23,11 +23,11 @@ struct HomeView: View {
                             .padding(.vertical, 44)
 
                         VStack(alignment: .leading, spacing: 20) {
-                            LabelAndTextFieldView(text: $roomId, label: "Room ID")
+                            LabelAndTextField(text: $roomId, label: "Room ID")
 
-                            LabelAndTextFieldView(text: $accessToken, label: "Access Token")
+                            LabelAndTextField(text: $accessToken, label: "Access Token")
 
-                            LabelAndTextFieldView(text: $query, label: "Query (Only for debug)")
+                            LabelAndTextField(text: $query, label: "Query (Only for debug)")
                         }
                     }
                     .padding(.bottom, 44)

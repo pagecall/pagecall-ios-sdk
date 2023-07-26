@@ -13,7 +13,7 @@
 		4B59A90929F1472C00DF2B46 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B59A90829F1472C00DF2B46 /* Preview Assets.xcassets */; };
 		4B59A91829F1481600DF2B46 /* PagecallCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4B59A91729F1481600DF2B46 /* PagecallCore */; };
 		4BA5316F2A20BAEF0002FCED /* Pagecall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA5316E2A20BAEF0002FCED /* Pagecall.swift */; };
-		5CC7560F2A6E3230008262D9 /* LabelAndTextFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7560E2A6E3230008262D9 /* LabelAndTextFieldView.swift */; };
+		5CC7560F2A6E3230008262D9 /* LabelAndTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7560E2A6E3230008262D9 /* LabelAndTextField.swift */; };
 		5CC756132A6E477B008262D9 /* EnterButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756122A6E477B008262D9 /* EnterButton.swift */; };
 		5CC756152A6E478A008262D9 /* ReplayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756142A6E478A008262D9 /* ReplayButton.swift */; };
 		5CC756182A6E51F0008262D9 /* UIApplication+endEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756172A6E51F0008262D9 /* UIApplication+endEditing.swift */; };
@@ -22,6 +22,8 @@
 		5CC756302A6E7CA6008262D9 /* Notification+keyboardHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7562F2A6E7CA6008262D9 /* Notification+keyboardHeight.swift */; };
 		5CC756322A6F57BF008262D9 /* Loading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756312A6F57BF008262D9 /* Loading.swift */; };
 		5CC756342A6F5FF0008262D9 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756332A6F5FF0008262D9 /* Background.swift */; };
+		5CD5AF242A70AA91008536B7 /* SendMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CD5AF232A70AA91008536B7 /* SendMessage.swift */; };
+		5CD5AF262A70D6A6008536B7 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CD5AF252A70D6A6008536B7 /* Message.swift */; };
 		5CDBB2EE2A6F79A2006232B4 /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CDBB2ED2A6F79A2006232B4 /* ProgressBar.swift */; };
 		5CDBB2F02A6F9426006232B4 /* PagecallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CDBB2EF2A6F9426006232B4 /* PagecallView.swift */; };
 /* End PBXBuildFile section */
@@ -35,7 +37,7 @@
 		4B59A91429F147CD00DF2B46 /* pagecall-ios-sdk */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "pagecall-ios-sdk"; path = ../..; sourceTree = "<group>"; };
 		4B59A91529F147D000DF2B46 /* SwiftUI-Example-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "SwiftUI-Example-Info.plist"; sourceTree = SOURCE_ROOT; };
 		4BA5316E2A20BAEF0002FCED /* Pagecall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pagecall.swift; sourceTree = "<group>"; };
-		5CC7560E2A6E3230008262D9 /* LabelAndTextFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelAndTextFieldView.swift; sourceTree = "<group>"; };
+		5CC7560E2A6E3230008262D9 /* LabelAndTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelAndTextField.swift; sourceTree = "<group>"; };
 		5CC756122A6E477B008262D9 /* EnterButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterButton.swift; sourceTree = "<group>"; };
 		5CC756142A6E478A008262D9 /* ReplayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayButton.swift; sourceTree = "<group>"; };
 		5CC756172A6E51F0008262D9 /* UIApplication+endEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+endEditing.swift"; sourceTree = "<group>"; };
@@ -44,6 +46,8 @@
 		5CC7562F2A6E7CA6008262D9 /* Notification+keyboardHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+keyboardHeight.swift"; sourceTree = "<group>"; };
 		5CC756312A6F57BF008262D9 /* Loading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loading.swift; sourceTree = "<group>"; };
 		5CC756332A6F5FF0008262D9 /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
+		5CD5AF232A70AA91008536B7 /* SendMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessage.swift; sourceTree = "<group>"; };
+		5CD5AF252A70D6A6008536B7 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		5CDBB2ED2A6F79A2006232B4 /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
 		5CDBB2EF2A6F9426006232B4 /* PagecallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagecallView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -119,7 +123,7 @@
 		5CC756292A6E7354008262D9 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				5CC7560E2A6E3230008262D9 /* LabelAndTextFieldView.swift */,
+				5CC7560E2A6E3230008262D9 /* LabelAndTextField.swift */,
 				5CC756122A6E477B008262D9 /* EnterButton.swift */,
 				5CC756142A6E478A008262D9 /* ReplayButton.swift */,
 				5CC7562A2A6E736B008262D9 /* Alert.swift */,
@@ -127,6 +131,8 @@
 				5CC756332A6F5FF0008262D9 /* Background.swift */,
 				5CDBB2ED2A6F79A2006232B4 /* ProgressBar.swift */,
 				4BA5316E2A20BAEF0002FCED /* Pagecall.swift */,
+				5CD5AF232A70AA91008536B7 /* SendMessage.swift */,
+				5CD5AF252A70D6A6008536B7 /* Message.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -236,8 +242,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				5CC7562B2A6E736B008262D9 /* Alert.swift in Sources */,
+				5CD5AF242A70AA91008536B7 /* SendMessage.swift in Sources */,
 				5CC756182A6E51F0008262D9 /* UIApplication+endEditing.swift in Sources */,
-				5CC7560F2A6E3230008262D9 /* LabelAndTextFieldView.swift in Sources */,
+				5CC7560F2A6E3230008262D9 /* LabelAndTextField.swift in Sources */,
 				5CC756152A6E478A008262D9 /* ReplayButton.swift in Sources */,
 				5CC756132A6E477B008262D9 /* EnterButton.swift in Sources */,
 				5CDBB2EE2A6F79A2006232B4 /* ProgressBar.swift in Sources */,
@@ -247,6 +254,7 @@
 				4BA5316F2A20BAEF0002FCED /* Pagecall.swift in Sources */,
 				5CC756322A6F57BF008262D9 /* Loading.swift in Sources */,
 				5CC756342A6F5FF0008262D9 /* Background.swift in Sources */,
+				5CD5AF262A70D6A6008536B7 /* Message.swift in Sources */,
 				5CDBB2F02A6F9426006232B4 /* PagecallView.swift in Sources */,
 				4B59A90229F1472B00DF2B46 /* SwiftUI_ExampleApp.swift in Sources */,
 			);
