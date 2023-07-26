@@ -16,13 +16,11 @@ struct SendMessage: View {
     private let pagecallWebView: PagecallWebView
     @Binding var isSendingMessage: Bool
     @Binding var message: String
-    @Binding var newMessage: String
     
-    init( pagecallWebView: PagecallWebView, isSendingMessage: Binding<Bool>, message: Binding<String>, sentMessage: Binding<String>) {
+    init( pagecallWebView: PagecallWebView, isSendingMessage: Binding<Bool>, message: Binding<String>) {
         self.pagecallWebView = pagecallWebView
         self._isSendingMessage = isSendingMessage
         self._message = message
-        self._newMessage = sentMessage
     }
     
     var body: some View {
@@ -74,6 +72,6 @@ struct SendMessage_Previews: PreviewProvider {
     @State static var text = ""
     
     static var previews: some View {
-        SendMessage(pagecallWebView: PagecallWebView(), isSendingMessage: $isSendingMessage, message: $text, sentMessage: $text)
+        SendMessage(pagecallWebView: PagecallWebView(), isSendingMessage: $isSendingMessage, message: $text)
     }
 }
