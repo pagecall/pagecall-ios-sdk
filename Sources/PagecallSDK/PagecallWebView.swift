@@ -294,7 +294,7 @@ extension PagecallWebView: WKScriptMessageHandler {
             case "PagecallEvent":
                 guard let action = body["action"] as? String else { return }
                 if action == "loaded" {
-                    delegate?.pagecallDidLoad(self);
+                    delegate?.pagecallDidLoad(self)
                 } else if action == "terminated" {
                     if let payload = body["payload"] as? [String: String], let reason = payload["reason"] {
                         if reason == "internal" {
@@ -376,11 +376,15 @@ extension PagecallWebView: WKNavigationDelegate {
         decisionHandler(.allow)
     }
 
-    private func initializePageContext() {
+    private func listenJavascriptMessages() {
         configuration.userContentController.add(LeakAvoider(delegate: self), name: self.controllerName)
         cleanups.append({
             self.configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
         })
+    }
+
+    private func initializePageContext() {
+        listenJavascriptMessages()
 
         // Enable call
         CallManager.shared.startCall { error in
@@ -419,6 +423,9 @@ extension PagecallWebView: WKNavigationDelegate {
         if let isPagecallMeeting = webView.url?.absoluteString.contains(PagecallMode.meet.baseURLString()), isPagecallMeeting {
             cleanupPagecallContext()
             initializePageContext()
+        } else if let isPagecallReplay = webView.url?.absoluteString.contains(PagecallMode.replay.baseURLString()), isPagecallReplay {
+            cleanupPagecallContext()
+            listenJavascriptMessages()
         }
     }
 
