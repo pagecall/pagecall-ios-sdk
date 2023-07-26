@@ -376,7 +376,7 @@ extension PagecallWebView: WKNavigationDelegate {
         decisionHandler(.allow)
     }
 
-    private func addLeakAvoider() {
+    private func listenJavascriptMessages() {
         configuration.userContentController.add(LeakAvoider(delegate: self), name: self.controllerName)
         cleanups.append({
             self.configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
@@ -384,7 +384,7 @@ extension PagecallWebView: WKNavigationDelegate {
     }
 
     private func initializePageContext() {
-        addLeakAvoider()
+        listenJavascriptMessages()
 
         // Enable call
         CallManager.shared.startCall { error in
@@ -425,7 +425,7 @@ extension PagecallWebView: WKNavigationDelegate {
             initializePageContext()
         } else if let isPagecallReplay = webView.url?.absoluteString.contains(PagecallMode.replay.baseURLString()), isPagecallReplay {
             cleanupPagecallContext()
-            addLeakAvoider()
+            listenJavascriptMessages()
         }
     }
 
