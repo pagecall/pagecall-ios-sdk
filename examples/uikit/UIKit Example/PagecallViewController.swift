@@ -19,6 +19,15 @@ struct PagecallViewConstants {
         static let PaddingAboveLoadingLabel = CGFloat(13)
         static let PencilHeight = CGFloat(58)
         static let PencilWidth = CGFloat(56)
+        static let MessageBoxLeftRightPadding = CGFloat(44)
+        static let PaddingUnderMessageBox = CGFloat(24)
+        static let MessageBoxHeight = CGFloat(60)
+        static let MessageLabelLeftRightPadding = CGFloat(24)
+        static let MessageLabelUpDownPadding = CGFloat(12)
+        static let MessageTextFieldBackgroundHeight = CGFloat(70)
+        static let MessageTextFieldOverlayPadding = CGFloat(16)
+        static let MessageTextFieldLeftRightPadding = CGFloat(13)
+        static let MessageTextFieldUpDownPadding = CGFloat(11)
     }
 
     struct Color {
@@ -115,10 +124,10 @@ class PagecallViewController: UIViewController {
         view.addSubview(messageBox)
         messageBox.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            messageBox.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 44),
-            messageBox.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -44),
-            messageBox.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24),
-            messageBox.heightAnchor.constraint(equalToConstant: 60)
+            messageBox.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: PagecallViewConstants.Layout.MessageBoxLeftRightPadding),
+            messageBox.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -PagecallViewConstants.Layout.MessageBoxLeftRightPadding),
+            messageBox.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -PagecallViewConstants.Layout.PaddingUnderMessageBox),
+            messageBox.heightAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.MessageBoxHeight)
         ])
 
         let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow })!

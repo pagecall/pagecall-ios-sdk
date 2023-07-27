@@ -34,7 +34,7 @@ final class SendMessage: UIView {
         NSLayoutConstraint.activate([
             textFieldBackground.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             textFieldBackground.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            textFieldBackground.heightAnchor.constraint(equalToConstant: 70),
+            textFieldBackground.heightAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.MessageTextFieldBackgroundHeight),
             textFieldBackground.bottomAnchor.constraint(equalTo: self.bottomAnchor)
         ])
 
@@ -50,19 +50,19 @@ final class SendMessage: UIView {
         textFieldBackground.addSubview(textFieldOverlay)
         textFieldOverlay.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            textFieldOverlay.leadingAnchor.constraint(equalTo: textFieldBackground.leadingAnchor, constant: 16),
-            textFieldOverlay.trailingAnchor.constraint(equalTo: textFieldBackground.trailingAnchor, constant: -16),
-            textFieldOverlay.topAnchor.constraint(equalTo: textFieldBackground.topAnchor, constant: 16),
-            textFieldOverlay.bottomAnchor.constraint(equalTo: textFieldBackground.bottomAnchor, constant: -16)
+            textFieldOverlay.leadingAnchor.constraint(equalTo: textFieldBackground.leadingAnchor, constant: PagecallViewConstants.Layout.MessageTextFieldOverlayPadding),
+            textFieldOverlay.trailingAnchor.constraint(equalTo: textFieldBackground.trailingAnchor, constant: -PagecallViewConstants.Layout.MessageTextFieldOverlayPadding),
+            textFieldOverlay.topAnchor.constraint(equalTo: textFieldBackground.topAnchor, constant: PagecallViewConstants.Layout.MessageTextFieldOverlayPadding),
+            textFieldOverlay.bottomAnchor.constraint(equalTo: textFieldBackground.bottomAnchor, constant: -PagecallViewConstants.Layout.MessageTextFieldOverlayPadding)
         ])
 
         textFieldOverlay.addSubview(textField)
         textField.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            textField.leadingAnchor.constraint(equalTo: textFieldOverlay.leadingAnchor, constant: 13),
-            textField.trailingAnchor.constraint(equalTo: textFieldOverlay.trailingAnchor, constant: -13),
-            textField.topAnchor.constraint(equalTo: textFieldOverlay.topAnchor, constant: 11),
-            textField.bottomAnchor.constraint(equalTo: textFieldOverlay.bottomAnchor, constant: -11)
+            textField.leadingAnchor.constraint(equalTo: textFieldOverlay.leadingAnchor, constant: PagecallViewConstants.Layout.MessageTextFieldLeftRightPadding),
+            textField.trailingAnchor.constraint(equalTo: textFieldOverlay.trailingAnchor, constant: -PagecallViewConstants.Layout.MessageTextFieldLeftRightPadding),
+            textField.topAnchor.constraint(equalTo: textFieldOverlay.topAnchor, constant: PagecallViewConstants.Layout.MessageTextFieldUpDownPadding),
+            textField.bottomAnchor.constraint(equalTo: textFieldOverlay.bottomAnchor, constant: -PagecallViewConstants.Layout.MessageTextFieldUpDownPadding)
         ])
     }
 

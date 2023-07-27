@@ -35,10 +35,10 @@ final class Message: UIView {
         rectangle.addSubview(messageLabel)
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            messageLabel.leadingAnchor.constraint(equalTo: rectangle.leadingAnchor, constant: 24),
-            messageLabel.trailingAnchor.constraint(equalTo: rectangle.trailingAnchor, constant: -24),
-            messageLabel.topAnchor.constraint(equalTo: rectangle.topAnchor, constant: 12),
-            messageLabel.bottomAnchor.constraint(equalTo: rectangle.bottomAnchor, constant: -12)
+            messageLabel.leadingAnchor.constraint(equalTo: rectangle.leadingAnchor, constant: PagecallViewConstants.Layout.MessageLabelLeftRightPadding),
+            messageLabel.trailingAnchor.constraint(equalTo: rectangle.trailingAnchor, constant: -PagecallViewConstants.Layout.MessageLabelLeftRightPadding),
+            messageLabel.topAnchor.constraint(equalTo: rectangle.topAnchor, constant: PagecallViewConstants.Layout.MessageLabelUpDownPadding),
+            messageLabel.bottomAnchor.constraint(equalTo: rectangle.bottomAnchor, constant: -PagecallViewConstants.Layout.MessageLabelUpDownPadding)
         ])
     }
 
@@ -46,7 +46,6 @@ final class Message: UIView {
         rectangle.backgroundColor = UIColor.black.withAlphaComponent(0.8)
         rectangle.layer.cornerRadius = 6
 
-        messageLabel.frame = CGRect(x: 0, y: 0, width: 159, height: 20)
         messageLabel.textColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
         messageLabel.font = UIFont(name: "Pretendard-Medium", size: 14)
         var paragraphStyle = NSMutableParagraphStyle()
