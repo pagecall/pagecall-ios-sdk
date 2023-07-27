@@ -69,7 +69,15 @@ struct SendMessage: View {
                     }
                 }
             }
+            .onTapGesture {
+                self.endEditing() // dismiss keyboard when touched around
+                isSendingMessage = false
+            }
         }
+    }
+    
+    private func endEditing() {
+        UIApplication.shared.endEditing()
     }
 }
 
