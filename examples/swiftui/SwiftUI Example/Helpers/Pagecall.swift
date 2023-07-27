@@ -2,11 +2,11 @@ import SwiftUI
 import PagecallCore
 
 class PagecallManager: PagecallDelegate {
-    let onLoad: (() -> Void)?
-    let onTerminate: ((TerminationReason) -> Void)?
-    let onReceive: ((String) -> Void)?
+    private var onLoad: (() -> Void)?
+    private var onTerminate: ((TerminationReason) -> Void)?
+    private var onReceive: ((String) -> Void)?
 
-    init(onLoad: (() -> Void)?, onTerminate: ((TerminationReason) -> Void)?, onReceive: ((String) -> Void)?) {
+    func setHandlers(onLoad: (() -> Void)?, onTerminate: ((TerminationReason) -> Void)?, onReceive: ((String) -> Void)?) {
         self.onLoad = onLoad
         self.onTerminate = onTerminate
         self.onReceive = onReceive
@@ -32,16 +32,15 @@ public struct Pagecall: UIViewControllerRepresentable {
     let queryItems: [URLQueryItem]?
 
     let mode: PagecallMode
-    let delegate: PagecallManager
 
     public init(pagecallWebView: PagecallWebView, roomId: String, accessToken: String, queryItems: [URLQueryItem]?, mode: PagecallMode, onLoad: (() -> Void)?, onTerminate: ((TerminationReason) -> Void)?, onReceive: ((String) -> Void)?) {
         self.roomId = roomId
         self.accessToken = accessToken
         self.queryItems = queryItems
         self.pagecallWebView = pagecallWebView
-
         self.mode = mode
-        self.delegate = PagecallManager(onLoad: onLoad, onTerminate: onTerminate, onReceive: onReceive)
+        
+        (pagecallWebView.delegate as? PagecallManager)?.setHandlers(onLoad: onLoad, onTerminate: onTerminate, onReceive: onReceive)
     }
 
     public func makeUIViewController(context: Context) -> some UIViewController {
@@ -55,7 +54,7 @@ public struct Pagecall: UIViewControllerRepresentable {
             pagecallWebView.topAnchor.constraint(equalTo: controller.view.safeAreaLayoutGuide.topAnchor),
             pagecallWebView.bottomAnchor.constraint(equalTo: controller.view.safeAreaLayoutGuide.bottomAnchor)
         ])
-        pagecallWebView.delegate = self.delegate
+        
         if let queryItems = queryItems {
             _ = pagecallWebView.load(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems)
         } else {
