@@ -88,7 +88,16 @@ struct PagecallView: View {
                 )
                 
                 if !isSendingMessage && newMessage != "" {
-                    Message(newMessage: $newMessage)
+                    VStack {
+                        Spacer()
+                        Message(newMessage: $newMessage)
+                            .padding(.bottom, 24)
+                    }
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3) {
+                            newMessage = ""
+                        }
+                    }
                 }
                 
                 SendMessage(pagecallWebView: pagecallWebView, isSendingMessage: $isSendingMessage, message: $message)
