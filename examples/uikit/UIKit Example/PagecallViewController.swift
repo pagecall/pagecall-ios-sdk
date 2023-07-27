@@ -38,6 +38,7 @@ class PagecallViewController: UIViewController {
     let topSafeAreaView = UIView()
     let loadingLabel = UILabel()
     let progressView = UIProgressView()
+    let messageBox = Message()
 
     let pencilImageView: UIImageView = {
         let imageView = UIImageView()
@@ -46,12 +47,16 @@ class PagecallViewController: UIViewController {
     }()
 
     let pagecallWebView = PagecallWebView()
+    var sendMessage: SendMessage
+
+    var sendMessageBottomConstraint: NSLayoutConstraint?
 
     init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?) {
         self.roomId = roomId
         self.accessToken = accessToken
         self.mode = mode
         self.queryItems = queryItems
+        self.sendMessage = SendMessage(pagecallWebView: pagecallWebView)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -63,8 +68,11 @@ class PagecallViewController: UIViewController {
         setUpNavigationBar()
         setUpLayout()
         configureDesign()
-        pagecallWebView.delegate = self
+        addRightBarButton()
+        addTapGestures()
+        addKeyboardNotifications()
         enterRoom()
+        pagecallWebView.delegate = self
     }
 
     func setUpNavigationBar() {
@@ -91,6 +99,26 @@ class PagecallViewController: UIViewController {
             pagecallWebView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             pagecallWebView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             pagecallWebView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
+
+        sendMessageBottomConstraint = sendMessage.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+
+        view.addSubview(sendMessage)
+        sendMessage.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            sendMessage.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            sendMessage.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            sendMessage.topAnchor.constraint(equalTo: view.topAnchor),
+            sendMessageBottomConstraint!
+        ])
+
+        view.addSubview(messageBox)
+        messageBox.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            messageBox.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 44),
+            messageBox.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -44),
+            messageBox.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24),
+            messageBox.heightAnchor.constraint(equalToConstant: 44)
         ])
 
         let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow })!
@@ -142,6 +170,27 @@ class PagecallViewController: UIViewController {
         paragraphStyle.lineHeightMultiple = 1.2
         loadingLabel.attributedText = NSMutableAttributedString(string: "Now Loading...", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
         loadingLabel.sizeToFit()
+
+        messageBox.isHidden = true
+        sendMessage.isHidden = true
+    }
+
+    func addRightBarButton() {
+        let sendMessageButton = UIBarButtonItem(title: "sendMessage", style: .plain, target: self, action: #selector(sendMessageTapped))
+        sendMessageButton.tintColor = .white
+
+        navigationItem.rightBarButtonItem = sendMessageButton
+    }
+
+    func addTapGestures() {
+        // dismiss keyboard when touched around
+        let tap = UITapGestureRecognizer(target: self, action: #selector(UIInputViewController.dismissKeyboard))
+        view.addGestureRecognizer(tap)
+    }
+
+    func addKeyboardNotifications() {
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
     func enterRoom() {
@@ -176,6 +225,14 @@ extension PagecallViewController: PagecallDelegate {
         }
     }
 
+    func pagecallDidReceive(_ view: PagecallWebView, message: String) {
+        messageBox.setText(message: message)
+        messageBox.isHidden = false
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3) {
+            self.messageBox.isHidden = true
+        }
+    }
+
     func pagecallDidLoad(_ view: PagecallWebView) {
         movePencil()
         self.progressView.setProgress(1, animated: true)
@@ -184,4 +241,31 @@ extension PagecallViewController: PagecallDelegate {
         }
     }
 
+}
+
+extension PagecallViewController {
+    @objc private func sendMessageTapped() {
+        sendMessage.isHidden = false
+    }
+
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+        sendMessage.isHidden = true
+    }
+
+    @objc func keyboardWillShow(notification: NSNotification) {
+        if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+            let keyboardRectangle = keyboardFrame.cgRectValue
+            let keyboardHeight = keyboardRectangle.height
+
+            sendMessageBottomConstraint?.constant = -keyboardHeight
+        }
+    }
+
+    @objc func keyboardWillHide(notification: NSNotification) {
+        // go back to original constraints
+        let innerViewTop = HomeViewConstants.Layout.InnerViewTop
+
+        sendMessageBottomConstraint?.constant = 0
+    }
 }

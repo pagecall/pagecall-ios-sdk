@@ -14,6 +14,8 @@
 		4BD9333F2A160E49008BD122 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BD9333D2A160E49008BD122 /* Main.storyboard */; };
 		4BD933412A160E4A008BD122 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BD933402A160E4A008BD122 /* Assets.xcassets */; };
 		4BD933442A160E4A008BD122 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BD933422A160E4A008BD122 /* LaunchScreen.storyboard */; };
+		5C5CC03B2A7254C400EF9732 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C5CC03A2A7254C400EF9732 /* Message.swift */; };
+		5C5CC03D2A7254CE00EF9732 /* SendMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C5CC03C2A7254CE00EF9732 /* SendMessage.swift */; };
 		5C71FBF72A68F1BE004E3A6F /* PagecallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C71FBF62A68F1BE004E3A6F /* PagecallViewController.swift */; };
 		5CC756262A6E72A5008262D9 /* AlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756252A6E72A5008262D9 /* AlertView.swift */; };
 		5CC756282A6E72D0008262D9 /* LabelAndTextFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756272A6E72D0008262D9 /* LabelAndTextFieldView.swift */; };
@@ -29,6 +31,8 @@
 		4BD933432A160E4A008BD122 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4BD933452A160E4A008BD122 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		54C7829D75F5BF0865EA120B /* Pods_UIKit_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_UIKit_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5C5CC03A2A7254C400EF9732 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		5C5CC03C2A7254CE00EF9732 /* SendMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessage.swift; sourceTree = "<group>"; };
 		5C71FBF62A68F1BE004E3A6F /* PagecallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagecallViewController.swift; sourceTree = "<group>"; };
 		5CC756252A6E72A5008262D9 /* AlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertView.swift; sourceTree = "<group>"; };
 		5CC756272A6E72D0008262D9 /* LabelAndTextFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelAndTextFieldView.swift; sourceTree = "<group>"; };
@@ -96,6 +100,8 @@
 			children = (
 				5CC756252A6E72A5008262D9 /* AlertView.swift */,
 				5CC756272A6E72D0008262D9 /* LabelAndTextFieldView.swift */,
+				5C5CC03A2A7254C400EF9732 /* Message.swift */,
+				5C5CC03C2A7254CE00EF9732 /* SendMessage.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -245,9 +251,11 @@
 				5CC756262A6E72A5008262D9 /* AlertView.swift in Sources */,
 				5C71FBF72A68F1BE004E3A6F /* PagecallViewController.swift in Sources */,
 				4BD9333C2A160E49008BD122 /* HomeViewController.swift in Sources */,
+				5C5CC03D2A7254CE00EF9732 /* SendMessage.swift in Sources */,
 				4BD933382A160E49008BD122 /* AppDelegate.swift in Sources */,
 				4BD9333A2A160E49008BD122 /* SceneDelegate.swift in Sources */,
 				5CC756282A6E72D0008262D9 /* LabelAndTextFieldView.swift in Sources */,
+				5C5CC03B2A7254C400EF9732 /* Message.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
