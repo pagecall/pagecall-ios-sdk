@@ -23,6 +23,8 @@ class NativeBridge: Equatable {
         return lhs.id == rhs.id
     }
 
+    private var applePencilMonitor: ApplePencilMonitor?
+    
     private let webview: PagecallWebView
     private let emitter: WebViewEmitter
 
@@ -69,6 +71,17 @@ class NativeBridge: Equatable {
         id = NativeBridge.count
         self.webview = webview
         self.emitter = .init(webView: self.webview)
+        self.applePencilMonitor = ApplePencilMonitor()
+        NotificationCenter.default.addObserver(self, selector: #selector(self.applePencilConnectionChanged(notification:)), name: .applePencilConnectionChanged, object: nil)
+    }
+    @objc func applePencilConnectionChanged(notification: Notification) {
+        if let userInfo = notification.userInfo, let isConnected = userInfo["connected"] as? Bool {
+            if isConnected {
+                emitter.log(name: "ApplePencilConnection", message: "Connected")
+            } else {
+                emitter.log(name: "ApplePencilConnection", message: "Disconnected")
+            }
+        }
     }
 
     func messageHandler(message: String) {
@@ -259,6 +272,9 @@ class NativeBridge: Equatable {
 
     deinit {
         disconnect()
+        // Do not dispose applePencilMonitor in the "disconnect"
+        applePencilMonitor?.dispose()
+        applePencilMonitor = nil
     }
 }
 

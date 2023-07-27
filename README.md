@@ -7,6 +7,7 @@
 - Make sure you set `NSMicrophoneUsageDescription`
   - Video call is currently not supported. If you need video conferencing integrated in your service, please contact support@pagecall.com
 - Also, Those `UIBackgroundModes` should be enabled: `audio`, `fetch`, `voip`.
+- **Optional but Recommended**: Add `NSBluetoothAlwaysUsageDescription` to your Info.plist. This allows Pagecall to monitor the connection status of user's Apple Pencil, making it easier to diagnose issues.
 
 ## Usages
 
