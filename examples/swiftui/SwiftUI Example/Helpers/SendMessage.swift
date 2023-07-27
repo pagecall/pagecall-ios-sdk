@@ -12,10 +12,12 @@ enum FocusField {
   case message
 }
 
+@available(iOS 15.0, *)
 struct SendMessage: View {
     private let pagecallWebView: PagecallWebView
     @Binding var isSendingMessage: Bool
     @Binding var message: String
+    @FocusState private var focus: Bool
     
     init( pagecallWebView: PagecallWebView, isSendingMessage: Binding<Bool>, message: Binding<String>) {
         self.pagecallWebView = pagecallWebView
@@ -55,12 +57,16 @@ struct SendMessage: View {
                             }
                         }
                     }
-                        .autocorrectionDisabled()
-                        .autocapitalization(.none)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 20)
-                        .padding(.horizontal, 16 + 13)
-                        .padding(.vertical, 11)
+                    .focused($focus)
+                    .autocorrectionDisabled()
+                    .autocapitalization(.none)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 20)
+                    .padding(.horizontal, 16 + 13)
+                    .padding(.vertical, 11)
+                    .onAppear {
+                        focus = true
+                    }
                 }
             }
         }
@@ -72,6 +78,10 @@ struct SendMessage_Previews: PreviewProvider {
     @State static var text = ""
     
     static var previews: some View {
-        SendMessage(pagecallWebView: PagecallWebView(), isSendingMessage: $isSendingMessage, message: $text)
+        if #available(iOS 15.0, *) {
+            SendMessage(pagecallWebView: PagecallWebView(), isSendingMessage: $isSendingMessage, message: $text)
+        } else {
+            // Fallback on earlier versions
+        }
     }
 }

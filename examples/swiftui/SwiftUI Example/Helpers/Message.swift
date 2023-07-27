@@ -9,7 +9,6 @@ import SwiftUI
 
 struct Message: View {
     @Binding var newMessage : String
-    
     var body: some View {
         ZStack(alignment: .center) {
             RoundedRectangle(cornerRadius: 6)

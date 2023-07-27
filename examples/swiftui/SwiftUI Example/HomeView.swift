@@ -2,6 +2,7 @@ import SwiftUI
 import PagecallCore
 import Combine
 
+@available(iOS 15.0, *)
 struct HomeView: View {
     let pagecallWebView: PagecallWebView
     
@@ -111,6 +112,10 @@ struct HomeView: View {
 
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeView(pagecallWebView: PagecallWebView())
+        if #available(iOS 15.0, *) {
+            HomeView(pagecallWebView: PagecallWebView())
+        } else {
+            // Fallback on earlier versions
+        }
     }
 }

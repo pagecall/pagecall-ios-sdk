@@ -8,6 +8,7 @@
 import SwiftUI
 import PagecallCore
 
+@available(iOS 15.0, *)
 struct PagecallView: View {
     @Binding var isShowingPagecallView: Bool
 
@@ -114,6 +115,10 @@ struct PagecallView: View {
 struct PagecallView_Previews: PreviewProvider {
     @State static var isShowingPagecallView = true
     static var previews: some View {
-        PagecallView(pagecallWebView: PagecallWebView(), roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingPagecallView: $isShowingPagecallView)
+        if #available(iOS 15.0, *) {
+            PagecallView(pagecallWebView: PagecallWebView(), roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingPagecallView: $isShowingPagecallView)
+        } else {
+            // Fallback on earlier versions
+        }
     }
 }
