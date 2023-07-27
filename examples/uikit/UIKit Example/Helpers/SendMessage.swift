@@ -13,7 +13,7 @@ final class SendMessage: UIView {
     private let backgroundView = UIView()
     private let textFieldBackground = UIView()
     private let textFieldOverlay = UIView()
-    private let textField = UITextField()
+    let textField = UITextField()
     private let pagecallWebView: PagecallWebView
 
     init(pagecallWebView: PagecallWebView) {
@@ -87,6 +87,7 @@ extension SendMessage: UITextFieldDelegate {
         if let message = textField.text {
             pagecallWebView.sendMessage(message: message) { _ in
                 self.textField.text = ""
+                self.endEditing(true)
                 self.isHidden = true
             }
         }

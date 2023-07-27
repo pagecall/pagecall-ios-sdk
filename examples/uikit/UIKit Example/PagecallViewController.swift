@@ -118,7 +118,7 @@ class PagecallViewController: UIViewController {
             messageBox.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 44),
             messageBox.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -44),
             messageBox.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24),
-            messageBox.heightAnchor.constraint(equalToConstant: 44)
+            messageBox.heightAnchor.constraint(equalToConstant: 60)
         ])
 
         let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow })!
@@ -245,6 +245,7 @@ extension PagecallViewController: PagecallDelegate {
 
 extension PagecallViewController {
     @objc private func sendMessageTapped() {
+        sendMessage.textField.becomeFirstResponder()
         sendMessage.isHidden = false
     }
 
