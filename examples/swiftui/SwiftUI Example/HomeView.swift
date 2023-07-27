@@ -3,6 +3,8 @@ import PagecallCore
 import Combine
 
 struct HomeView: View {
+    let pagecallWebView: PagecallWebView
+    
     @State private var roomId: String = ""
     @State private var accessToken: String = ""
     @State private var query: String = ""
@@ -11,6 +13,10 @@ struct HomeView: View {
     @State private var mode = PagecallMode.meet
 
     @State private var isShowingPagecallView = false
+    
+    init(pagecallWebView: PagecallWebView) {
+        self.pagecallWebView = pagecallWebView
+    }
 
     var body: some View {
         NavigationView {
@@ -53,7 +59,7 @@ struct HomeView: View {
                 }
 
                 NavigationLink(
-                    destination: PagecallView(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: parseQueryItems(), isShowingPagecallView: $isShowingPagecallView),
+                    destination: PagecallView(pagecallWebView: pagecallWebView, roomId: roomId, accessToken: accessToken, mode: mode, queryItems: parseQueryItems(), isShowingPagecallView: $isShowingPagecallView),
                     isActive: $isShowingPagecallView,
                     label: { EmptyView() }
                 )
@@ -105,6 +111,6 @@ struct HomeView: View {
 
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeView()
+        HomeView(pagecallWebView: PagecallWebView())
     }
 }

@@ -14,7 +14,7 @@ struct PagecallView: View {
     let roomId: String
     let accessToken: String
     let mode: PagecallMode
-    let pagecallWebView = PagecallWebView()
+    let pagecallWebView: PagecallWebView
     let queryItems: [URLQueryItem]?
 
     @State private var isLoading = true
@@ -23,7 +23,8 @@ struct PagecallView: View {
     @State private var message = ""
     @State private var newMessage = ""
 
-    init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingPagecallView: Binding<Bool>) {
+    init(pagecallWebView: PagecallWebView, roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingPagecallView: Binding<Bool>) {
+        self.pagecallWebView = pagecallWebView
         self.roomId = roomId
         self.accessToken = accessToken
         self.mode = mode
@@ -104,6 +105,6 @@ struct PagecallView: View {
 struct PagecallView_Previews: PreviewProvider {
     @State static var isShowingPagecallView = true
     static var previews: some View {
-        PagecallView(roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingPagecallView: $isShowingPagecallView)
+        PagecallView(pagecallWebView: PagecallWebView(), roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingPagecallView: $isShowingPagecallView)
     }
 }
