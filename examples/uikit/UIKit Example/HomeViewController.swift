@@ -41,7 +41,7 @@ struct HomeViewConstants {
 class HomeViewController: UIViewController {
     let innerView = UIView()
     let topSafeAreaView = UIView()
-    let alertView = AlertView()
+    let alert = Alert()
 
     let pagecallLogoView: UIImageView = {
         let imageView = UIImageView()
@@ -71,7 +71,7 @@ class HomeViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.navigationBar.backgroundColor = HomeViewConstants.Color.LightGray
-        alertView.isHidden = true
+        alert.isHidden = true
     }
 
     func setUpLayout() {
@@ -165,14 +165,14 @@ class HomeViewController: UIViewController {
     }
 
     func setUpAlertLayout() {
-        view.addSubview(alertView)
-        alertView.translatesAutoresizingMaskIntoConstraints = false
-        alertViewBottomConstraint = alertView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -HomeViewConstants.Layout.PaddingUnderAlert)
+        view.addSubview(alert)
+        alert.translatesAutoresizingMaskIntoConstraints = false
+        alertViewBottomConstraint = alert.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -HomeViewConstants.Layout.PaddingUnderAlert)
         NSLayoutConstraint.activate([
-            alertView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: HomeViewConstants.Layout.LeftRightPadding),
-            alertView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -HomeViewConstants.Layout.LeftRightPadding),
+            alert.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: HomeViewConstants.Layout.LeftRightPadding),
+            alert.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -HomeViewConstants.Layout.LeftRightPadding),
             alertViewBottomConstraint!,
-            alertView.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.AlertHeight)
+            alert.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.AlertHeight)
         ])
     }
 
@@ -256,7 +256,7 @@ extension HomeViewController {
 
             self.navigationController?.pushViewController(vc, animated: true)
         } else {
-            alertView.isHidden = false
+            alert.isHidden = false
         }
     }
 
@@ -267,7 +267,7 @@ extension HomeViewController {
 
             self.navigationController?.pushViewController(vc, animated: true)
         } else {
-            alertView.isHidden = false
+            alert.isHidden = false
         }
     }
 

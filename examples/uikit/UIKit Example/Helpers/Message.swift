@@ -48,7 +48,7 @@ final class Message: UIView {
 
         messageLabel.textColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
         messageLabel.font = UIFont(name: "Pretendard-Medium", size: 14)
-        var paragraphStyle = NSMutableParagraphStyle()
+        let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineHeightMultiple = 1.19
         messageLabel.attributedText = NSMutableAttributedString(string: "바로 focused 되어야 합니다", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
     }

@@ -8,16 +8,16 @@
 import Foundation
 import UIKit
 
-final class AlertView: UIView {
+final class Alert: UIView {
     private let label = UILabel()
 
-    private let circledXView: UIImageView = {
+    private let circledX: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "circled X")
         return imageView
     }()
 
-    private let xView: UIImageView = {
+    private let x: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "X")
         return imageView
@@ -47,29 +47,29 @@ final class AlertView: UIView {
     }
 
     func setUpLayout() {
-        self.addSubview(circledXView)
-        circledXView.translatesAutoresizingMaskIntoConstraints = false
+        self.addSubview(circledX)
+        circledX.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            circledXView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: HomeViewConstants.Layout.AlertViewPadding),
-            circledXView.widthAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageWidth),
-            circledXView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            circledXView.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageHeight)
+            circledX.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: HomeViewConstants.Layout.AlertViewPadding),
+            circledX.widthAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageWidth),
+            circledX.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+            circledX.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageHeight)
         ])
 
-        self.addSubview(xView)
-        xView.translatesAutoresizingMaskIntoConstraints = false
+        self.addSubview(x)
+        x.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            xView.widthAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageWidth),
-            xView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -HomeViewConstants.Layout.AlertViewPadding),
-            xView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            xView.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageHeight)
+            x.widthAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageWidth),
+            x.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -HomeViewConstants.Layout.AlertViewPadding),
+            x.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+            x.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.XImageHeight)
         ])
 
         self.addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: circledXView.trailingAnchor, constant: HomeViewConstants.Layout.PaddingBtwXImageAndAlertLabel),
-            label.trailingAnchor.constraint(equalTo: xView.leadingAnchor, constant: -HomeViewConstants.Layout.PaddingBtwXImageAndAlertLabel),
+            label.leadingAnchor.constraint(equalTo: circledX.trailingAnchor, constant: HomeViewConstants.Layout.PaddingBtwXImageAndAlertLabel),
+            label.trailingAnchor.constraint(equalTo: x.leadingAnchor, constant: -HomeViewConstants.Layout.PaddingBtwXImageAndAlertLabel),
             label.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             label.heightAnchor.constraint(equalToConstant: HomeViewConstants.Layout.AlertLabelHeight)
         ])
@@ -77,8 +77,8 @@ final class AlertView: UIView {
 
     func addTapGestures() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissAlert))
-        xView.addGestureRecognizer(tapGesture)
-        xView.isUserInteractionEnabled = true
+        x.addGestureRecognizer(tapGesture)
+        x.isUserInteractionEnabled = true
     }
 
     @objc func dismissAlert() {

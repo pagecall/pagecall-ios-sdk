@@ -43,21 +43,12 @@ class PagecallViewController: UIViewController {
     let queryItems: [URLQueryItem]?
     let mode: PagecallMode
 
-    let loadingView = UIView()
     let topSafeAreaView = UIView()
-    let loadingLabel = UILabel()
-    let progressView = UIProgressView()
+    let loading = Loading()
     let messageBox = Message()
-
-    let pencilImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "Pencil")
-        return imageView
-    }()
 
     let pagecallWebView = PagecallWebView()
     var sendMessage: SendMessage
-
     var sendMessageBottomConstraint: NSLayoutConstraint?
 
     init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?) {
@@ -131,55 +122,18 @@ class PagecallViewController: UIViewController {
         ])
 
         let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow })!
-        keyWindow.addSubview(loadingView)
-        loadingView.translatesAutoresizingMaskIntoConstraints = false
+        keyWindow.addSubview(loading)
+        loading.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            loadingView.leadingAnchor.constraint(equalTo: keyWindow.leadingAnchor),
-            loadingView.trailingAnchor.constraint(equalTo: keyWindow.trailingAnchor),
-            loadingView.topAnchor.constraint(equalTo: keyWindow.topAnchor),
-            loadingView.bottomAnchor.constraint(equalTo: keyWindow.bottomAnchor)
-        ])
-
-        loadingView.addSubview(progressView)
-        progressView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            progressView.leadingAnchor.constraint(equalTo: loadingView.leadingAnchor, constant: PagecallViewConstants.Layout.ProgressViewLeftRightPadding),
-            progressView.trailingAnchor.constraint(equalTo: loadingView.trailingAnchor, constant: -PagecallViewConstants.Layout.ProgressViewLeftRightPadding),
-            progressView.centerYAnchor.constraint(equalTo: loadingView.centerYAnchor),
-            progressView.heightAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.ProgressViewHeight)
-        ])
-
-        loadingView.addSubview(loadingLabel)
-        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            loadingLabel.centerXAnchor.constraint(equalTo: loadingView.centerXAnchor),
-            loadingLabel.widthAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.LoadingLabelWidth),
-            loadingLabel.topAnchor.constraint(equalTo: progressView.bottomAnchor, constant: PagecallViewConstants.Layout.PaddingAboveLoadingLabel),
-            loadingLabel.heightAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.LoadingLabelHeight)
-        ])
-
-        loadingView.addSubview(pencilImageView)
-        pencilImageView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            pencilImageView.widthAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.PencilWidth),
-            pencilImageView.leadingAnchor.constraint(equalTo: progressView.leadingAnchor),
-            pencilImageView.bottomAnchor.constraint(equalTo: progressView.topAnchor),
-            pencilImageView.heightAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.PencilHeight)
+            loading.leadingAnchor.constraint(equalTo: keyWindow.leadingAnchor),
+            loading.trailingAnchor.constraint(equalTo: keyWindow.trailingAnchor),
+            loading.topAnchor.constraint(equalTo: keyWindow.topAnchor),
+            loading.bottomAnchor.constraint(equalTo: keyWindow.bottomAnchor)
         ])
     }
 
     func configureDesign() {
-        loadingView.backgroundColor = .white
         topSafeAreaView.backgroundColor = PagecallViewConstants.Color.Navy
-        progressView.progressTintColor = PagecallViewConstants.Color.Blue
-
-        loadingLabel.textColor = PagecallViewConstants.Color.TextBlack
-        loadingLabel.font = UIFont(name: "Pretendard-Medium", size: 14)
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 1.2
-        loadingLabel.attributedText = NSMutableAttributedString(string: "Now Loading...", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
-        loadingLabel.sizeToFit()
-
         messageBox.isHidden = true
         sendMessage.isHidden = true
     }
@@ -203,7 +157,7 @@ class PagecallViewController: UIViewController {
     }
 
     func enterRoom() {
-        progressView.setProgress(0.0, animated: true)
+        loading.setProgress(progress: 0)
         if let queryItems = queryItems {
             _ = pagecallWebView.load(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems)
         } else {
@@ -212,25 +166,23 @@ class PagecallViewController: UIViewController {
     }
 
     func movePencil() {
-        UIView.animate(withDuration: 1.1, delay: 0, options: [], animations: {
-            self.pencilImageView.center.x += self.view.frame.width - 2*PagecallViewConstants.Layout.ProgressViewLeftRightPadding
-        })
+        loading.movePencil()
     }
 }
 
 extension PagecallViewController: PagecallDelegate {
     func pagecallDidTerminate(_ view: Pagecall.PagecallWebView, reason: Pagecall.TerminationReason) {
         movePencil()
-        self.progressView.setProgress(1, animated: true)
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(1)) {
-            self.loadingView.isHidden = true
+        loading.setProgress(progress: 1.0)
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1) {
+            self.loading.isHidden = true
         }
 
     }
 
     func pagecallDidEncounter(_ view: PagecallWebView, error: Error) {
         DispatchQueue.main.async {
-            self.progressView.setProgress(0.25, animated: true)
+            self.loading.setProgress(progress: 0.25)
         }
     }
 
@@ -244,9 +196,9 @@ extension PagecallViewController: PagecallDelegate {
 
     func pagecallDidLoad(_ view: PagecallWebView) {
         movePencil()
-        self.progressView.setProgress(1, animated: true)
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(1)) {
-            self.loadingView.isHidden = true
+        loading.setProgress(progress: 1)
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1) {
+            self.loading.isHidden = true
         }
     }
 
@@ -274,8 +226,6 @@ extension PagecallViewController {
 
     @objc func keyboardWillHide(notification: NSNotification) {
         // go back to original constraints
-        let innerViewTop = HomeViewConstants.Layout.InnerViewTop
-
         sendMessageBottomConstraint?.constant = 0
     }
 }
