@@ -34,6 +34,7 @@ struct PagecallViewConstants {
         static let Navy = UIColor(red: 0.216, green: 0.255, blue: 0.318, alpha: 1)
         static let TextBlack = UIColor(red: 0.294, green: 0.333, blue: 0.388, alpha: 1)
         static let Blue = UIColor(red: 0.075, green: 0.38, blue: 1, alpha: 1)
+        static let Gray = UIColor(red: 0.82, green: 0.836, blue: 0.86, alpha: 1)
     }
 }
 
@@ -165,14 +166,10 @@ class PagecallViewController: UIViewController {
         }
     }
 
-    func movePencil() {
-        loading.movePencil()
-    }
 }
 
 extension PagecallViewController: PagecallDelegate {
     func pagecallDidTerminate(_ view: Pagecall.PagecallWebView, reason: Pagecall.TerminationReason) {
-        movePencil()
         loading.setProgress(progress: 1.0)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1) {
             self.loading.isHidden = true
@@ -195,7 +192,6 @@ extension PagecallViewController: PagecallDelegate {
     }
 
     func pagecallDidLoad(_ view: PagecallWebView) {
-        movePencil()
         loading.setProgress(progress: 1)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1) {
             self.loading.isHidden = true

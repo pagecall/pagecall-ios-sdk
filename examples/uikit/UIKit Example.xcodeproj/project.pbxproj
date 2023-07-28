@@ -18,6 +18,7 @@
 		5C5CC03D2A7254CE00EF9732 /* SendMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C5CC03C2A7254CE00EF9732 /* SendMessage.swift */; };
 		5C71FBF72A68F1BE004E3A6F /* PagecallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C71FBF62A68F1BE004E3A6F /* PagecallViewController.swift */; };
 		5CA27F032A7352480058D55C /* Loading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA27F022A7352480058D55C /* Loading.swift */; };
+		5CA27F052A736E570058D55C /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA27F042A736E570058D55C /* ProgressBar.swift */; };
 		5CC756262A6E72A5008262D9 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756252A6E72A5008262D9 /* Alert.swift */; };
 		5CC756282A6E72D0008262D9 /* LabelAndTextFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756272A6E72D0008262D9 /* LabelAndTextFieldView.swift */; };
 /* End PBXBuildFile section */
@@ -36,6 +37,7 @@
 		5C5CC03C2A7254CE00EF9732 /* SendMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessage.swift; sourceTree = "<group>"; };
 		5C71FBF62A68F1BE004E3A6F /* PagecallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagecallViewController.swift; sourceTree = "<group>"; };
 		5CA27F022A7352480058D55C /* Loading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loading.swift; sourceTree = "<group>"; };
+		5CA27F042A736E570058D55C /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
 		5CC756252A6E72A5008262D9 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
 		5CC756272A6E72D0008262D9 /* LabelAndTextFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelAndTextFieldView.swift; sourceTree = "<group>"; };
 		6CA2247DD5FD7A4DB42EBA82 /* Pods-UIKit Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UIKit Example.release.xcconfig"; path = "Target Support Files/Pods-UIKit Example/Pods-UIKit Example.release.xcconfig"; sourceTree = "<group>"; };
@@ -105,6 +107,7 @@
 				5C5CC03A2A7254C400EF9732 /* Message.swift */,
 				5C5CC03C2A7254CE00EF9732 /* SendMessage.swift */,
 				5CA27F022A7352480058D55C /* Loading.swift */,
+				5CA27F042A736E570058D55C /* ProgressBar.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -259,6 +262,7 @@
 				4BD933382A160E49008BD122 /* AppDelegate.swift in Sources */,
 				4BD9333A2A160E49008BD122 /* SceneDelegate.swift in Sources */,
 				5CC756282A6E72D0008262D9 /* LabelAndTextFieldView.swift in Sources */,
+				5CA27F052A736E570058D55C /* ProgressBar.swift in Sources */,
 				5C5CC03B2A7254C400EF9732 /* Message.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
