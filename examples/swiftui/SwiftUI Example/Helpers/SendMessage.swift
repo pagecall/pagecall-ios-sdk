@@ -14,13 +14,13 @@ enum FocusField {
 
 @available(iOS 15.0, *)
 struct SendMessage: View {
-    private let pagecallWebView: PagecallWebView
+    private let sendMessage: (String, ((Error?) -> Void)?) -> Void
     @Binding var isSendingMessage: Bool
     @Binding var message: String
     @FocusState private var focus: Bool
     
-    init( pagecallWebView: PagecallWebView, isSendingMessage: Binding<Bool>, message: Binding<String>) {
-        self.pagecallWebView = pagecallWebView
+    init(sendMessage: @escaping (String, ((Error?) -> Void)?) -> Void, isSendingMessage: Binding<Bool>, message: Binding<String>) {
+        self.sendMessage = sendMessage
         self._isSendingMessage = isSendingMessage
         self._message = message
     }
@@ -46,7 +46,7 @@ struct SendMessage: View {
 
                     TextField("", text: $message) {
                         if message != "" {
-                            pagecallWebView.sendMessage(message: message) { error in
+                            sendMessage(message) { error in
                                 if let error {
                                     message = ""
                                     isSendingMessage = false
@@ -87,7 +87,7 @@ struct SendMessage_Previews: PreviewProvider {
     
     static var previews: some View {
         if #available(iOS 15.0, *) {
-            SendMessage(pagecallWebView: PagecallWebView(), isSendingMessage: $isSendingMessage, message: $text)
+            SendMessage(sendMessage: {_,_ in }, isSendingMessage: $isSendingMessage, message: $text)
         } else {
             // Fallback on earlier versions
         }
