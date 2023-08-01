@@ -17,7 +17,7 @@ struct Alert: View {
                     .resizable()
                     .frame(width: 20, height: 20)
 
-                Text("입력 값이 필요합니다.")
+                Text("An input value is required.")
                 .font(
                     Font.custom("Pretendard", size: 14)
                         .weight(.medium)
