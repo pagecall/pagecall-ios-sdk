@@ -1,12 +1,16 @@
 import SwiftUI
 import PagecallCore
 
-class PagecallManager: PagecallDelegate {
+extension PagecallWebView: ObservableObject {
+
+}
+
+class PagecallManager: PagecallDelegate, ObservableObject {
     private var onLoad: (() -> Void)?
     private var onTerminate: ((TerminationReason) -> Void)?
     private var onReceive: ((String) -> Void)?
 
-    func setHandlers(onLoad: (() -> Void)?, onTerminate: ((TerminationReason) -> Void)?, onReceive: ((String) -> Void)?) {
+    public func setHandlers(onLoad: (() -> Void)?, onTerminate: ((TerminationReason) -> Void)?, onReceive: ((String) -> Void)?) {
         self.onLoad = onLoad
         self.onTerminate = onTerminate
         self.onReceive = onReceive
@@ -19,28 +23,27 @@ class PagecallManager: PagecallDelegate {
     public func pagecallDidLoad(_ view: PagecallWebView) {
         onLoad?()
     }
-    
+
     public func pagecallDidReceive(_ view: PagecallWebView, message: String) {
         onReceive?(message)
     }
 }
 
 public struct Pagecall: UIViewControllerRepresentable {
-    let pagecallWebView: PagecallWebView
+    private let pagecallWebView: PagecallWebView
+
     let roomId: String
     let accessToken: String
     let queryItems: [URLQueryItem]?
 
     let mode: PagecallMode
 
-    public init(pagecallWebView: PagecallWebView, roomId: String, accessToken: String, queryItems: [URLQueryItem]?, mode: PagecallMode, onLoad: (() -> Void)?, onTerminate: ((TerminationReason) -> Void)?, onReceive: ((String) -> Void)?) {
+    public init(pagecallWebView: PagecallWebView, roomId: String, accessToken: String, queryItems: [URLQueryItem]?, mode: PagecallMode) {
+        self.pagecallWebView = pagecallWebView
         self.roomId = roomId
         self.accessToken = accessToken
         self.queryItems = queryItems
-        self.pagecallWebView = pagecallWebView
         self.mode = mode
-        
-        (pagecallWebView.delegate as? PagecallManager)?.setHandlers(onLoad: onLoad, onTerminate: onTerminate, onReceive: onReceive)
     }
 
     public func makeUIViewController(context: Context) -> some UIViewController {
@@ -54,7 +57,7 @@ public struct Pagecall: UIViewControllerRepresentable {
             pagecallWebView.topAnchor.constraint(equalTo: controller.view.safeAreaLayoutGuide.topAnchor),
             pagecallWebView.bottomAnchor.constraint(equalTo: controller.view.safeAreaLayoutGuide.bottomAnchor)
         ])
-        
+
         if let queryItems = queryItems {
             _ = pagecallWebView.load(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems)
         } else {

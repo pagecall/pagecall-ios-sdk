@@ -15,8 +15,10 @@ struct PagecallView: View {
     let roomId: String
     let accessToken: String
     let mode: PagecallMode
-    let pagecallWebView: PagecallWebView
     let queryItems: [URLQueryItem]?
+
+    @StateObject private var pagecallWebView = PagecallWebView()
+    @StateObject private var pagecallManager = PagecallManager()
 
     @State private var isLoading = true
     @State private var isShowingLoading = true
@@ -24,17 +26,13 @@ struct PagecallView: View {
     @State private var message = ""
     @State private var newMessage = ""
 
-    init(pagecallWebView: PagecallWebView, roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingPagecallView: Binding<Bool>) {
-        self.pagecallWebView = pagecallWebView
+    init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingPagecallView: Binding<Bool>) {
         self.roomId = roomId
         self.accessToken = accessToken
         self.mode = mode
         self.queryItems = queryItems
         self._isShowingPagecallView = isShowingPagecallView
-        if #available(iOS 16.4, *) {
-            pagecallWebView.isInspectable = true
-        }
-        
+
         UINavigationBar.appearance().barTintColor = UIColor(Color(red: 0.22, green: 0.25, blue: 0.32))
         UINavigationBar.appearance().backgroundColor = UIColor(Color(red: 0.22, green: 0.25, blue: 0.32))
         UINavigationBar.appearance().tintColor = .white
@@ -48,7 +46,7 @@ struct PagecallView: View {
                 .foregroundColor(.white)
         }
     }
-    
+
     private var sendMessageButton: some View {
         Button(action: {
             isSendingMessage = true
@@ -76,18 +74,9 @@ struct PagecallView: View {
                     roomId: roomId,
                     accessToken: accessToken,
                     queryItems: queryItems,
-                    mode: mode,
-                    onLoad: { () in
-                        isLoading = false
-                    },
-                    onTerminate: { _ in
-                        isLoading = false
-                    },
-                    onReceive: { receivedMessage in
-                        newMessage = receivedMessage
-                    }
+                    mode: mode
                 )
-                
+
                 if !isSendingMessage && newMessage != "" {
                     VStack {
                         Spacer()
@@ -100,7 +89,7 @@ struct PagecallView: View {
                         }
                     }
                 }
-                
+
                 SendMessage(sendMessage: pagecallWebView.sendMessage, isSendingMessage: $isSendingMessage, message: $message)
 
                 Loading(isLoading: $isLoading, isShowingLoading: $isShowingLoading)
@@ -109,6 +98,24 @@ struct PagecallView: View {
         .navigationBarHidden(isShowingLoading)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton, trailing: sendMessageButton)
+        .onAppear {
+            if #available(iOS 16.4, *) {
+                pagecallWebView.isInspectable = true
+            }
+            pagecallWebView.delegate = pagecallManager
+
+            pagecallManager.setHandlers(
+                onLoad: { () in
+                    self.isLoading = false
+                },
+                onTerminate: {_ in
+                    self.isLoading = false
+                },
+                onReceive: { receivedMessage in
+                    self.newMessage = receivedMessage
+                }
+            )
+        }
     }
 }
 
@@ -116,7 +123,7 @@ struct PagecallView_Previews: PreviewProvider {
     @State static var isShowingPagecallView = true
     static var previews: some View {
         if #available(iOS 15.0, *) {
-            PagecallView(pagecallWebView: PagecallWebView(), roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingPagecallView: $isShowingPagecallView)
+            PagecallView(roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingPagecallView: $isShowingPagecallView)
         } else {
             // Fallback on earlier versions
         }

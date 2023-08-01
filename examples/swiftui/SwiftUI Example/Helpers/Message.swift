@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Message: View {
-    @Binding var newMessage : String
+    @Binding var newMessage: String
     var body: some View {
         ZStack(alignment: .center) {
             RoundedRectangle(cornerRadius: 6)
@@ -16,7 +16,7 @@ struct Message: View {
                 .frame(maxWidth: .infinity)
                 .frame(maxHeight: 42)
                 .padding(.horizontal, 16)
-            
+
             Text(newMessage)
                 .font(
                     Font.custom("Pretendard", size: 14)

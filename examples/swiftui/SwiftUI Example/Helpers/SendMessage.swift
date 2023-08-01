@@ -18,26 +18,26 @@ struct SendMessage: View {
     @Binding var isSendingMessage: Bool
     @Binding var message: String
     @FocusState private var focus: Bool
-    
+
     init(sendMessage: @escaping (String, ((Error?) -> Void)?) -> Void, isSendingMessage: Binding<Bool>, message: Binding<String>) {
         self.sendMessage = sendMessage
         self._isSendingMessage = isSendingMessage
         self._message = message
     }
-    
+
     var body: some View {
         if isSendingMessage {
             VStack {
                 Rectangle()
                     .foregroundColor(.black.opacity(0.4))
                     .edgesIgnoringSafeArea(.all)
-                
+
                 ZStack {
                     Rectangle()
                         .foregroundColor(Color.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 58)
-                    
+
                     RoundedRectangle(cornerRadius: 6)
                         .stroke(Color(red: 0.07, green: 0.38, blue: 1), lineWidth: 1)
                         .frame(maxWidth: .infinity)
@@ -46,14 +46,9 @@ struct SendMessage: View {
 
                     TextField("", text: $message) {
                         if message != "" {
-                            sendMessage(message) { error in
-                                if let error {
-                                    message = ""
-                                    isSendingMessage = false
-                                } else {
-                                    message = ""
-                                    isSendingMessage = false
-                                }
+                            sendMessage(message) { _ in
+                                message = ""
+                                isSendingMessage = false
                             }
                         }
                     }
@@ -75,7 +70,7 @@ struct SendMessage: View {
             }
         }
     }
-    
+
     private func endEditing() {
         UIApplication.shared.endEditing()
     }
@@ -84,10 +79,10 @@ struct SendMessage: View {
 struct SendMessage_Previews: PreviewProvider {
     @State static var isSendingMessage = true
     @State static var text = ""
-    
+
     static var previews: some View {
         if #available(iOS 15.0, *) {
-            SendMessage(sendMessage: {_,_ in }, isSendingMessage: $isSendingMessage, message: $text)
+            SendMessage(sendMessage: {_, _ in }, isSendingMessage: $isSendingMessage, message: $text)
         } else {
             // Fallback on earlier versions
         }
