@@ -57,7 +57,7 @@ class PagecallViewController: UIViewController {
         self.accessToken = accessToken
         self.mode = mode
         self.queryItems = queryItems
-        self.sendMessage = SendMessage(pagecallWebView: pagecallWebView)
+        self.sendMessage = SendMessage(sendMessage: pagecallWebView.sendMessage)
         super.init(nibName: nil, bundle: nil)
     }
 

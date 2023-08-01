@@ -14,10 +14,10 @@ final class SendMessage: UIView {
     private let textFieldBackground = UIView()
     private let textFieldOverlay = UIView()
     let textField = UITextField()
-    private let pagecallWebView: PagecallWebView
-
-    init(pagecallWebView: PagecallWebView) {
-        self.pagecallWebView = pagecallWebView
+    private let sendMessage: (String, ((Error?) -> Void)?) -> Void
+    
+    init(sendMessage: @escaping (String, ((Error?) -> Void)?) -> Void) {
+        self.sendMessage = sendMessage
         super.init(frame: .zero)
         setUpLayout()
         configureDesign()
@@ -85,7 +85,7 @@ final class SendMessage: UIView {
 extension SendMessage: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if let message = textField.text {
-            pagecallWebView.sendMessage(message: message) { _ in
+            sendMessage(message) { _ in
                 self.textField.text = ""
                 self.endEditing(true)
                 self.isHidden = true
