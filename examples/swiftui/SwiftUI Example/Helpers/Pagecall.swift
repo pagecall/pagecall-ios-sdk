@@ -32,11 +32,11 @@ class PagecallManager: PagecallDelegate, ObservableObject {
 public struct Pagecall: UIViewControllerRepresentable {
     private let pagecallWebView: PagecallWebView
 
-    let roomId: String
-    let accessToken: String
-    let queryItems: [URLQueryItem]?
+    private let roomId: String
+    private let accessToken: String
+    private let queryItems: [URLQueryItem]?
 
-    let mode: PagecallMode
+    private let mode: PagecallMode
 
     public init(pagecallWebView: PagecallWebView, roomId: String, accessToken: String, queryItems: [URLQueryItem]?, mode: PagecallMode) {
         self.pagecallWebView = pagecallWebView
