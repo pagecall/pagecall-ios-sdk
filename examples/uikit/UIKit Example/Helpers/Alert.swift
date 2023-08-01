@@ -43,7 +43,7 @@ final class Alert: UIView {
         label.textColor = HomeViewConstants.Color.TextRed
         label.font = UIFont(name: "Pretendard-Medium", size: 14)
         let paragraphStyle = NSMutableParagraphStyle()
-        label.attributedText = NSMutableAttributedString(string: "입력 값이 필요합니다.", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        label.attributedText = NSMutableAttributedString(string: "An input value is required.", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
     }
 
     func setUpLayout() {
