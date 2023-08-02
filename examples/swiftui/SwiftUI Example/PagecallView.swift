@@ -90,7 +90,7 @@ struct PagecallView: View {
                     }
                 }
 
-                SendMessage(sendMessage: pagecallWebView.sendMessage, isSendingMessage: $isSendingMessage, message: $message)
+                SendMessage(sendMessage: pagecallWebView.sendMessage, isSendingMessage: $isSendingMessage)
 
                 Loading(isLoading: $isLoading, isShowingLoading: $isShowingLoading)
             }

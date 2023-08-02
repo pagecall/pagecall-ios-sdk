@@ -16,13 +16,12 @@ enum FocusField {
 struct SendMessage: View {
     private let sendMessage: (String, ((Error?) -> Void)?) -> Void
     @Binding var isSendingMessage: Bool
-    @Binding var message: String
     @FocusState private var focus: Bool
+    @State var message = ""
 
-    init(sendMessage: @escaping (String, ((Error?) -> Void)?) -> Void, isSendingMessage: Binding<Bool>, message: Binding<String>) {
+    init(sendMessage: @escaping (String, ((Error?) -> Void)?) -> Void, isSendingMessage: Binding<Bool>) {
         self.sendMessage = sendMessage
         self._isSendingMessage = isSendingMessage
-        self._message = message
     }
 
     var body: some View {
@@ -78,11 +77,10 @@ struct SendMessage: View {
 
 struct SendMessage_Previews: PreviewProvider {
     @State static var isSendingMessage = true
-    @State static var text = ""
 
     static var previews: some View {
         if #available(iOS 15.0, *) {
-            SendMessage(sendMessage: {_, _ in }, isSendingMessage: $isSendingMessage, message: $text)
+            SendMessage(sendMessage: {_, _ in }, isSendingMessage: $isSendingMessage)
         } else {
             // Fallback on earlier versions
         }
