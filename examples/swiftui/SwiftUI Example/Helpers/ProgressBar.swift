@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct ProgressBar: View {
-    @Binding var progress: Double
+    var progress: Double
     private var barColor: Color
 
-    public init(initialProgress: Binding<Double>, color: Color) {
-        self._progress = initialProgress
+    public init(initialProgress: Double, color: Color) {
+        self.progress = initialProgress
         self.barColor = color
     }
 
@@ -45,8 +45,7 @@ struct ProgressBar: View {
 }
 
 struct ProgressBar_Previews: PreviewProvider {
-    @State static var initialProgress: Double = 0.25
     static var previews: some View {
-        ProgressBar(initialProgress: $initialProgress, color: Color(red: 0.07, green: 0.38, blue: 1))
+        ProgressBar(initialProgress: 0.25, color: Color(red: 0.07, green: 0.38, blue: 1))
     }
 }

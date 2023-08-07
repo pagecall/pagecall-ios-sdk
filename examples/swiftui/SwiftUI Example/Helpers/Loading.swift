@@ -17,7 +17,7 @@ struct Loading: View {
         if isShowingLoading {
             Background {
                 ZStack {
-                    ProgressBar(initialProgress: $progress, color: Color(red: 0.07, green: 0.38, blue: 1))
+                    ProgressBar(initialProgress: progress, color: Color(red: 0.07, green: 0.38, blue: 1))
                         .padding(.horizontal, 95)
                         .padding(.bottom, 100)
                         .frame(maxHeight: .infinity, alignment: .top)
