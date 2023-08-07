@@ -3,8 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Microphone permission is required.
-</string>
+	<string>Microphone permission is required.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera permission is required.</string>
 	<key>UIApplicationSceneManifest</key>
