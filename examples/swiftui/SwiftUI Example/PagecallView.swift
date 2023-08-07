@@ -21,7 +21,6 @@ struct PagecallView: View {
     @StateObject private var pagecallManager = PagecallManager()
 
     @State private var isLoading = true
-    @State private var isShowingLoading = true
     @State private var isSendingMessage = false
     @State private var message = ""
     @State private var newMessage = ""
@@ -85,10 +84,10 @@ struct PagecallView: View {
 
                 SendMessage(sendMessage: pagecallWebView.sendMessage, isSendingMessage: $isSendingMessage)
 
-                Loading(isLoading: $isLoading, isShowingLoading: $isShowingLoading)
+                Loading(isLoading: $isLoading)
             }
         }
-        .navigationBarHidden(isShowingLoading)
+        .navigationBarHidden(isLoading)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton, trailing: sendMessageButton)
         .onAppear {

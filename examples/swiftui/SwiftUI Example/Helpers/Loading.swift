@@ -10,8 +10,8 @@ import Combine
 
 struct Loading: View {
     @Binding var isLoading: Bool
-    @Binding var isShowingLoading: Bool
     @State private var progress = 0.25
+    @State private var isShowingLoading = true
 
     var body: some View {
         if isShowingLoading {
@@ -41,16 +41,13 @@ struct Loading: View {
                     }
                 }
             }
-
         }
     }
 }
 
 struct Loading_Previews: PreviewProvider {
     @State static var isLoading = true
-    @State static var isShowingLoading = true
-
     static var previews: some View {
-        Loading(isLoading: $isLoading, isShowingLoading: $isShowingLoading)
+        Loading(isLoading: $isLoading)
     }
 }
