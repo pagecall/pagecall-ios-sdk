@@ -9,21 +9,19 @@ import SwiftUI
 import PagecallCore
 
 @available(iOS 15.0, *)
-struct PagecallView: View {
+struct RoomView: View {
     @Binding var isShowingPagecallView: Bool
 
-    let roomId: String
-    let accessToken: String
-    let mode: PagecallMode
-    let queryItems: [URLQueryItem]?
-
-    @StateObject private var pagecallWebView = PagecallWebView()
-    @StateObject private var pagecallManager = PagecallManager()
+    private let roomId: String
+    private let accessToken: String
+    private let mode: PagecallMode
+    private let queryItems: [URLQueryItem]?
 
     @State private var isLoading = true
     @State private var isSendingMessage = false
-    @State private var message = ""
     @State private var newMessage = ""
+
+    @StateObject private var pagecallWebViewWrapper = PagecallWebViewWrapper()
 
     init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingPagecallView: Binding<Bool>) {
         self.roomId = roomId
@@ -68,13 +66,21 @@ struct PagecallView: View {
                         .ignoresSafeArea()
                 }
 
-                Pagecall(
-                    pagecallWebView: pagecallWebView,
-                    roomId: roomId,
-                    accessToken: accessToken,
-                    queryItems: queryItems,
-                    mode: mode
-                )
+                PagecallBridge(pagecallWebViewWrapper: pagecallWebViewWrapper)
+                    .onAppear {
+                        pagecallWebViewWrapper.setHandlers(
+                            onLoad: {
+                                self.isLoading = false
+                            },
+                            onTerminate: { _ in
+                                self.isLoading = false
+                            },
+                            onReceive: { newMessage in
+                                self.newMessage = newMessage
+                            }
+                        )
+                        pagecallWebViewWrapper.enter(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems)
+                    }
 
                 VStack {
                     Spacer()
@@ -82,7 +88,7 @@ struct PagecallView: View {
                         .padding(.bottom, 24)
                 }
 
-                SendMessage(sendMessage: pagecallWebView.sendMessage, isSendingMessage: $isSendingMessage)
+                SendMessage(sendMessage: pagecallWebViewWrapper.sendMessage, isSendingMessage: $isSendingMessage)
 
                 Loading(isLoading: $isLoading)
             }
@@ -90,32 +96,14 @@ struct PagecallView: View {
         .navigationBarHidden(isLoading)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton, trailing: sendMessageButton)
-        .onAppear {
-            if #available(iOS 16.4, *) {
-                pagecallWebView.isInspectable = true
-            }
-            pagecallWebView.delegate = pagecallManager
-
-            pagecallManager.setHandlers(
-                onLoad: { () in
-                    self.isLoading = false
-                },
-                onTerminate: {_ in
-                    self.isLoading = false
-                },
-                onReceive: { receivedMessage in
-                    self.newMessage = receivedMessage
-                }
-            )
-        }
     }
 }
 
-struct PagecallView_Previews: PreviewProvider {
+struct RoomView_Previews: PreviewProvider {
     @State static var isShowingPagecallView = true
     static var previews: some View {
         if #available(iOS 15.0, *) {
-            PagecallView(roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingPagecallView: $isShowingPagecallView)
+            RoomView(roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingPagecallView: $isShowingPagecallView)
         } else {
             // Fallback on earlier versions
         }

@@ -54,7 +54,7 @@ struct HomeView: View {
                 }
 
                 NavigationLink(
-                    destination: PagecallView(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: parseQueryItems(), isShowingPagecallView: $isShowingPagecallView),
+                    destination: RoomView(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: parseQueryItems(), isShowingPagecallView: $isShowingPagecallView),
                     isActive: $isShowingPagecallView,
                     label: { EmptyView() }
                 )
