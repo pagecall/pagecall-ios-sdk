@@ -16,7 +16,7 @@ struct Background<Content: View>: View {
     }
 
     var body: some View {
-        Color(red: 0.98, green: 0.98, blue: 0.98)
+        Color(red: 0.976, green: 0.98, blue: 0.984)
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
         .overlay(content)
     }

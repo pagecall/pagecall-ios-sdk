@@ -63,6 +63,7 @@ struct HomeView: View {
             .onTapGesture {
                 self.endEditing() // dismiss keyboard when touched around
             }
+            .background(Color(red: 0.976, green: 0.98, blue: 0.984, opacity: 1))
         }
     }
 

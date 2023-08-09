@@ -28,12 +28,14 @@ struct LabelAndTextField: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 6)
                     .stroke(Color.gray, lineWidth: 1)
+                    .background(Color.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 42)
 
                 TextField("", text: $text)
                     .autocorrectionDisabled()
                     .autocapitalization(.none)
+                    .background(Color.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 42)
                     .padding(.horizontal, 13)
