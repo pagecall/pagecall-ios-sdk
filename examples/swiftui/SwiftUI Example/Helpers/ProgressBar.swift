@@ -11,8 +11,8 @@ struct ProgressBar: View {
     var progress: Double
     private var barColor: Color
 
-    public init(initialProgress: Double, color: Color) {
-        self.progress = initialProgress
+    public init(progress: Double, color: Color) {
+        self.progress = progress
         self.barColor = color
     }
 
@@ -46,6 +46,6 @@ struct ProgressBar: View {
 
 struct ProgressBar_Previews: PreviewProvider {
     static var previews: some View {
-        ProgressBar(initialProgress: 0.25, color: Color(red: 0.07, green: 0.38, blue: 1))
+        ProgressBar(progress: 0.25, color: Color(red: 0.07, green: 0.38, blue: 1))
     }
 }
