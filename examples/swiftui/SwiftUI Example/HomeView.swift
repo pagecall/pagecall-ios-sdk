@@ -11,7 +11,7 @@ struct HomeView: View {
     @State private var keyboardHeight: CGFloat = 0
     @State private var mode = PagecallMode.meet
 
-    @State private var isShowingPagecallView = false
+    @State private var isShowingRoomView = false
 
     var body: some View {
         NavigationView {
@@ -59,8 +59,8 @@ struct HomeView: View {
                 }
 
                 NavigationLink(
-                    destination: RoomView(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: parseQueryItems(), isShowingPagecallView: $isShowingPagecallView),
-                    isActive: $isShowingPagecallView,
+                    destination: RoomView(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: parseQueryItems(), isShowingRoomView: $isShowingRoomView),
+                    isActive: $isShowingRoomView,
                     label: { EmptyView() }
                 )
                 .hidden()
@@ -82,7 +82,7 @@ struct HomeView: View {
         } else {
             mode = .replay
             isAlertOn = false
-            isShowingPagecallView = true
+            isShowingRoomView = true
         }
     }
 
@@ -92,7 +92,7 @@ struct HomeView: View {
         } else {
             mode = .meet
             isAlertOn = false
-            isShowingPagecallView = true
+            isShowingRoomView = true
         }
     }
 

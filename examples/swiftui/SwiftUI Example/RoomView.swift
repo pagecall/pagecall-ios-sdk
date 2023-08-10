@@ -10,7 +10,7 @@ import PagecallCore
 
 @available(iOS 15.0, *)
 struct RoomView: View {
-    @Binding var isShowingPagecallView: Bool
+    @Binding var isShowingRoomView: Bool
 
     private let roomId: String
     private let accessToken: String
@@ -23,12 +23,12 @@ struct RoomView: View {
 
     @StateObject private var pagecallWebViewDelegate = PagecallWebViewDelegate()
 
-    init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingPagecallView: Binding<Bool>) {
+    init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingRoomView: Binding<Bool>) {
         self.roomId = roomId
         self.accessToken = accessToken
         self.mode = mode
         self.queryItems = queryItems
-        self._isShowingPagecallView = isShowingPagecallView
+        self._isShowingRoomView = isShowingRoomView
 
         UINavigationBar.appearance().barTintColor = UIColor(Color(red: 0.22, green: 0.25, blue: 0.32))
         UINavigationBar.appearance().backgroundColor = UIColor(Color(red: 0.22, green: 0.25, blue: 0.32))
@@ -37,7 +37,7 @@ struct RoomView: View {
 
     private var backButton: some View {
         Button(action: {
-            isShowingPagecallView = false
+            isShowingRoomView = false
         }) {
             Image(systemName: "chevron.left")
                 .foregroundColor(.white)
@@ -116,10 +116,10 @@ struct RoomView: View {
 }
 
 struct RoomView_Previews: PreviewProvider {
-    @State static var isShowingPagecallView = true
+    @State static var isShowingRoomView = true
     static var previews: some View {
         if #available(iOS 15.0, *) {
-            RoomView(roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingPagecallView: $isShowingPagecallView)
+            RoomView(roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingRoomView: $isShowingRoomView)
         } else {
             // Fallback on earlier versions
         }
