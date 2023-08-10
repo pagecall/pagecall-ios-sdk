@@ -21,7 +21,7 @@ struct RoomView: View {
     @State private var isSendingMessage = false
     @State private var newMessage: String?
 
-    @StateObject private var pagecallWebViewWrapper = PagecallWebViewWrapper()
+    @StateObject private var pagecallWebViewDelegate = PagecallWebViewDelegate()
 
     init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingPagecallView: Binding<Bool>) {
         self.roomId = roomId
@@ -66,9 +66,9 @@ struct RoomView: View {
                         .ignoresSafeArea()
                 }
 
-                PagecallBridge(pagecallWebViewWrapper: pagecallWebViewWrapper)
+                PagecallViewRepresentable(pagecallWebViewDelegate: pagecallWebViewDelegate)
                     .onAppear {
-                        pagecallWebViewWrapper.setHandlers(
+                        pagecallWebViewDelegate.setHandlers(
                             onLoad: {
                                 self.isLoading = false
                             },
@@ -79,7 +79,7 @@ struct RoomView: View {
                                 self.newMessage = newMessage
                             }
                         )
-                        pagecallWebViewWrapper.enter(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems)
+                        pagecallWebViewDelegate.enter(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems)
                     }
 
                 if let newMessage = newMessage {
@@ -98,7 +98,7 @@ struct RoomView: View {
                 if isSendingMessage {
                     SendMessage(onReturn: { messageToSend in
                         if let messageToSend = messageToSend {
-                            pagecallWebViewWrapper.sendMessage(messageToSend, nil)
+                            pagecallWebViewDelegate.sendMessage(messageToSend, nil)
                         }
                         self.isSendingMessage = false
                     })

@@ -9,7 +9,7 @@ import Foundation
 import PagecallCore
 import UIKit
 
-public class PagecallWebViewWrapper: UIView, PagecallDelegate, ObservableObject {
+public class PagecallWebViewDelegate: UIView, PagecallDelegate, ObservableObject {
     private var onLoad: (() -> Void)?
     private var onTerminate: ((TerminationReason) -> Void)?
     private var onReceive: ((String) -> Void)?
