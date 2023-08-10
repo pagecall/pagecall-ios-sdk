@@ -19,7 +19,7 @@ struct RoomView: View {
 
     @State private var isLoading = true
     @State private var isSendingMessage = false
-    @State private var newMessage = ""
+    @State private var newMessage: String?
 
     @StateObject private var pagecallWebViewWrapper = PagecallWebViewWrapper()
 
@@ -81,11 +81,18 @@ struct RoomView: View {
                         )
                         pagecallWebViewWrapper.enter(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems)
                     }
-
-                VStack {
-                    Spacer()
-                    Message(newMessage: $newMessage)
-                        .padding(.bottom, 24)
+                
+                if let newMessage = newMessage {
+                    VStack {
+                        Spacer()
+                        Message(newMessage: newMessage)
+                            .padding(.bottom, 24)
+                    }
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            self.newMessage = nil
+                        }
+                    }
                 }
 
                 SendMessage(sendMessage: pagecallWebViewWrapper.sendMessage, isSendingMessage: $isSendingMessage)
