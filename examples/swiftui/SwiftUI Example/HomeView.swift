@@ -43,7 +43,12 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
                 VStack {
-                    Alert(isAlertOn: $isAlertOn)
+                    if isAlertOn {
+                        Alert(onClose: {
+                            isAlertOn = false
+                        },
+                              text: "An input value is required.")
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .padding(.horizontal, 32)
