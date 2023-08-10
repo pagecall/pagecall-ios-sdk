@@ -90,7 +90,9 @@ struct RoomView: View {
 
                 SendMessage(sendMessage: pagecallWebViewWrapper.sendMessage, isSendingMessage: $isSendingMessage)
 
-                Loading(isLoading: $isLoading)
+                if isLoading {
+                    Loading()
+                }
             }
         }
         .navigationBarHidden(isLoading)
