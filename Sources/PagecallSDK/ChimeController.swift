@@ -99,7 +99,7 @@ class ChimeController: MediaController {
         let audioDevice = audioDevices.first { mediaDevice in mediaDevice.label == deviceId }
 
         guard let audioDevice = audioDevice else {
-            callback(PagecallError(message: "Missing device with id: \(deviceId)"))
+            callback(PagecallError.generalError(message: "Missing device with id: \(deviceId)"))
             return
         }
 
@@ -128,7 +128,7 @@ class ChimeController: MediaController {
     private func initializeVolumeRecorder() {
         self.volumeRecorder?.stop()
         do {
-            let volumeRecorder = try VolumeRecorder()
+            let volumeRecorder = try VolumeRecorder(emitter: emitter)
             volumeRecorder.highest = -10
             volumeRecorder.lowest = -40
             self.volumeRecorder = volumeRecorder
@@ -142,9 +142,18 @@ class ChimeController: MediaController {
             do {
                 let volume = try volumeRecorder.requestAudioVolume()
                 return volume
-            } catch {
+            } catch let error as PagecallError {
+                switch error {
+                case .audioRecorderBroken:
+                    initializeVolumeRecorder()
+                case .audioRecorderPowerOutOfRange: break
+                    // do nothing yet
+                case .generalError: break
+                }
                 self.emitter.error(error)
-                initializeVolumeRecorder()
+                return 0
+            } catch {
+                self.emitter.error(PagecallError.generalError(message: "Unexpected VolumeRecorder error"))
                 return 0
             }
         } else {

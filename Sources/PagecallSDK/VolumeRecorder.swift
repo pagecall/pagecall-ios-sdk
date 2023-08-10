@@ -2,10 +2,13 @@ import AVFoundation
 
 class VolumeRecorder {
     private let audioRecorder: AVAudioRecorder
+    let emitter: WebViewEmitter
+    
     var lowest: Float = -40 // -50 in MI
     var highest: Float = -10 // -10 in MI
 
-    init() throws {
+    init(emitter: WebViewEmitter) throws {
+        self.emitter = emitter
         let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let audioFilename = documentPath.appendingPathComponent("nothing.m4a")
         let settings = [
@@ -27,14 +30,23 @@ class VolumeRecorder {
         return level / (highest - lowest) // scaled to 0.0 ~ 1
     }
 
+    var unusualAveragePowerCount = 0
+    
     func requestAudioVolume() throws -> Float {
         audioRecorder.updateMeters()
         let averagePower = audioRecorder.averagePower(forChannel: 0)
-        if averagePower <= -120 {
+        if averagePower == -120.0 {
             // 일부 기기에서 마이크 사용중 표시(주황색 동그라미)가 꺼지면서 볼륨이 계속 -120 으로 찍히는 경우가 있습니다.
             // 이 때는 AVAudioRecorder를 재생성해주면 해결됩니다.
             // 아무리 조용해도 -80 정도는 나오는 것이 정상입니다.
-            throw PagecallError(message: "AVAudioRecorder seems to be broken")
+            unusualAveragePowerCount += 1
+        }
+        if unusualAveragePowerCount > 5 {
+            unusualAveragePowerCount = 0
+            throw PagecallError.audioRecorderBroken
+        }
+        if averagePower < -120 {
+            throw PagecallError.audioRecorderPowerOutOfRange
         }
         let volume = normalizeSoundLevel(level: averagePower)
         return volume

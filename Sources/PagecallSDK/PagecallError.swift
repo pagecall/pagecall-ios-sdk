@@ -7,9 +7,21 @@
 
 import Foundation
 
-struct PagecallError: LocalizedError {
-    let message: String
+enum PagecallError: LocalizedError {
+    case generalError(message: String)
+    case audioRecorderBroken
+    case audioRecorderPowerOutOfRange
 
+    var message: String {
+        switch self {
+        case .generalError(let message):
+            return message
+        case .audioRecorderBroken:
+            return "AVAudioRecorder seems to be broken"
+        case .audioRecorderPowerOutOfRange:
+            return "averagePower of AVAudioRecorder less than -120"
+        }
+    }
     var errorDescription: String { message }
     var failureReason: String { message }
     var recoverySuggestion: String? { "" }
