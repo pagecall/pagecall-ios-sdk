@@ -42,20 +42,20 @@ struct HomeView: View {
                 .padding(.top, 48)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
-                VStack {
-                    if isAlertOn {
+                if isAlertOn {
+                    VStack {
                         Alert(onClose: {
                             isAlertOn = false
                         },
                               text: "An input value is required.")
                     }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .padding(.horizontal, 32)
-                .padding(.bottom, keyboardHeight == 0 ? 40 : keyboardHeight)
-                .ignoresSafeArea(.keyboard, edges: .bottom)
-                .onReceive(Publishers.keyboardHeight) {
-                    self.keyboardHeight = $0
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, keyboardHeight == 0 ? 40 : keyboardHeight)
+                    .ignoresSafeArea(.keyboard, edges: .bottom)
+                    .onReceive(Publishers.keyboardHeight) {
+                        self.keyboardHeight = $0
+                    }
                 }
 
                 NavigationLink(
