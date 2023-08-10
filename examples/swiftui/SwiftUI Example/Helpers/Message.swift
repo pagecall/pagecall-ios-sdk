@@ -9,11 +9,11 @@ import SwiftUI
 
 struct Message: View {
     private let newMessage: String
-    
+
     init(newMessage: String) {
         self.newMessage = newMessage
     }
-    
+
     var body: some View {
         ZStack(alignment: .center) {
             RoundedRectangle(cornerRadius: 6)

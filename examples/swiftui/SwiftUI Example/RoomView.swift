@@ -81,7 +81,7 @@ struct RoomView: View {
                         )
                         pagecallWebViewWrapper.enter(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems)
                     }
-                
+
                 if let newMessage = newMessage {
                     VStack {
                         Spacer()
@@ -95,7 +95,14 @@ struct RoomView: View {
                     }
                 }
 
-                SendMessage(sendMessage: pagecallWebViewWrapper.sendMessage, isSendingMessage: $isSendingMessage)
+                if isSendingMessage {
+                    SendMessage(onReturn: { messageToSend in
+                        if let messageToSend = messageToSend {
+                            pagecallWebViewWrapper.sendMessage(messageToSend, nil)
+                        }
+                        self.isSendingMessage = false
+                    })
+                }
 
                 if isLoading {
                     Loading()
