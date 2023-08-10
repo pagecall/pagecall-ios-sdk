@@ -222,7 +222,7 @@ return true;
             } else if let success = result as? Bool, success {
                 completionHandler?(nil)
             } else {
-                completionHandler?(PagecallError(message: "Not initialized"))
+                completionHandler?(PagecallError.generalError(message: "Not initialized"))
             }
         }
     }

@@ -104,14 +104,14 @@ class NativeBridge: Equatable {
         switch bridgeAction {
         case .initialize:
             guard let payloadData = payload?.data(using: .utf8) else {
-                respond(PagecallError(message: "Missing payload"), nil)
+                respond(PagecallError.generalError(message: "Missing payload"), nil)
                 return
             }
             struct MiPayload: Codable {
                 let plugin: String
             }
             if let _ = self.mediaController {
-                respond(PagecallError(message: "Must be disposed first"), nil)
+                respond(PagecallError.generalError(message: "Must be disposed first"), nil)
                 return
             }
             if let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: payloadData) {
@@ -130,7 +130,7 @@ class NativeBridge: Equatable {
 
         case .getPermissions:
             guard let payloadData = payloadData, let mediaType = try? JSONDecoder().decode(MediaConstraints.self, from: payloadData) else {
-                respond(PagecallError(message: "Missing or invalid payload"), nil)
+                respond(PagecallError.generalError(message: "Missing or invalid payload"), nil)
                 return
             }
 
@@ -142,11 +142,11 @@ class NativeBridge: Equatable {
             ) {
                 respond(nil, data)
             } else {
-                respond(PagecallError(message: "Failed to getPermissions"), nil)
+                respond(PagecallError.generalError(message: "Failed to getPermissions"), nil)
             }
         case .requestPermission:
             guard let payloadData = payloadData, let mediaType = try? JSONDecoder().decode(MediaType.self, from: payloadData) else {
-                respond(PagecallError(message: "Missing or invalid payload"), nil)
+                respond(PagecallError.generalError(message: "Missing or invalid payload"), nil)
                 return
             }
             let respondBool: (Bool) -> Void = { result in respond(nil, try? JSONEncoder().encode(result)) }
@@ -156,7 +156,7 @@ class NativeBridge: Equatable {
             case "video":
                 DeviceManager.requestAccess(for: .video, callback: respondBool)
             default:
-                respond(PagecallError(message: "Unknown mediaType: \(mediaType.mediaType)"), nil)
+                respond(PagecallError.generalError(message: "Unknown mediaType: \(mediaType.mediaType)"), nil)
             }
         case .getAudioDevices:
             let deviceList: [MediaDeviceInfo] = {
@@ -178,7 +178,7 @@ class NativeBridge: Equatable {
                 if let volumeData = try? JSONEncoder().encode(volume) {
                     respond(nil, volumeData)
                 } else {
-                    respond(PagecallError(message: "Failed to encode volume"), nil)
+                    respond(PagecallError.generalError(message: "Failed to encode volume"), nil)
                 }
             }
             if let mediaController = mediaController {
@@ -205,7 +205,7 @@ class NativeBridge: Equatable {
             }
         case .start:
             guard let mediaController = mediaController else {
-                respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
+                respond(PagecallError.generalError(message: "Missing mediaController, initialize first"), nil)
                 return
             }
             mediaController.start { (error: Error?) in
@@ -222,14 +222,14 @@ class NativeBridge: Equatable {
             respond(nil, nil)
         case .setAudioDevice:
             guard let mediaController = mediaController else {
-                respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
+                respond(PagecallError.generalError(message: "Missing mediaController, initialize first"), nil)
                 return
             }
             struct DeviceId: Codable {
                 var deviceId: String
             }
             guard let payloadData = payloadData, let deviceId = try? JSONDecoder().decode(DeviceId.self, from: payloadData) else {
-                respond(PagecallError(message: "Invalid payload"), nil)
+                respond(PagecallError.generalError(message: "Invalid payload"), nil)
                 return
             }
 
@@ -247,7 +247,7 @@ class NativeBridge: Equatable {
             }
         case .consume:
             guard let mediaController = mediaController else {
-                respond(PagecallError(message: "Missing mediaController, initialize first"), nil)
+                respond(PagecallError.generalError(message: "Missing mediaController, initialize first"), nil)
                 return
             }
             if let miController = mediaController as? MiController {
@@ -261,10 +261,10 @@ class NativeBridge: Equatable {
                         }
                     }
                 } else {
-                    respond(PagecallError(message: "Invalid payload"), nil)
+                    respond(PagecallError.generalError(message: "Invalid payload"), nil)
                 }
             } else {
-                respond(PagecallError(message: "consume is only effective for MI"), nil)
+                respond(PagecallError.generalError(message: "consume is only effective for MI"), nil)
             }
         }
     }
