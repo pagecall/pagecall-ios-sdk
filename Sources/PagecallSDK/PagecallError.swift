@@ -8,13 +8,13 @@
 import Foundation
 
 enum PagecallError: LocalizedError {
-    case generalError(message: String)
+    case other(message: String)
     case audioRecorderBroken
     case audioRecorderPowerOutOfRange
 
     var message: String {
         switch self {
-        case .generalError(let message):
+        case .other(let message):
             return message
         case .audioRecorderBroken:
             return "AVAudioRecorder seems to be broken"

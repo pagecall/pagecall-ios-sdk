@@ -67,7 +67,7 @@ class WebViewEmitter {
 
     private func jsonEmit(eventName: String, json: [String: Any], callback: ((Error?, String?) -> Void)?) {
         guard let jsonData = try? JSONSerialization.data(withJSONObject: json), let stringifiedJson = String(data: jsonData, encoding: .utf8) else {
-            callback?(PagecallError.generalError(message: "Failed to stringify"), nil)
+            callback?(PagecallError.other(message: "Failed to stringify"), nil)
             return
         }
         if let callback = callback {
@@ -83,7 +83,7 @@ class WebViewEmitter {
         if let callback = eventIdToCallback[eventId] {
             eventIdToCallback.removeValue(forKey: eventId)
             if let errorMessage = error {
-                callback(PagecallError.generalError(message: errorMessage), nil)
+                callback(PagecallError.other(message: errorMessage), nil)
             } else {
                 callback(nil, result)
             }

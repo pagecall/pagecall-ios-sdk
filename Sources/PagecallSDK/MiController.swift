@@ -147,7 +147,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
               let kind = payload["kind"] as? String,
               let rawRtpParameters = payload["rtpParameters"],
               let rtpParameters = String.from(jsonObject: rawRtpParameters) else {
-            callback(PagecallError.generalError(message: "Invalid payload"))
+            callback(PagecallError.other(message: "Invalid payload"))
             return
         }
         let appData = payload["appData"] as? String
@@ -233,12 +233,12 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
                     initializeVolumeRecorder()
                 case .audioRecorderPowerOutOfRange: break
                     // do nothing yet
-                case .generalError: break
+                case .other: break
                 }
                 self.emitter.error(error)
                 return 0
             } catch {
-                self.emitter.error(PagecallError.generalError(message: "Unexpected VolumeRecorder error"))
+                self.emitter.error(PagecallError.other(message: "Unexpected VolumeRecorder error"))
                 return 0
             }
         } else {

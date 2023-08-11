@@ -20,7 +20,7 @@ class CallManager: NSObject, CXProviderDelegate {
 
     func startCall(completion: @escaping (Error?) -> Void) {
         if let _ = callId {
-            completion(PagecallError.generalError(message: "Call not ended"))
+            completion(PagecallError.other(message: "Call not ended"))
             return
         }
         let callId = UUID()
@@ -29,7 +29,7 @@ class CallManager: NSObject, CXProviderDelegate {
         callController.requestTransaction(with: [CXStartCallAction(call: callId, handle: CXHandle(type: .generic, value: "Pagecall"))]) { error in
             if self.callId != callId {
                 self.provider.reportCall(with: callId, endedAt: Date(), reason: .failed)
-                completion(error ?? PagecallError.generalError(message: "startCall interrupted"))
+                completion(error ?? PagecallError.other(message: "startCall interrupted"))
                 return
             }
             if let error = error {
