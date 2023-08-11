@@ -21,7 +21,8 @@ struct RoomView: View {
     @State private var isSendingMessage = false
     @State private var newMessage: String?
 
-    @StateObject private var pagecallWebViewDelegate = PagecallWebViewDelegate()
+    private let pagecallWebView = PagecallWebView()
+    @State private var pagecallWebViewDelegate: PagecallWebViewDelegate?
 
     init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingRoomView: Binding<Bool>) {
         self.roomId = roomId
@@ -66,21 +67,7 @@ struct RoomView: View {
                         .ignoresSafeArea()
                 }
 
-                PagecallViewRepresentable(pagecallWebViewDelegate: pagecallWebViewDelegate)
-                    .onAppear {
-                        pagecallWebViewDelegate.setHandlers(
-                            onLoad: {
-                                self.isLoading = false
-                            },
-                            onTerminate: { _ in
-                                self.isLoading = false
-                            },
-                            onReceive: { newMessage in
-                                self.newMessage = newMessage
-                            }
-                        )
-                        pagecallWebViewDelegate.enter(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems)
-                    }
+                UIViewRenderer(view: pagecallWebView)
 
                 if let newMessage = newMessage {
                     VStack {
@@ -98,7 +85,7 @@ struct RoomView: View {
                 if isSendingMessage {
                     SendMessage(onReturn: { messageToSend in
                         if let messageToSend = messageToSend {
-                            pagecallWebViewDelegate.sendMessage(messageToSend, nil)
+                            pagecallWebView.sendMessage(message: messageToSend, completionHandler: nil)
                         }
                         self.isSendingMessage = false
                     })
@@ -108,6 +95,22 @@ struct RoomView: View {
                     Loading()
                 }
             }
+        }
+        .onAppear {
+            pagecallWebViewDelegate = PagecallWebViewDelegate(
+                onLoad: {
+                    self.isLoading = false
+                },
+                onTerminate: { _ in
+                    self.isLoading = false
+                },
+                onReceive: { message in
+                    self.newMessage = message
+                })
+
+            pagecallWebView.delegate = pagecallWebViewDelegate
+
+            _ = pagecallWebView.load(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems ?? [])
         }
         .navigationBarHidden(isLoading)
         .navigationBarBackButtonHidden(true)
