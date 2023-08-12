@@ -37,9 +37,9 @@ struct HomeView: View {
                         ) {
                             ReplayLabel()
                         }
-                        .disabled(roomId == "" || accessToken == "")
+                        .disabled(roomId.isEmpty || accessToken.isEmpty)
                         .onTapGesture {
-                            if roomId == "" || accessToken == "" {
+                            if roomId.isEmpty || accessToken.isEmpty {
                                 isAlertOn = true
                             } else {
                                 isAlertOn = false
@@ -51,9 +51,9 @@ struct HomeView: View {
                         ) {
                             EnterLabel()
                         }
-                        .disabled(roomId == "" || accessToken == "")
+                        .disabled(roomId.isEmpty || accessToken.isEmpty)
                         .onTapGesture {
-                            if roomId == "" || accessToken == "" {
+                            if roomId.isEmpty || accessToken.isEmpty {
                                 isAlertOn = true
                             } else {
                                 isAlertOn = false
@@ -94,7 +94,7 @@ struct HomeView: View {
     }
 
     private func parseQueryItems() -> [URLQueryItem]? {
-        if query != "" {
+        if !query.isEmpty {
             return query.components(separatedBy: "&")
                 .map {
                     $0.components(separatedBy: "=")
