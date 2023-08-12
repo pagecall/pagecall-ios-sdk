@@ -12,24 +12,14 @@ import PagecallCore
 struct RoomView: View {
     @Binding var isShowingRoomView: Bool
 
-    private let roomId: String
-    private let accessToken: String
-    private let mode: PagecallMode
-    private let queryItems: [URLQueryItem]?
-
-    @State private var isLoading = true
     @State private var isSendingMessage = false
-    @State private var newMessage: String?
+    @State private var visibleMessage: String?
 
-    private let pagecallWebView = PagecallWebView()
-    @State private var pagecallWebViewDelegate: PagecallWebViewDelegate?
+    @StateObject private var pagecallWebViewModel: PagecallWebViewModel
 
     init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingRoomView: Binding<Bool>) {
-        self.roomId = roomId
-        self.accessToken = accessToken
-        self.mode = mode
-        self.queryItems = queryItems
         self._isShowingRoomView = isShowingRoomView
+        self._pagecallWebViewModel = StateObject(wrappedValue: PagecallWebViewModel(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems))
 
         UINavigationBar.appearance().barTintColor = UIColor(Color(red: 0.22, green: 0.25, blue: 0.32))
         UINavigationBar.appearance().backgroundColor = UIColor(Color(red: 0.22, green: 0.25, blue: 0.32))
@@ -67,9 +57,9 @@ struct RoomView: View {
                         .ignoresSafeArea()
                 }
 
-                UIViewRenderer(view: pagecallWebView)
+                UIViewRenderer(view: pagecallWebViewModel.view)
 
-                if let newMessage = newMessage {
+                if let newMessage = visibleMessage {
                     VStack {
                         Spacer()
                         Message(newMessage: newMessage)
@@ -77,7 +67,7 @@ struct RoomView: View {
                     }
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                            self.newMessage = nil
+                            self.visibleMessage = nil
                         }
                     }
                 }
@@ -85,34 +75,20 @@ struct RoomView: View {
                 if isSendingMessage {
                     SendMessage(onReturn: { messageToSend in
                         if let messageToSend = messageToSend {
-                            pagecallWebView.sendMessage(message: messageToSend, completionHandler: nil)
+                            pagecallWebViewModel.sendMessage(messageToSend)
                         }
                         self.isSendingMessage = false
                     })
                 }
 
-                if isLoading {
+                if pagecallWebViewModel.state == .loading {
                     Loading()
                 }
             }
         }
-        .onAppear {
-            pagecallWebViewDelegate = PagecallWebViewDelegate(
-                onLoad: {
-                    self.isLoading = false
-                },
-                onTerminate: { _ in
-                    self.isLoading = false
-                },
-                onReceive: { message in
-                    self.newMessage = message
-                })
-
-            pagecallWebView.delegate = pagecallWebViewDelegate
-
-            _ = pagecallWebView.load(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems ?? [])
-        }
-        .navigationBarHidden(isLoading)
+        .onChange(of: pagecallWebViewModel.newMessage, perform: { newMessage in
+            self.visibleMessage = newMessage
+        })
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton, trailing: sendMessageButton)
     }

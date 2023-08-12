@@ -19,6 +19,7 @@ public struct UIViewRenderer: UIViewRepresentable {
     public func makeUIView(context: Context) -> UIViewType {
         return view
     }
+
     public func updateUIView(_ uiView: UIViewType, context: Context) {
     }
 }
