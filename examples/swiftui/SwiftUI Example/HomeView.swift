@@ -11,8 +11,6 @@ struct HomeView: View {
     @State private var keyboardHeight: CGFloat = 0
     @State private var mode = PagecallMode.meet
 
-    @State private var isShowingRoomView = false
-
     var body: some View {
         NavigationView {
             Background {
@@ -34,8 +32,34 @@ struct HomeView: View {
                     .padding(.bottom, 44)
 
                     HStack(spacing: 12) {
-                        ReplayButton(onTap: onReplayButtonTap)
-                        EnterButton(onTap: onEnterButtonTap)
+                        NavigationLink(
+                            destination: RoomView(roomId: roomId, accessToken: accessToken, mode: .replay, queryItems: parseQueryItems())
+                        ) {
+                            ReplayLabel()
+                        }
+                        .disabled(roomId == "" || accessToken == "")
+                        .onTapGesture {
+                            if roomId == "" || accessToken == "" {
+                                isAlertOn = true
+                            } else {
+                                isAlertOn = false
+                            }
+                        }
+
+                        NavigationLink(
+                            destination: RoomView(roomId: roomId, accessToken: accessToken, mode: .meet, queryItems: parseQueryItems())
+                        ) {
+                            EnterLabel()
+                        }
+                        .disabled(roomId == "" || accessToken == "")
+                        .onTapGesture {
+                            if roomId == "" || accessToken == "" {
+                                isAlertOn = true
+                            } else {
+                                isAlertOn = false
+                            }
+                        }
+
                     }
                 }
                 .padding(.horizontal, 32)
@@ -57,13 +81,6 @@ struct HomeView: View {
                         self.keyboardHeight = $0
                     }
                 }
-
-                NavigationLink(
-                    destination: RoomView(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: parseQueryItems(), isShowingRoomView: $isShowingRoomView),
-                    isActive: $isShowingRoomView,
-                    label: { EmptyView() }
-                )
-                .hidden()
             }
             .onTapGesture {
                 self.endEditing() // dismiss keyboard when touched around
@@ -74,26 +91,6 @@ struct HomeView: View {
 
     private func endEditing() {
         UIApplication.shared.endEditing()
-    }
-
-    private func onReplayButtonTap() {
-        if roomId == "" || accessToken == "" {
-            isAlertOn = true
-        } else {
-            mode = .replay
-            isAlertOn = false
-            isShowingRoomView = true
-        }
-    }
-
-    private func onEnterButtonTap() {
-        if roomId == "" || accessToken == "" {
-            isAlertOn = true
-        } else {
-            mode = .meet
-            isAlertOn = false
-            isShowingRoomView = true
-        }
     }
 
     private func parseQueryItems() -> [URLQueryItem]? {

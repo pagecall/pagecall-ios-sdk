@@ -10,15 +10,14 @@ import PagecallCore
 
 @available(iOS 15.0, *)
 struct RoomView: View {
-    @Binding var isShowingRoomView: Bool
+    @Environment(\.presentationMode) var presentationMode
 
     @State private var isSendingMessage = false
     @State private var visibleMessage: String?
 
     @StateObject private var pagecallWebViewModel: PagecallWebViewModel
 
-    init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, isShowingRoomView: Binding<Bool>) {
-        self._isShowingRoomView = isShowingRoomView
+    init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?) {
         self._pagecallWebViewModel = StateObject(wrappedValue: PagecallWebViewModel(roomId: roomId, accessToken: accessToken, mode: mode, queryItems: queryItems))
 
         UINavigationBar.appearance().barTintColor = UIColor(Color(red: 0.22, green: 0.25, blue: 0.32))
@@ -28,7 +27,7 @@ struct RoomView: View {
 
     private var backButton: some View {
         Button(action: {
-            isShowingRoomView = false
+            self.presentationMode.wrappedValue.dismiss()
         }) {
             Image(systemName: "chevron.left")
                 .foregroundColor(.white)
@@ -98,7 +97,7 @@ struct RoomView_Previews: PreviewProvider {
     @State static var isShowingRoomView = true
     static var previews: some View {
         if #available(iOS 15.0, *) {
-            RoomView(roomId: "d", accessToken: "d", mode: .replay, queryItems: nil, isShowingRoomView: $isShowingRoomView)
+            RoomView(roomId: "d", accessToken: "d", mode: .replay, queryItems: nil)
         } else {
             // Fallback on earlier versions
         }

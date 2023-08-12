@@ -15,8 +15,8 @@
 		5CAC4D822A86413500416A4B /* UIViewRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CAC4D812A86413500416A4B /* UIViewRenderer.swift */; };
 		5CAC4D842A86464500416A4B /* PagecallWebViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CAC4D832A86464500416A4B /* PagecallWebViewModel.swift */; };
 		5CC7560F2A6E3230008262D9 /* LabelAndTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7560E2A6E3230008262D9 /* LabelAndTextField.swift */; };
-		5CC756132A6E477B008262D9 /* EnterButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756122A6E477B008262D9 /* EnterButton.swift */; };
-		5CC756152A6E478A008262D9 /* ReplayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756142A6E478A008262D9 /* ReplayButton.swift */; };
+		5CC756132A6E477B008262D9 /* EnterLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756122A6E477B008262D9 /* EnterLabel.swift */; };
+		5CC756152A6E478A008262D9 /* ReplayLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756142A6E478A008262D9 /* ReplayLabel.swift */; };
 		5CC756182A6E51F0008262D9 /* UIApplication+endEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC756172A6E51F0008262D9 /* UIApplication+endEditing.swift */; };
 		5CC7562B2A6E736B008262D9 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7562A2A6E736B008262D9 /* Alert.swift */; };
 		5CC7562E2A6E7C67008262D9 /* Publishers+keyboardHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC7562D2A6E7C67008262D9 /* Publishers+keyboardHeight.swift */; };
@@ -40,8 +40,8 @@
 		5CAC4D812A86413500416A4B /* UIViewRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewRenderer.swift; sourceTree = "<group>"; };
 		5CAC4D832A86464500416A4B /* PagecallWebViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagecallWebViewModel.swift; sourceTree = "<group>"; };
 		5CC7560E2A6E3230008262D9 /* LabelAndTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelAndTextField.swift; sourceTree = "<group>"; };
-		5CC756122A6E477B008262D9 /* EnterButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterButton.swift; sourceTree = "<group>"; };
-		5CC756142A6E478A008262D9 /* ReplayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayButton.swift; sourceTree = "<group>"; };
+		5CC756122A6E477B008262D9 /* EnterLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterLabel.swift; sourceTree = "<group>"; };
+		5CC756142A6E478A008262D9 /* ReplayLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayLabel.swift; sourceTree = "<group>"; };
 		5CC756172A6E51F0008262D9 /* UIApplication+endEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+endEditing.swift"; sourceTree = "<group>"; };
 		5CC7562A2A6E736B008262D9 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
 		5CC7562D2A6E7C67008262D9 /* Publishers+keyboardHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publishers+keyboardHeight.swift"; sourceTree = "<group>"; };
@@ -135,8 +135,8 @@
 			isa = PBXGroup;
 			children = (
 				5CC7560E2A6E3230008262D9 /* LabelAndTextField.swift */,
-				5CC756122A6E477B008262D9 /* EnterButton.swift */,
-				5CC756142A6E478A008262D9 /* ReplayButton.swift */,
+				5CC756122A6E477B008262D9 /* EnterLabel.swift */,
+				5CC756142A6E478A008262D9 /* ReplayLabel.swift */,
 				5CC7562A2A6E736B008262D9 /* Alert.swift */,
 				5CC756312A6F57BF008262D9 /* Loading.swift */,
 				5CC756332A6F5FF0008262D9 /* Background.swift */,
@@ -256,8 +256,8 @@
 				5CD5AF242A70AA91008536B7 /* SendMessage.swift in Sources */,
 				5CC756182A6E51F0008262D9 /* UIApplication+endEditing.swift in Sources */,
 				5CC7560F2A6E3230008262D9 /* LabelAndTextField.swift in Sources */,
-				5CC756152A6E478A008262D9 /* ReplayButton.swift in Sources */,
-				5CC756132A6E477B008262D9 /* EnterButton.swift in Sources */,
+				5CC756152A6E478A008262D9 /* ReplayLabel.swift in Sources */,
+				5CC756132A6E477B008262D9 /* EnterLabel.swift in Sources */,
 				5CDBB2EE2A6F79A2006232B4 /* ProgressBar.swift in Sources */,
 				5CAC4D842A86464500416A4B /* PagecallWebViewModel.swift in Sources */,
 				5CC7562E2A6E7C67008262D9 /* Publishers+keyboardHeight.swift in Sources */,
