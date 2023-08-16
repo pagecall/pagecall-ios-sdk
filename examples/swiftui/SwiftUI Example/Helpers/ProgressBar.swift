@@ -22,18 +22,24 @@ struct ProgressBar: View {
                 Rectangle()
                     .fill(Color(red: 0.82, green: 0.84, blue: 0.86))
                     .frame(height: 2)
+                    .alignmentGuide(VerticalAlignment.center) { $0[.bottom] }
 
-                Rectangle()
-                    .fill(barColor)
-                    .frame(width: min(geo.size.width, geo.size.width * progress), height: 2)
-                    .animation(.linear, value: progress)
+                VStack(alignment: .leading) {
+                    let xOffset = min(geo.size.width, geo.size.width * progress)
 
-                Image("Pencil")
-                    .resizable()
-                    .frame(width: 56, height: 58)
-                    .offset(x: min(geo.size.width, geo.size.width * progress) - 10)
-                    .animation(.linear, value: progress)
-                    .alignmentGuide(VerticalAlignment.center) { $0[.bottom] + 3 }
+                    Image("Pencil")
+                        .resizable()
+                        .frame(width: 56, height: 58)
+                        .offset(x: xOffset - 10, y: 5)
+                        .animation(.linear, value: progress)
+
+                    Rectangle()
+                        .fill(barColor)
+                        .frame(width: xOffset, height: 2)
+                        .animation(.linear, value: progress)
+                }
+                .alignmentGuide(VerticalAlignment.center) { $0[.bottom] }
+
             }
             .frame(width: geo.size.width, height: geo.size.height)
         }
