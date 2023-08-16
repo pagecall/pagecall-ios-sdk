@@ -29,20 +29,19 @@ struct ProgressBar: View {
                     Image("Pencil")
                         .resizable()
                         .frame(width: 56, height: 58)
-                        .offset(x: 0, y: 5)
+                        .offset(x: -10, y: 5)
                         .alignmentGuide(HorizontalAlignment.trailing) { $0[.leading] }
 
                     Rectangle()
                         .fill(barColor)
                         .frame(height: 2)
                 }
-                .offset(x: 27)
+                .offset(x: 30) //necessary to match alignment because of the image size
                 .frame(width: xOffset)
                 .animation(.linear, value: progress)
                 .alignmentGuide(VerticalAlignment.center) { $0[.bottom] }
             }
             .frame(width: geo.size.width, height: geo.size.height)
-            .alignmentGuide(HorizontalAlignment.leading) { $0[.leading] }
         }
     }
 }
