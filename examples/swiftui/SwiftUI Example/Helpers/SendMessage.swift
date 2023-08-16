@@ -12,7 +12,6 @@ enum FocusField {
   case message
 }
 
-@available(iOS 15.0, *)
 struct SendMessage: View {
     private let onReturn: (String?) -> Void
     @FocusState private var focus: Bool
@@ -72,10 +71,6 @@ struct SendMessage: View {
 
 struct SendMessage_Previews: PreviewProvider {
     static var previews: some View {
-        if #available(iOS 15.0, *) {
-            SendMessage(onReturn: { messageToSend in print(messageToSend ?? "messageToSend") })
-        } else {
-            // Fallback on earlier versions
-        }
+        SendMessage(onReturn: { messageToSend in print(messageToSend ?? "messageToSend") })
     }
 }

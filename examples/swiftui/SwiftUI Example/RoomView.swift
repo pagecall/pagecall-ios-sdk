@@ -8,7 +8,6 @@
 import SwiftUI
 import PagecallCore
 
-@available(iOS 15.0, *)
 struct RoomView: View {
     @Environment(\.presentationMode) var presentationMode
 
@@ -96,10 +95,6 @@ struct RoomView: View {
 struct RoomView_Previews: PreviewProvider {
     @State static var isShowingRoomView = true
     static var previews: some View {
-        if #available(iOS 15.0, *) {
-            RoomView(roomId: "d", accessToken: "d", mode: .replay, queryItems: nil)
-        } else {
-            // Fallback on earlier versions
-        }
+        RoomView(roomId: "temp", accessToken: "temp", mode: .replay, queryItems: nil)
     }
 }
