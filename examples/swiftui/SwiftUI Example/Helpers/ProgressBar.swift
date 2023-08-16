@@ -18,26 +18,22 @@ struct ProgressBar: View {
 
     var body: some View {
         GeometryReader { geo in
-            VStack(alignment: .leading) {
+            ZStack(alignment: .leading) {
+                Rectangle()
+                    .fill(Color(red: 0.82, green: 0.84, blue: 0.86))
+                    .frame(height: 2)
+
+                Rectangle()
+                    .fill(barColor)
+                    .frame(width: min(geo.size.width, geo.size.width * progress), height: 2)
+                    .animation(.linear, value: progress)
+
                 Image("Pencil")
                     .resizable()
                     .frame(width: 56, height: 58)
-                    // need -10 offset because of the original image shape
-                    .offset(x: min(geo.size.width, geo.size.width * progress) - 10, y: 0)
+                    .offset(x: min(geo.size.width, geo.size.width * progress) - 10)
                     .animation(.linear, value: progress)
-                    .padding(.bottom, -5)
-
-                ZStack(alignment: .leading) {
-                    Rectangle()
-                        .fill(Color(red: 0.82, green: 0.84, blue: 0.86))
-                        .frame(height: 2)
-
-                    Rectangle()
-                        .fill(barColor)
-                        .frame(width: min(geo.size.width, geo.size.width * progress), height: 2)
-                        .animation(.linear, value: progress)
-                }
-                .cornerRadius(45.0)
+                    .alignmentGuide(VerticalAlignment.center) { $0[.bottom] + 3 }
             }
             .frame(width: geo.size.width, height: geo.size.height)
         }
