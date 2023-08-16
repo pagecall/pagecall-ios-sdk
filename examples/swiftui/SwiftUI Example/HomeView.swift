@@ -32,7 +32,7 @@ struct HomeView: View {
 
                     HStack(spacing: 12) {
                         NavigationLink(
-                            destination: RoomView(roomId: roomId, accessToken: accessToken, mode: .replay, queryItems: parseQueryItems())
+                            destination: RoomView(roomId: roomId, accessToken: accessToken, mode: .replay, queryItems: String.parseQueryItems(query: query))
                         ) {
                             ReplayLabel()
                         }
@@ -46,7 +46,7 @@ struct HomeView: View {
                         }
 
                         NavigationLink(
-                            destination: RoomView(roomId: roomId, accessToken: accessToken, mode: .meet, queryItems: parseQueryItems())
+                            destination: RoomView(roomId: roomId, accessToken: accessToken, mode: .meet, queryItems: String.parseQueryItems(query: query))
                         ) {
                             EnterLabel()
                         }
@@ -90,19 +90,6 @@ struct HomeView: View {
 
     private func endEditing() {
         UIApplication.shared.endEditing()
-    }
-
-    private func parseQueryItems() -> [URLQueryItem]? {
-        if !query.isEmpty {
-            return query.components(separatedBy: "&")
-                .map {
-                    $0.components(separatedBy: "=")
-                }
-                .map {
-                    URLQueryItem(name: $0[0], value: $0[1])
-                }
-        }
-        return nil
     }
 }
 
