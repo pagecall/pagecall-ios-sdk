@@ -24,7 +24,7 @@ struct ProgressBar: View {
                     .frame(width: 56, height: 58)
                     // need -10 offset because of the original image shape
                     .offset(x: min(geo.size.width, geo.size.width * progress) - 10, y: 0)
-                    .animation(.linear)
+                    .animation(.linear, value: progress)
                     .padding(.bottom, -5)
 
                 ZStack(alignment: .leading) {
@@ -35,7 +35,7 @@ struct ProgressBar: View {
                     Rectangle()
                         .fill(barColor)
                         .frame(width: min(geo.size.width, geo.size.width * progress), height: 2)
-                        .animation(.linear)
+                        .animation(.linear, value: progress)
                 }
                 .cornerRadius(45.0)
             }
