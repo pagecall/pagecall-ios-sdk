@@ -8,9 +8,9 @@
 import Foundation
 
 extension String {
-    static func parseQueryItems(query: String) -> [URLQueryItem]? {
-        if !query.isEmpty {
-            return query.components(separatedBy: "&")
+    func asQueryItems() -> [URLQueryItem]? {
+        if !self.isEmpty {
+            return self.components(separatedBy: "&")
                 .map {
                     $0.components(separatedBy: "=")
                 }

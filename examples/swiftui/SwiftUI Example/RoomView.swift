@@ -13,6 +13,7 @@ struct RoomView: View {
 
     @State private var isSendingMessage = false
     @State private var visibleMessage: String?
+    @State var isLoadingShown = true
 
     @StateObject private var pagecallWebViewModel: PagecallWebViewModel
 
@@ -79,14 +80,28 @@ struct RoomView: View {
                     })
                 }
 
-                if pagecallWebViewModel.state == .loading {
-                    Loading()
+                if isLoadingShown {
+                    Loading(progress: pagecallWebViewModel.state == .loading ? 0 : 1)
                 }
             }
         }
         .onChange(of: pagecallWebViewModel.newMessage, perform: { newMessage in
             self.visibleMessage = newMessage
         })
+        .onChange(of: pagecallWebViewModel.state) { state in
+            switch state {
+            case .loading:
+                isLoadingShown = true
+            case .loaded:
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    isLoadingShown = false
+                }
+            case .terminated:
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    isLoadingShown = false
+                }
+            }
+        }
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton, trailing: sendMessageButton)
     }

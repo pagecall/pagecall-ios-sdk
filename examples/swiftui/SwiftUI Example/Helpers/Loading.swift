@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 struct Loading: View {
-    @State private var progress = Double(0)
+    let progress: Double
 
     var body: some View {
         Background {
@@ -28,14 +28,11 @@ struct Loading: View {
             }
         }
         .ignoresSafeArea()
-        .onAppear {
-            progress = 0.25
-        }
     }
 }
 
 struct Loading_Previews: PreviewProvider {
     static var previews: some View {
-        Loading()
+        Loading(progress: 0.25)
     }
 }

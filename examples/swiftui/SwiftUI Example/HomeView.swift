@@ -32,7 +32,7 @@ struct HomeView: View {
 
                     HStack(spacing: 12) {
                         NavigationLink(
-                            destination: RoomView(roomId: roomId, accessToken: accessToken, mode: .replay, queryItems: String.parseQueryItems(query: query))
+                            destination: RoomView(roomId: roomId, accessToken: accessToken, mode: .replay, queryItems: query.asQueryItems())
                         ) {
                             ReplayLabel()
                         }
@@ -46,7 +46,7 @@ struct HomeView: View {
                         }
 
                         NavigationLink(
-                            destination: RoomView(roomId: roomId, accessToken: accessToken, mode: .meet, queryItems: String.parseQueryItems(query: query))
+                            destination: RoomView(roomId: roomId, accessToken: accessToken, mode: .meet, queryItems: query.asQueryItems())
                         ) {
                             EnterLabel()
                         }
