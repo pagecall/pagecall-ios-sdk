@@ -1,5 +1,5 @@
 //
-//  String+parseQueryItems.swift
+//  String+asQueryItems.swift
 //  SwiftUI Example
 //
 //  Created by 최성혁 on 2023/08/16.
