@@ -47,6 +47,7 @@ final class LabelAndTextFieldView: UIView {
         textField.autocapitalizationType = .none
         textField.autocorrectionType = .no
         textField.backgroundColor = .white
+        textField.overrideUserInterfaceStyle = .light
 
         divider.layer.borderWidth = 1
         divider.layer.borderColor = HomeViewConstants.Color.BorderGray.cgColor
