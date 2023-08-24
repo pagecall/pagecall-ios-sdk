@@ -24,7 +24,7 @@ public class PagecallLogger {
         print("[PagecallLogger] set roomId", roomId)
         #if canImport(Sentry)
         SentrySDK.configureScope { scope in
-            scope.setTag(value: "roomId", key: roomId)
+            scope.setTag(value: roomId, key: "roomId")
         }
         #endif
     }
