@@ -384,7 +384,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QTGVHKHLYT;
+				DEVELOPMENT_TEAM = 9H2SNY3HBF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "UIKit Example/Info.plist";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Pagecall requires microphone access for voicechat";
@@ -414,7 +414,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QTGVHKHLYT;
+				DEVELOPMENT_TEAM = 9H2SNY3HBF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "UIKit Example/Info.plist";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Pagecall requires microphone access for voicechat";
