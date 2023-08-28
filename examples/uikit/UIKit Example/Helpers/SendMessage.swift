@@ -15,7 +15,7 @@ final class SendMessage: UIView {
     private let textFieldOverlay = UIView()
     let textField = UITextField()
     private let sendMessage: (String, ((Error?) -> Void)?) -> Void
-    
+
     init(sendMessage: @escaping (String, ((Error?) -> Void)?) -> Void) {
         self.sendMessage = sendMessage
         super.init(frame: .zero)
