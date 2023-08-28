@@ -3,7 +3,7 @@ import AVFoundation
 class VolumeRecorder {
     private let audioRecorder: AVAudioRecorder
     let emitter: WebViewEmitter
-    
+
     var lowest: Float = -40 // -50 in MI
     var highest: Float = -10 // -10 in MI
 
@@ -31,7 +31,7 @@ class VolumeRecorder {
     }
 
     var unusualAveragePowerCount = 0
-    
+
     func requestAudioVolume() throws -> Float {
         audioRecorder.updateMeters()
         let averagePower = audioRecorder.averagePower(forChannel: 0)

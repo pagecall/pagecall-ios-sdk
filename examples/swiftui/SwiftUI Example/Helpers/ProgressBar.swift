@@ -36,7 +36,7 @@ struct ProgressBar: View {
                         .fill(barColor)
                         .frame(height: 2)
                 }
-                .offset(x: 30) //necessary to match alignment because of the image size
+                .offset(x: 30) // necessary to match alignment because of the image size
                 .frame(width: xOffset)
                 .animation(.linear, value: progress)
                 .alignmentGuide(VerticalAlignment.center) { $0[.bottom] }
