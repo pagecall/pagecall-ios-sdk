@@ -345,10 +345,17 @@ extension PagecallWebView: WKNavigationDelegate {
         didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
-        let cred = URLCredential(trust: challenge.protectionSpace.serverTrust!)
-        DispatchQueue.global(qos: .userInitiated).async {
-             completionHandler(.useCredential, cred)
-         }
+        if let serverTrust = challenge.protectionSpace.serverTrust {
+            let cred = URLCredential(trust: serverTrust)
+            DispatchQueue.global(qos: .userInitiated).async {
+                completionHandler(.useCredential, cred)
+            }
+        } else {
+            PagecallLogger.shared.capture(message: "Missing serverTrust")
+            DispatchQueue.global(qos: .userInitiated).async {
+                completionHandler(.performDefaultHandling, nil)
+            }
+        }
     }
 
     open func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
