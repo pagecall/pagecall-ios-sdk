@@ -133,6 +133,34 @@ open class PagecallWebView: WKWebView {
         }
     }
 
+    @available(*, deprecated, message: "Please use delegate, as uiDelegate is handled internally")
+    public override var uiDelegate: WKUIDelegate? {
+        didSet {
+            if let uiDelegate = uiDelegate {
+                if !uiDelegate.isEqual(self) {
+                    fatalError("uiDelegate cannot be overridden")
+                }
+            } else {
+                print("[PagecallWebView] uiDelegate cannot be unset")
+                uiDelegate = self
+            }
+        }
+    }
+
+    @available(*, deprecated, message: "Please use delegate, as navigationDelegate is handled internally")
+    public override var navigationDelegate: WKNavigationDelegate? {
+        didSet {
+            if let navigationDelegate = navigationDelegate {
+                if !navigationDelegate.isEqual(self) {
+                    fatalError("navigationDelegate cannot be overridden")
+                }
+            } else {
+                print("[PagecallWebView] navigationDelegate cannot be unset")
+                navigationDelegate = self
+            }
+        }
+    }
+
     private var callbacks = [String: (Any?) -> Void]()
     public func getReturnValue(script: String, completion: @escaping (Any?) -> Void) {
         let id = UUID().uuidString
