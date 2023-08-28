@@ -393,7 +393,7 @@ extension PagecallWebView: WKNavigationDelegate {
                 PagecallLogger.shared.capture(error: error)
                 self.delegate?.pagecallDidEncounter(self, error: error)
             } else {
-                PagecallLogger.shared.capture(message: "Call started")
+                PagecallLogger.shared.addBreadcrumb(message: "Call started")
             }
         }
         cleanups.append({
@@ -403,7 +403,7 @@ extension PagecallWebView: WKNavigationDelegate {
                     PagecallLogger.shared.capture(error: error)
                     self.delegate?.pagecallDidEncounter(self, error: error)
                 } else {
-                    PagecallLogger.shared.capture(message: "Call ended")
+                    PagecallLogger.shared.addBreadcrumb(message: "Call ended")
                 }
             }
         })

@@ -29,6 +29,14 @@ public class PagecallLogger {
         #endif
     }
 
+    func addBreadcrumb(message: String) {
+        #if canImport(Sentry)
+        let crumb = Breadcrumb()
+        crumb.message = message
+        SentrySDK.addBreadcrumb(crumb)
+        #endif
+    }
+
     func capture(message: String) {
         #if canImport(Sentry)
         SentrySDK.capture(message: message)
