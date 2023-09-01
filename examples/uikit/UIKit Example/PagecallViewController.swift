@@ -177,18 +177,16 @@ extension PagecallViewController: PagecallDelegate {
 
     }
 
-    func pagecallDidEncounter(_ view: PagecallWebView, error: Error) {
-        DispatchQueue.main.async {
-            self.loading.setProgress(progress: 0.25)
-        }
-    }
-
     func pagecallDidReceive(_ view: PagecallWebView, message: String) {
         messageBox.setText(message: message)
         messageBox.isHidden = false
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3) {
             self.messageBox.isHidden = true
         }
+    }
+    
+    func pagecallDidCommit(_ view: PagecallWebView) {
+        print("pagecallWebView did commit")
     }
 
     func pagecallDidLoad(_ view: PagecallWebView) {
@@ -197,7 +195,12 @@ extension PagecallViewController: PagecallDelegate {
             self.loading.isHidden = true
         }
     }
-
+    
+    func pagecallDidFailLoad(_ view: PagecallWebView, error: Error) {
+        DispatchQueue.main.async {
+            self.loading.setProgress(progress: 0.25)
+        }
+    }
 }
 
 extension PagecallViewController {

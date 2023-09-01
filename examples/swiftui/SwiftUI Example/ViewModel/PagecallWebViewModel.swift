@@ -36,6 +36,10 @@ class PagecallWebViewModel: PagecallDelegate, ObservableObject {
         pagecallWebView.sendMessage(message: message, completionHandler: nil)
     }
 
+    public func pagecallDidCommit(_ view: PagecallWebView) {
+        print("pagecallWebView did commit")
+    }
+    
     public func pagecallDidLoad(_ view: PagecallWebView) {
         state = .loaded
     }

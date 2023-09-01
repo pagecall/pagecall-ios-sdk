@@ -8,7 +8,9 @@ public enum TerminationReason {
 public protocol PagecallDelegate: AnyObject {
     func pagecallDidTerminate(_ view: PagecallWebView, reason: TerminationReason)
     func pagecallDidEncounter(_ view: PagecallWebView, error: Error)
+    func pagecallDidCommit(_ view: PagecallWebView)
     func pagecallDidLoad(_ view: PagecallWebView)
+    func pagecallDidFailLoad(_ view: PagecallWebView, error: Error)
     func pagecallDidReceive(_ view: PagecallWebView, message: String)
     func pagecall(_ view: PagecallWebView, requestDownloadFor url: URL)
 }
@@ -16,7 +18,9 @@ public protocol PagecallDelegate: AnyObject {
 // Optional delegates
 public extension PagecallDelegate {
     func pagecallDidEncounter(_ view: PagecallWebView, error: Error) {}
+    func pagecallDidCommit(_ view: PagecallWebView) {}
     func pagecallDidLoad(_ view: PagecallWebView) {}
+    func pagecallDidFailLoad(_ view: PagecallWebView, error: Error) {}
     func pagecallDidReceive(_ view: PagecallWebView, message: String) {}
     func pagecall(_ view: PagecallWebView, requestDownloadFor url: URL) {}
 }
@@ -368,6 +372,9 @@ extension PagecallWebView: WKUIDelegate {
 }
 
 extension PagecallWebView: WKNavigationDelegate {
+    open func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        self.delegate?.pagecallDidCommit(self)
+    }
     open func webView(
         _ webView: WKWebView,
         didReceive challenge: URLAuthenticationChallenge,
@@ -470,7 +477,7 @@ extension PagecallWebView: WKNavigationDelegate {
 
     open func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         PagecallLogger.shared.capture(error: error)
-        self.delegate?.pagecallDidEncounter(self, error: error)
+        self.delegate?.pagecallDidFailLoad(self, error: error)
     }
 
     open func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
