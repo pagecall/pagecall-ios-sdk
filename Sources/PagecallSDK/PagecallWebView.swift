@@ -426,7 +426,6 @@ extension PagecallWebView: WKNavigationDelegate {
             if let error = error {
                 print("[PagecallWebView] Failed to start call")
                 PagecallLogger.shared.capture(error: error)
-                self.delegate?.pagecallDidEncounter(self, error: error)
             } else {
                 PagecallLogger.shared.addBreadcrumb(message: "Call started")
             }
@@ -436,7 +435,6 @@ extension PagecallWebView: WKNavigationDelegate {
                 if let error = error {
                     print("[PagecallWebView] Failed to end call")
                     PagecallLogger.shared.capture(error: error)
-                    self.delegate?.pagecallDidEncounter(self, error: error)
                 } else {
                     PagecallLogger.shared.addBreadcrumb(message: "Call ended")
                 }
