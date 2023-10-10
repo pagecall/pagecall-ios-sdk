@@ -90,17 +90,17 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     func onConnectionStateChange(transport: Transport, connectionState: TransportConnectionState) {
         switch connectionState {
         case .new:
-            print("[MiController] transport new")
+            emitter.log(name: "ConnectionStateChange", message: "new")
         case .checking:
-            print("[MiController] transport checking")
+            emitter.log(name: "ConnectionStateChange", message: "checking")
         case .connected:
-            print("[MiController] transport connected")
+            emitter.emit(eventName: .connected)
         case .completed:
-            print("[MiController] transport completed")
+            emitter.log(name: "ConnectionStateChange", message: "completed")
         case .failed:
             emitter.error(name: "ConnectionError", message: "Connection failed")
         case .disconnected:
-            emitter.error(name: "ConnectionError", message: "Disconnected")
+            emitter.emit(eventName: .disconnected)
         case .closed:
             emitter.error(name: "ConnectionError", message: "Connection closed")
         @unknown default:
