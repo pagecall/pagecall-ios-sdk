@@ -51,12 +51,14 @@ class PagecallViewController: UIViewController {
     let pagecallWebView = PagecallWebView()
     var sendMessage: SendMessage
     var sendMessageBottomConstraint: NSLayoutConstraint?
+    let onFatalError: ((Error) -> Void)
 
-    init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?) {
+    init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, onFatalError: @escaping (Error) -> Void) {
         self.roomId = roomId
         self.accessToken = accessToken
         self.mode = mode
         self.queryItems = queryItems
+        self.onFatalError = onFatalError
         self.sendMessage = SendMessage(sendMessage: pagecallWebView.sendMessage)
         super.init(nibName: nil, bundle: nil)
     }
@@ -74,6 +76,22 @@ class PagecallViewController: UIViewController {
         addKeyboardNotifications()
         enterRoom()
         pagecallWebView.delegate = self
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow })!
+        keyWindow.addSubview(loading)
+        loading.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            loading.leadingAnchor.constraint(equalTo: keyWindow.leadingAnchor),
+            loading.trailingAnchor.constraint(equalTo: keyWindow.trailingAnchor),
+            loading.topAnchor.constraint(equalTo: keyWindow.topAnchor),
+            loading.bottomAnchor.constraint(equalTo: keyWindow.bottomAnchor)
+        ])
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        loading.removeFromSuperview()
     }
 
     func setUpNavigationBar() {
@@ -121,16 +139,6 @@ class PagecallViewController: UIViewController {
             messageBox.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -PagecallViewConstants.Layout.PaddingUnderMessageBox),
             messageBox.heightAnchor.constraint(equalToConstant: PagecallViewConstants.Layout.MessageBoxHeight)
         ])
-
-        let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow })!
-        keyWindow.addSubview(loading)
-        loading.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            loading.leadingAnchor.constraint(equalTo: keyWindow.leadingAnchor),
-            loading.trailingAnchor.constraint(equalTo: keyWindow.trailingAnchor),
-            loading.topAnchor.constraint(equalTo: keyWindow.topAnchor),
-            loading.bottomAnchor.constraint(equalTo: keyWindow.bottomAnchor)
-        ])
     }
 
     func configureDesign() {
@@ -174,13 +182,10 @@ extension PagecallViewController: PagecallDelegate {
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1) {
             self.loading.isHidden = true
         }
-
     }
 
     func pagecallDidEncounter(_ view: PagecallWebView, error: Error) {
-        DispatchQueue.main.async {
-            self.loading.setProgress(progress: 0.25)
-        }
+        onFatalError(error)
     }
 
     func pagecallDidReceive(_ view: PagecallWebView, message: String) {

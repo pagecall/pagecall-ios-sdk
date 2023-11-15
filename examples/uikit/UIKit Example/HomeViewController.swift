@@ -249,12 +249,22 @@ extension HomeViewController {
         alertViewBottomConstraint?.constant = -HomeViewConstants.Layout.PaddingUnderAlert
     }
 
+    private func openPagecall(mode: PagecallMode) {
+        let queryItems = parseQueryItems()
+        var vc: PagecallViewController?
+        vc = PagecallViewController(roomId: roomSubview.text, accessToken: tokenSubview.text, mode: mode, queryItems: queryItems) { error in
+            let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+            alert.addAction(.init(title: "OK", style: .default, handler: { _ in
+                self.navigationController?.popViewController(animated: true)
+            }))
+            self.present(alert, animated: true, completion: nil)
+        }
+        self.navigationController?.pushViewController(vc!, animated: true)
+    }
+
     @objc func onReplayButtonTap() {
         if roomSubview.text != "" && tokenSubview.text != "" {
-            let queryItems = parseQueryItems()
-            let vc = PagecallViewController(roomId: roomSubview.text, accessToken: tokenSubview.text, mode: .replay, queryItems: queryItems)
-
-            self.navigationController?.pushViewController(vc, animated: true)
+            openPagecall(mode: .replay)
         } else {
             alert.isHidden = false
         }
@@ -262,10 +272,7 @@ extension HomeViewController {
 
     @objc func onEnterButtonTap() {
         if roomSubview.text != "" && tokenSubview.text != "" {
-            let queryItems = parseQueryItems()
-            let vc = PagecallViewController(roomId: roomSubview.text, accessToken: tokenSubview.text, mode: .meet, queryItems: queryItems)
-
-            self.navigationController?.pushViewController(vc, animated: true)
+            openPagecall(mode: .meet)
         } else {
             alert.isHidden = false
         }
