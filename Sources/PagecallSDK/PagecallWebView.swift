@@ -293,6 +293,7 @@ extension PagecallWebView {
     @available(*, deprecated, message: "Please use load(roomId) instead")
     override open func load(_ request: URLRequest) -> WKNavigation? {
         if let url = request.url, let components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            PagecallLogger.shared.addBreadcrumb(message: "Load \(url)")
             if let roomId = components.queryItems?.first(where: { item in item.name == "room_id" })?.value {
                 PagecallLogger.shared.setRoomId(roomId)
             } else {
@@ -453,6 +454,8 @@ extension PagecallWebView: WKNavigationDelegate {
     }
 
     open func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        PagecallLogger.shared.addBreadcrumb(message: "Navigated to \(webView.url?.absoluteString ?? "(blank)")")
+
         if let isPagecallMeeting = webView.url?.absoluteString.contains(PagecallMode.meet.baseURLString()), isPagecallMeeting {
             cleanupPagecallContext()
             initializePageContext()
@@ -466,13 +469,24 @@ extension PagecallWebView: WKNavigationDelegate {
         cleanupPagecallContext()
     }
 
-    open func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+    private func handleFatalError(_ error: Error) {
         PagecallLogger.shared.capture(error: error)
         self.delegate?.pagecallDidEncounter(self, error: error)
     }
 
+    open func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        PagecallLogger.shared.addBreadcrumb(message: "webViewDidFailNavigation")
+        handleFatalError(error)
+    }
+
     open func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        PagecallLogger.shared.capture(error: error)
+        PagecallLogger.shared.addBreadcrumb(message: "webViewDidFailProvisionalNavigation")
+        handleFatalError(error)
+    }
+
+    public func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        PagecallLogger.shared.addBreadcrumb(message: "webContentProcessDidTerminate")
+        handleFatalError(PagecallError.other(message: "webContentProcessDidTerminate"))
     }
 }
 
