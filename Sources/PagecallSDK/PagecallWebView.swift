@@ -9,7 +9,17 @@ public protocol PagecallDelegate: AnyObject {
     func pagecallDidTerminate(_ view: PagecallWebView, reason: TerminationReason)
     func pagecallDidEncounter(_ view: PagecallWebView, error: Error)
     func pagecallDidLoad(_ view: PagecallWebView)
+    /**
+     Respond to a remote message
+     The remote message could be sent from `PagecallWebView.sendMessage` or Pagecall API calls,
+     and the same message is delivered to every client.
+     */
     func pagecallDidReceive(_ view: PagecallWebView, message: String)
+    /**
+     Respond to a local event
+     The possible events vary depending on the layout.
+     */
+    func pagecallDidReceive(_ view: PagecallWebView, event: [String: Any])
     func pagecall(_ view: PagecallWebView, requestDownloadFor url: URL)
 }
 
@@ -18,6 +28,7 @@ public extension PagecallDelegate {
     func pagecallDidEncounter(_ view: PagecallWebView, error: Error) {}
     func pagecallDidLoad(_ view: PagecallWebView) {}
     func pagecallDidReceive(_ view: PagecallWebView, message: String) {}
+    func pagecallDidReceive(_ view: PagecallWebView, event: [String: Any]) {}
     func pagecall(_ view: PagecallWebView, requestDownloadFor url: URL) {}
 }
 
@@ -337,6 +348,9 @@ extension PagecallWebView: WKScriptMessageHandler {
                 } else if action == "message" {
                     guard let payload = body["payload"] as? [String: String], let message = payload["message"] else { return }
                     delegate?.pagecallDidReceive(self, message: message)
+                } else if action == "event" {
+                    guard let payload = body["payload"] as? [String: Any] else { return }
+                    delegate?.pagecallDidReceive(self, event: payload)
                 }
             case "return":
                 guard let payload = body["payload"] as? [String: Any], let id = payload["id"] as? String, let callback = callbacks[id] else { return }
