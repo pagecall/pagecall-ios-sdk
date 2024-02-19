@@ -139,6 +139,9 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         sendTransport.delegate = self
         recvTransport.delegate = self
     }
+    func getMediaStats() -> String {
+        return sendTransport.stats
+    }
 
     func consume(data: Data, callback: (Error?) -> Void) {
         guard let payload = String(data: data, encoding: .utf8)?.jsonObject() as? [String: Any],
