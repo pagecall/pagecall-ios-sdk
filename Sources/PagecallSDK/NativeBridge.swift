@@ -1,6 +1,11 @@
 import WebKit
 import AVFoundation
 
+struct Stat: Encodable {
+    var roundTripTime: Double
+    var packetsLost: Int
+}
+
 enum BridgeEvent: String, Codable {
     case audioDevice, audioDevices, audioVolume, audioStatus, audioSessionRouteChanged, audioSessionInterrupted, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, log, error
     case connectTransport
@@ -12,10 +17,27 @@ enum BridgeRequest: String, Codable {
 
 enum BridgeAction: String, Codable {
     // 항상 유효한 요청
-    case initialize, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, requestAudioVolume
+    case initialize, getPermissions, requestPermission, pauseAudio, resumeAudio, getAudioDevices, requestAudioVolume, getMediaStats
     case response
     // 컨트롤러 생성 후 유효한 요청
     case start, setAudioDevice, consume, dispose
+}
+
+func parseMediaStats(jsonString: String) -> Result<Stat, Error> {
+    guard let jsonData = jsonString.data(using: .utf8),
+          let parsedData = try? JSONSerialization.jsonObject(with: jsonData),
+          let array = parsedData as? [[String: Any]] else {
+        return .failure(PagecallError.other(message: "Failed to parse MI mediaStats"))
+    }
+    
+    let filteredArray = array.filter { $0["type"] as? String == "remote-inbound-rtp" }
+    guard let firstItem = filteredArray.first,
+          let roundTripTime = firstItem["roundTripTime"] as? Double,
+          let packetsLost = firstItem["packetsLost"] as? Int else {
+        return .failure(PagecallError.other(message: "Required data missing"))
+    }
+    
+    return .success(Stat(roundTripTime: roundTripTime, packetsLost: packetsLost))
 }
 
 class NativeBridge: Equatable {
@@ -143,6 +165,18 @@ class NativeBridge: Equatable {
                 respond(nil, data)
             } else {
                 respond(PagecallError.other(message: "Failed to getPermissions"), nil)
+            }
+        case .getMediaStats:
+            if let miController = mediaController as? MiController {
+                let jsonString = miController.getMediaStats()
+                switch parseMediaStats(jsonString: jsonString) {
+                    case .success(let stat):
+                        respond(nil, try? JSONEncoder().encode(stat))
+                    case .failure(let error):
+                        respond(nil, try? JSONEncoder().encode(NullEncodable()))
+                }
+            } else {
+                respond(nil, try? JSONEncoder().encode(NullEncodable()))
             }
         case .requestPermission:
             guard let payloadData = payloadData, let mediaType = try? JSONDecoder().decode(MediaType.self, from: payloadData) else {
