@@ -37,7 +37,7 @@ func parseMediaStats(jsonString: String) -> Result<Stat, Error> {
         return .failure(PagecallError.other(message: "Required data missing"))
     }
     
-    return .success(Stat(roundTripTime: roundTripTime, packetsLost: packetsLost))
+    return .success(Stat(roundTripTime: roundTripTime * 1000.0, packetsLost: packetsLost))
 }
 
 class NativeBridge: Equatable {
@@ -173,10 +173,10 @@ class NativeBridge: Equatable {
                     case .success(let stat):
                         respond(nil, try? JSONEncoder().encode(stat))
                     case .failure(let error):
-                        respond(nil, try? JSONEncoder().encode(NullEncodable()))
+                        respond(PagecallError.other(message: error.localizedDescription), nil)
                 }
             } else {
-                respond(nil, try? JSONEncoder().encode(NullEncodable()))
+                respond(PagecallError.other(message: "Not supported in Chime yet"), nil)
             }
         case .requestPermission:
             guard let payloadData = payloadData, let mediaType = try? JSONDecoder().decode(MediaType.self, from: payloadData) else {
