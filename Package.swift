@@ -45,7 +45,7 @@ let package = Package(
         ),
         .binaryTarget(
             name: "WebRTC",
-            path: "Binaries/WebRTC.xcframework"
+            path: "Binaries/PagecallWebRTC.xcframework"
         ),
         .testTarget(
             name: "PagecallSDKTests",
