@@ -12,7 +12,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "PagecallCore",
-            targets: ["PagecallCore", "AmazonChimeSDK", "AmazonChimeSDKMedia", "Mediasoup", "WebRTC"]
+            targets: ["PagecallCore", "AmazonChimeSDK", "AmazonChimeSDKMedia", "Mediasoup"]
         )
     ],
     dependencies: [
