@@ -1,6 +1,9 @@
 PODS:
-  - Pagecall (0.0.21)
+  - Mediasoup-Client-Swift (0.7.0)
+  - Pagecall (0.0.21):
+    - Mediasoup-Client-Swift
   - Pagecall/Log (0.0.21):
+    - Mediasoup-Client-Swift
     - Sentry (~> 8.0.0)
   - Sentry (8.0.0):
     - Sentry/Core (= 8.0.0)
@@ -15,6 +18,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - Mediasoup-Client-Swift
     - Sentry
     - SentryPrivate
 
@@ -23,7 +27,8 @@ EXTERNAL SOURCES:
     :path: "../../"
 
 SPEC CHECKSUMS:
-  Pagecall: 0b155cc32e7f3b4faabc14ecd63366dcd0d1a9f7
+  Mediasoup-Client-Swift: e8f187c336f948d8e865a198c85c02a1900a9455
+  Pagecall: 89ee1c2c49657ec256157424200427071e16ad9d
   Sentry: 2158a4621096dcd0a3a4f7c80b84b04dde261035
   SentryPrivate: 1e3acf96ee818a8d0d95b8e922d39ab6be338ea0
 
