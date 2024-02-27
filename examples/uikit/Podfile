@@ -8,4 +8,5 @@ target 'UIKit Example' do
   # Pods for UIKit Example
   pod 'Pagecall', path: '../../'
   pod 'Pagecall/Log', path: '../../'
+  pod 'WebRTC-SDK', git: 'https://github.com/pplink/webrtc-specs'
 end

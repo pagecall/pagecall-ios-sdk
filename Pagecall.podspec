@@ -30,8 +30,8 @@ Pod::Spec.new do |s|
     'Binaries/AmazonChimeSDK.xcframework',
     'Binaries/AmazonChimeSDKMedia.xcframework',
     'Binaries/Mediasoup.xcframework',
-    'Binaries/WebRTC.xcframework'
   ]
+  s.dependency 'WebRTC-SDK'
   s.source_files = 'Sources/PagecallSDK/**/*.{swift,h,m}'
   s.resource = 'Sources/PagecallSDK/PagecallNative.js'
 

@@ -1,17 +1,21 @@
 PODS:
-  - Pagecall (0.0.21)
+  - Pagecall (0.0.21):
+    - WebRTC-SDK
   - Pagecall/Log (0.0.21):
     - Sentry (~> 8.0.0)
+    - WebRTC-SDK
   - Sentry (8.0.0):
     - Sentry/Core (= 8.0.0)
     - SentryPrivate (= 8.0.0)
   - Sentry/Core (8.0.0):
     - SentryPrivate (= 8.0.0)
   - SentryPrivate (8.0.0)
+  - WebRTC-SDK (120.0.2)
 
 DEPENDENCIES:
   - Pagecall (from `../../`)
   - Pagecall/Log (from `../../`)
+  - WebRTC-SDK (from `https://github.com/pplink/webrtc-specs`)
 
 SPEC REPOS:
   trunk:
@@ -21,12 +25,20 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Pagecall:
     :path: "../../"
+  WebRTC-SDK:
+    :git: https://github.com/pplink/webrtc-specs
+
+CHECKOUT OPTIONS:
+  WebRTC-SDK:
+    :commit: 1306e36b6e9e7a0661b89e6ae5ada239ecf1ae31
+    :git: https://github.com/pplink/webrtc-specs
 
 SPEC CHECKSUMS:
-  Pagecall: 0b155cc32e7f3b4faabc14ecd63366dcd0d1a9f7
+  Pagecall: 4deda6363d8193efdd61bcdcee2bde009faccae7
   Sentry: 2158a4621096dcd0a3a4f7c80b84b04dde261035
   SentryPrivate: 1e3acf96ee818a8d0d95b8e922d39ab6be338ea0
+  WebRTC-SDK: 27b36d6c91436f55d32086e0a7122fd17c9d3996
 
-PODFILE CHECKSUM: 2c5df6556b2906df5c2e3bf0debd55c824a18815
+PODFILE CHECKSUM: 93b51c27049b0fc013810fd3be7407eec0a08c1c
 
 COCOAPODS: 1.12.1
