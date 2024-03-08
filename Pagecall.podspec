@@ -28,12 +28,11 @@ Pod::Spec.new do |s|
   s.swift_version = '5.0'
   s.vendored_frameworks =  [
     'Binaries/AmazonChimeSDK.xcframework',
-    'Binaries/AmazonChimeSDKMedia.xcframework',
-    'Binaries/Mediasoup.xcframework',
-    'Binaries/WebRTC.xcframework'
+    'Binaries/AmazonChimeSDKMedia.xcframework'
   ]
   s.source_files = 'Sources/PagecallSDK/**/*.{swift,h,m}'
   s.resource = 'Sources/PagecallSDK/PagecallNative.js'
+  s.dependency 'Mediasoup-Client-Swift', '0.1.3'
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
