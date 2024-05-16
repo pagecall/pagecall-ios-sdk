@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Pagecall'
-  s.version          = '0.0.22' # Update `version` field of PagecallWebView as you change this
+  s.version          = '0.0.22-nomi0' # Update `version` field of PagecallWebView as you change this
   s.summary          = 'Pagecall WebView: Enhanced Voice Communication via Custom WebView based on WKWebView'
 
 # This description is used to generate tags and improve search results.
@@ -28,9 +28,7 @@ Pod::Spec.new do |s|
   s.swift_version = '5.0'
   s.vendored_frameworks =  [
     'Binaries/AmazonChimeSDK.xcframework',
-    'Binaries/AmazonChimeSDKMedia.xcframework',
-    'Binaries/Mediasoup.xcframework',
-    'Binaries/WebRTC.xcframework'
+    'Binaries/AmazonChimeSDKMedia.xcframework'
   ]
   s.source_files = 'Sources/PagecallSDK/**/*.{swift,h,m}'
   s.resource = 'Sources/PagecallSDK/PagecallNative.js'
