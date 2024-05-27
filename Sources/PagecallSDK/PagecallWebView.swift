@@ -311,7 +311,11 @@ extension PagecallWebView {
                 print("[PagecallWebView] a non-pagecall url is loaded")
             }
         }
-        return super.load(request)
+        let result = super.load(request)
+        cleanups.append({
+            super.load(URLRequest(url: URL(string:"about:blank")!))
+        })
+        return result
     }
 
     @available(*, deprecated, message: "Please use load(roomId) instead")
