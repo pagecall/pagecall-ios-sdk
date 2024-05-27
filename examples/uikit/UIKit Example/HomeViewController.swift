@@ -67,6 +67,10 @@ class HomeViewController: UIViewController {
 
         addKeyboardNotifications()
         addTapGestures()
+
+        // You can replace it with a desired value when testing.
+        roomSubview.text = ""
+        tokenSubview.text = ""
    }
 
     override func viewWillAppear(_ animated: Bool) {

@@ -18,6 +18,9 @@ final class LabelAndTextFieldView: UIView {
         get {
             return textField.text!
         }
+        set {
+            textField.text = newValue
+        }
     }
 
     init(labelText: String) {
