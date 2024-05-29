@@ -231,21 +231,15 @@ window["\(self.subscriptionsStorageName)"]["\(id)"]?.unsubscribe();
     }
 
     private var cleanups: [() -> Void] = []
-    private func cleanupPagecallContext() {
+    func cleanup() {
         cleanups.forEach { cleanup in
             cleanup()
         }
         cleanups = []
     }
 
-    open override func didMoveToSuperview() {
-        if superview == nil {
-            cleanupPagecallContext()
-        }
-    }
-
     deinit {
-        cleanupPagecallContext()
+        cleanup()
     }
 
     public func sendMessage(message: String, completionHandler: ((Error?) -> Void)?) {
@@ -475,16 +469,16 @@ extension PagecallWebView: WKNavigationDelegate {
         PagecallLogger.shared.addBreadcrumb(message: "Navigated to \(webView.url?.absoluteString ?? "(blank)")")
 
         if let isPagecallMeeting = webView.url?.absoluteString.contains(PagecallMode.meet.baseURLString()), isPagecallMeeting {
-            cleanupPagecallContext()
+            cleanup()
             initializePageContext()
         } else if let isPagecallReplay = webView.url?.absoluteString.contains(PagecallMode.replay.baseURLString()), isPagecallReplay {
-            cleanupPagecallContext()
+            cleanup()
             listenJavascriptMessages()
         }
     }
 
     open func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        cleanupPagecallContext()
+        cleanup()
     }
 
     private func handleFatalError(_ error: Error) {
