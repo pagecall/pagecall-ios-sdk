@@ -231,7 +231,7 @@ window["\(self.subscriptionsStorageName)"]["\(id)"]?.unsubscribe();
     }
 
     private var cleanups: [() -> Void] = []
-    func cleanup() {
+    public func cleanup() {
         cleanups.forEach { cleanup in
             cleanup()
         }
