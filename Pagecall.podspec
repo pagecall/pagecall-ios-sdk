@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Pagecall'
-  s.version          = '0.0.22-nomi3' # Update `version` field of PagecallWebView as you change this
+  s.version          = '0.0.22-nomi4' # Update `version` field of PagecallWebView as you change this
   s.summary          = 'Pagecall WebView: Enhanced Voice Communication via Custom WebView based on WKWebView'
 
 # This description is used to generate tags and improve search results.
