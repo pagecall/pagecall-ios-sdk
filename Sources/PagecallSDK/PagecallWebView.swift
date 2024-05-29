@@ -238,6 +238,12 @@ window["\(self.subscriptionsStorageName)"]["\(id)"]?.unsubscribe();
         cleanups = []
     }
 
+    open override func didMoveToSuperview() {
+        if superview == nil {
+            cleanup()
+        }
+    }
+
     deinit {
         cleanup()
     }
@@ -305,11 +311,7 @@ extension PagecallWebView {
                 print("[PagecallWebView] a non-pagecall url is loaded")
             }
         }
-        let result = super.load(request)
-        cleanups.append({
-            super.load(URLRequest(url: URL(string:"about:blank")!))
-        })
-        return result
+        return super.load(request)
     }
 
     @available(*, deprecated, message: "Please use load(roomId) instead")
@@ -462,6 +464,10 @@ extension PagecallWebView: WKNavigationDelegate {
             if self.nativeBridge == nativeBridge {
                 self.nativeBridge = nil
             }
+        })
+
+        cleanups.append({
+            self.evaluateJavascriptWithLog(script: "Pagecall?.terminate()")
         })
     }
 

@@ -29,14 +29,14 @@ func parseMediaStats(jsonString: String) -> Result<Stat, Error> {
           let array = parsedData as? [[String: Any]] else {
         return .failure(PagecallError.other(message: "Failed to parse MI mediaStats"))
     }
-    
+
     let filteredArray = array.filter { $0["type"] as? String == "remote-inbound-rtp" }
     guard let firstItem = filteredArray.first,
           let roundTripTime = firstItem["roundTripTime"] as? Double,
           let packetsLost = firstItem["packetsLost"] as? Int else {
         return .failure(PagecallError.other(message: "Required data missing"))
     }
-    
+
     return .success(Stat(roundTripTime: roundTripTime * 1000.0, packetsLost: packetsLost))
 }
 
