@@ -431,6 +431,11 @@ extension PagecallWebView: WKNavigationDelegate {
         })
     }
 
+    public static func configure() {
+        // Trigger instantiation
+        _ = CallManager.shared
+    }
+
     private func initializePageContext() {
         listenJavascriptMessages()
 
