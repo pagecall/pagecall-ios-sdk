@@ -6,12 +6,13 @@
 //
 
 import UIKit
+import Pagecall
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        PagecallWebView.configure()
         return true
     }
 
