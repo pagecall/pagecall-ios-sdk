@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		42B645BE994C072A6A478241 /* Pods_UIKit_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C7829D75F5BF0865EA120B /* Pods_UIKit_Example.framework */; };
+		4BC63DB72C23FA0100B657B5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BC63DB62C23FA0100B657B5 /* LaunchScreen.storyboard */; };
 		4BD933382A160E49008BD122 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD933372A160E49008BD122 /* AppDelegate.swift */; };
 		4BD9333A2A160E49008BD122 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD933392A160E49008BD122 /* SceneDelegate.swift */; };
 		4BD9333C2A160E49008BD122 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD9333B2A160E49008BD122 /* HomeViewController.swift */; };
@@ -22,6 +23,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4BC63DB62C23FA0100B657B5 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4BD933342A160E49008BD122 /* UIKit Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "UIKit Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4BD933372A160E49008BD122 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4BD933392A160E49008BD122 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -89,6 +91,7 @@
 				5C71FBF62A68F1BE004E3A6F /* PagecallViewController.swift */,
 				4BD933402A160E4A008BD122 /* Assets.xcassets */,
 				4BD933452A160E4A008BD122 /* Info.plist */,
+				4BC63DB62C23FA0100B657B5 /* LaunchScreen.storyboard */,
 			);
 			path = "UIKit Example";
 			sourceTree = "<group>";
@@ -176,6 +179,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4BD933412A160E4A008BD122 /* Assets.xcassets in Resources */,
+				4BC63DB72C23FA0100B657B5 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
