@@ -391,7 +391,8 @@
 				DEVELOPMENT_TEAM = 9H2SNY3HBF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "UIKit Example/Info.plist";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Pagecall requires microphone access for voicechat";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera permission is required.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone permission is required.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -421,7 +422,8 @@
 				DEVELOPMENT_TEAM = 9H2SNY3HBF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "UIKit Example/Info.plist";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Pagecall requires microphone access for voicechat";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera permission is required.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone permission is required.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

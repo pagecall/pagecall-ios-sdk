@@ -6,7 +6,7 @@
 
 - Make sure you set `NSMicrophoneUsageDescription`
   - Video call is currently not supported. If you need video conferencing integrated in your service, please contact support@pagecall.com
-- Also, Those `UIBackgroundModes` should be enabled: `audio`, `fetch`, `voip`.
+- Also, Those `UIBackgroundModes` should be enabled: `audio`, `voip`.
 
 ## Usages
 
