@@ -51,9 +51,9 @@ class PagecallViewController: UIViewController {
     let pagecallWebView = PagecallWebView()
     var sendMessage: SendMessage
     var sendMessageBottomConstraint: NSLayoutConstraint?
-    let onFatalError: ((Error) -> Void)
+    let onFatalError: ((Error) -> Void)?
 
-    init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, onFatalError: @escaping (Error) -> Void) {
+    init(roomId: String, accessToken: String, mode: PagecallMode, queryItems: [URLQueryItem]?, onFatalError: ((Error) -> Void)?) {
         self.roomId = roomId
         self.accessToken = accessToken
         self.mode = mode
@@ -186,7 +186,7 @@ extension PagecallViewController: PagecallDelegate {
     }
 
     func pagecallDidEncounter(_ view: PagecallWebView, error: Error) {
-        onFatalError(error)
+        onFatalError?(error)
     }
 
     func pagecallDidReceive(_ view: PagecallWebView, message: String) {
