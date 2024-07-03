@@ -2,6 +2,8 @@
 
 [!] Bitcode is not supported, because it depends on [amazon-chime-sdk-ios](https://github.com/aws/amazon-chime-sdk-ios)'s binary file without bitcode.
 
+[!] macOS is not supported.
+
 ## Prerequisites
 
 - Make sure you set `NSMicrophoneUsageDescription`
