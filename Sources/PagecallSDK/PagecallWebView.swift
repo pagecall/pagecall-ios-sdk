@@ -270,6 +270,22 @@ return true;
         }
     }
 
+    private func setValueRaw(key: String, value: Any) {
+        evaluateJavascriptWithLog(script: """
+if (PagecallUI) {
+  PagecallUI.set("\(key)", \(value));
+}
+""")
+    }
+
+    public func setValue(key: String, value: String) {
+        setValueRaw(key: key, value: "\"\(value)\"")
+    }
+
+    public func setValue(key: String, value: any Numeric) {
+        setValueRaw(key: key, value: value)
+    }
+
     // MARK: UIPencilInteractionDelegate
     private var downloadedPreviewItemUrl: URL?
 }
