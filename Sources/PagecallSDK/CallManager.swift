@@ -3,6 +3,7 @@ import AVFoundation
 
 class CallManager: NSObject, CXProviderDelegate {
     static let shared = CallManager()
+    static var disabled = false
 
     let provider: CXProvider
     let callController: CXCallController
@@ -19,10 +20,19 @@ class CallManager: NSObject, CXProviderDelegate {
     private var callId: UUID?
 
     func startCall(completion: @escaping (Error?) -> Void) {
+        PagecallLogger.shared.addBreadcrumb(message: "startCall")
+
         if let _ = callId {
             completion(PagecallError.other(message: "Call not ended"))
             return
         }
+
+        if CallManager.disabled {
+            PagecallLogger.shared.addBreadcrumb(message: "startCall skipped")
+            completion(nil)
+            return
+        }
+
         let callId = UUID()
         self.callId = callId
         provider.reportOutgoingCall(with: callId, startedConnectingAt: Date())
@@ -34,6 +44,7 @@ class CallManager: NSObject, CXProviderDelegate {
             }
             if let error = error {
                 self.provider.reportCall(with: callId, endedAt: Date(), reason: .failed)
+                self.callId = nil
                 completion(error)
                 return
             }
@@ -43,6 +54,8 @@ class CallManager: NSObject, CXProviderDelegate {
     }
 
     func endCall(completion: @escaping (Error?) -> Void) {
+        PagecallLogger.shared.addBreadcrumb(message: "endCall")
+
         guard let callId = callId else {
             completion(nil)
             return
