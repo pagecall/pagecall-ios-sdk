@@ -54,13 +54,9 @@ class NativeBridge: Equatable {
 
             if let mediaController = mediaController {
                 synchronizePauseState()
-                if let _ = mediaController as? ChimeController {
-                    // Chime에서는 videoChat일 경우 소리가 작게 송출된다.
-                    AudioSessionManager.shared.desiredMode = .default
-                } else {
-                    // MI에서는 default일 경우 에어팟 연결이 해제된다.
-                    AudioSessionManager.shared.desiredMode = .videoChat
-                }
+                
+                // MI에서는 default일 경우 에어팟 연결이 해제된다.
+                AudioSessionManager.shared.desiredMode = .videoChat
                 AudioSessionManager.shared.emitter = emitter
                 AudioSessionManager.shared.startHandlingInterruption()
             }
@@ -136,10 +132,7 @@ class NativeBridge: Equatable {
                 respond(PagecallError.other(message: "Must be disposed first"), nil)
                 return
             }
-            if let meetingSessionConfiguration = JoinRequestService.getMeetingSessionConfiguration(data: payloadData) {
-                self.mediaController = ChimeController(emitter: self.emitter, configuration: meetingSessionConfiguration)
-                respond(nil, nil)
-            } else if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
+            if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
                 do {
                     let miController = try MiController(emitter: self.emitter, initialPayload: initialPayload)
                     self.mediaController = miController
@@ -194,11 +187,7 @@ class NativeBridge: Equatable {
             }
         case .getAudioDevices:
             let deviceList: [MediaDeviceInfo] = {
-                if let chimeController = mediaController as? ChimeController {
-                    return chimeController.getAudioDevices()
-                } else {
-                    return [MediaDeviceInfo.audioDefault]
-                }
+                return [MediaDeviceInfo.audioDefault]
             }()
             do {
                 let data = try JSONEncoder().encode(deviceList)
@@ -265,19 +254,6 @@ class NativeBridge: Equatable {
             guard let payloadData = payloadData, let deviceId = try? JSONDecoder().decode(DeviceId.self, from: payloadData) else {
                 respond(PagecallError.other(message: "Invalid payload"), nil)
                 return
-            }
-
-            guard let chimeController = mediaController as? ChimeController else {
-                // No op for miController
-                return
-            }
-            chimeController.setAudioDevice(deviceId: deviceId.deviceId) { (error: Error?) in
-                if let error = error {
-                    print("[NativeBridge] Failed to setAudioDevice", error)
-                    respond(PagecallError.other(message: error.localizedDescription), nil)
-                } else {
-                    respond(nil, nil)
-                }
             }
         case .consume:
             guard let mediaController = mediaController else {

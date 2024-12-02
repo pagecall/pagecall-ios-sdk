@@ -1,13 +1,10 @@
 PODS:
-  - Pagecall (0.0.22)
-  - Pagecall/Log (0.0.22):
-    - Sentry (~> 8.0.0)
-  - Sentry (8.0.0):
-    - Sentry/Core (= 8.0.0)
-    - SentryPrivate (= 8.0.0)
-  - Sentry/Core (8.0.0):
-    - SentryPrivate (= 8.0.0)
-  - SentryPrivate (8.0.0)
+  - Pagecall (0.0.23)
+  - Pagecall/Log (0.0.23):
+    - Sentry (~> 8.41.0)
+  - Sentry (8.41.0):
+    - Sentry/Core (= 8.41.0)
+  - Sentry/Core (8.41.0)
 
 DEPENDENCIES:
   - Pagecall (from `../../`)
@@ -16,17 +13,15 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Sentry
-    - SentryPrivate
 
 EXTERNAL SOURCES:
   Pagecall:
     :path: "../../"
 
 SPEC CHECKSUMS:
-  Pagecall: 52e7f6c5cca591687888357f44919ed5b268b925
-  Sentry: 2158a4621096dcd0a3a4f7c80b84b04dde261035
-  SentryPrivate: 1e3acf96ee818a8d0d95b8e922d39ab6be338ea0
+  Pagecall: 34ec6b5553c66beac100cd74b5c9b919ae7dbbad
+  Sentry: 54d0fe6c0df448497c8ed4cce66ccf7027e1823e
 
 PODFILE CHECKSUM: 2c5df6556b2906df5c2e3bf0debd55c824a18815
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
