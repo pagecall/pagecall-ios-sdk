@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
         "state": {
           "branch": null,
-          "revision": "2479b6f7ff69b66bcdea82184d097667e63828ed",
-          "version": "8.5.0"
+          "revision": "56bfb7e723c76614be4c0861ee820ccbaed14c6d",
+          "version": "8.41.0"
         }
       }
     ]

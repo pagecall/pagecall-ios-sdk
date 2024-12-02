@@ -27,8 +27,6 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '14.0'
   s.swift_version = '5.0'
   s.vendored_frameworks =  [
-    'Binaries/AmazonChimeSDK.xcframework',
-    'Binaries/AmazonChimeSDKMedia.xcframework',
     'Binaries/Mediasoup.xcframework',
     'Binaries/WebRTC.xcframework'
   ]
@@ -41,6 +39,6 @@ Pod::Spec.new do |s|
   s.default_subspec = :none
 
   s.subspec 'Log' do |subspec|
-    subspec.dependency 'Sentry', '~> 8.0.0'
+    subspec.dependency 'Sentry', '~> 8.41.0'
   end
 end
