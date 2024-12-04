@@ -68,7 +68,7 @@ extension WKWebView {
 }
 
 open class PagecallWebView: WKWebView {
-    static let version = "0.0.24"
+    static let version = "0.0.25"
 
     var nativeBridge: NativeBridge?
     var controllerName = "pagecall"
