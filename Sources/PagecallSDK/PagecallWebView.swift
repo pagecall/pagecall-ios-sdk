@@ -235,6 +235,7 @@ window["\(self.subscriptionsStorageName)"]["\(id)"]?.unsubscribe();
         cleanups.forEach { cleanup in
             cleanup()
         }
+        evaluateJavascriptWithLog(script: "window.Pagecall?.terminate()")
         cleanups = []
     }
 
@@ -321,11 +322,7 @@ extension PagecallWebView {
                 print("[PagecallWebView] a non-pagecall url is loaded")
             }
         }
-        let result = super.load(request)
-        cleanups.append({
-            super.load(URLRequest(url: URL(string: "about:blank")!))
-        })
-        return result
+        return super.load(request)
     }
 
     @available(*, deprecated, message: "Please use load(roomId) instead")
