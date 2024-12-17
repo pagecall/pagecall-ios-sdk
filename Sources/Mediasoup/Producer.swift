@@ -2,6 +2,7 @@ import Foundation
 import Mediasoup_Private
 import WebRTC
 
+
 public class Producer {
 	public weak var delegate: ProducerDelegate?
 
@@ -78,6 +79,7 @@ public class Producer {
 		return try producer.getStats()
 	}
 }
+
 
 extension Producer: ProducerWrapperDelegate {
 	public func onTransportClose(_ producer: ProducerWrapper) {

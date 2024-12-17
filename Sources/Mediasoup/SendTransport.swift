@@ -2,6 +2,7 @@ import Foundation
 import WebRTC
 import Mediasoup_Private
 
+
 public class SendTransport {
 	public weak var delegate: SendTransportDelegate?
 
@@ -16,8 +17,13 @@ public class SendTransport {
 		print("SendTransport deallocated")
 	}
 
-	public func createProducer(for track: RTCMediaStreamTrack, encodings: [RTCRtpEncodingParameters]?,
-		codecOptions: String?, appData: String?) throws -> Producer {
+	public func createProducer(
+		for track: RTCMediaStreamTrack,
+		encodings: [RTCRtpEncodingParameters]?,
+		codecOptions: String?,
+		codec: String?,
+		appData: String?
+	) throws -> Producer {
 
 		guard let mediaKind = MediaKind(stringValue: track.kind) else {
 			throw MediasoupError.invalidParameters("Unknown media kind")
@@ -25,7 +31,7 @@ public class SendTransport {
 
 		return try convertMediasoupErrors {
 			let producer = try self.transport.createProducer(for: track, encodings: encodings,
-				codecOptions: codecOptions, appData: appData)
+				codecOptions: codecOptions, codec: codec, appData: appData)
 			return Producer(producer: producer, mediaKind: mediaKind)
 		}
 	}
@@ -65,12 +71,6 @@ extension SendTransport: Transport {
 	public func updateICEServers(_ iceServers: String) throws {
 		try convertMediasoupErrors {
 			try transport.updateICEServers(iceServers)
-		}
-	}
-
-	public func updateICETransportPolicy(_ transportPolicy: ICETransportPolicy) throws {
-		try convertMediasoupErrors {
-			try transport.update(transportPolicy.rtcICETransportPolicy)
 		}
 	}
 }

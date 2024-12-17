@@ -1,5 +1,6 @@
 import Foundation
 
+
 public protocol Transport: AnyObject {
 	var id: String { get }
 	var closed: Bool { get }
@@ -10,5 +11,4 @@ public protocol Transport: AnyObject {
 	func close()
 	func restartICE(with iceParameters: String) throws
 	func updateICEServers(_ iceServers: String) throws
-	func updateICETransportPolicy(_ transportPolicy: ICETransportPolicy) throws
 }

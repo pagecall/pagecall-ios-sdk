@@ -85,18 +85,10 @@
 	}, error);
 }
 
-- (void)updateICETransportPolicy:(RTCIceTransportPolicy)iceTransportPolicy
-	error:(out NSError *__autoreleasing _Nullable *_Nullable)error
-	__attribute__((swift_error(nonnull_error))) {
-	mediasoupTry(^{
-		auto nativePolicy = [RTCConfiguration nativeTransportsTypeForTransportPolicy:iceTransportPolicy];
-		self->_transport->UpdateIceTransportType(nativePolicy);
-	}, error);
-}
-
 - (ProducerWrapper *_Nullable)createProducerForTrack:(RTCMediaStreamTrack *_Nonnull)mediaTrack
 	encodings:(NSArray<RTCRtpEncodingParameters *> *_Nullable)encodings
 	codecOptions:(NSString *_Nullable)codecOptions
+	codec:(NSString *_Nullable)codec
 	appData:(NSString *_Nullable)appData
 	error:(out NSError *__autoreleasing _Nullable *_Nullable)error {
 
@@ -135,6 +127,13 @@
 			codecOptionsJson = nlohmann::json::parse(std::string(codecOptions.UTF8String));
 		}
 
+		nlohmann::json *codecJsonPtr = nullptr;
+		nlohmann::json codecJson = nlohmann::json::object();
+		if (codec != nullptr) {
+			codecJson = nlohmann::json::parse(std::string(codec.UTF8String));
+			codecJsonPtr = &codecJson;
+		}
+
 		nlohmann::json appDataJson = nlohmann::json::object();
 		if (appData != nullptr) {
 			appDataJson = nlohmann::json::parse(std::string(appData.UTF8String));
@@ -148,6 +147,7 @@
 			mediaStreamTrack,
 			&encodingsVector,
 			&codecOptionsJson,
+			codecJsonPtr,
 			appDataJson
 		);
 		return [[ProducerWrapper alloc] initWithProducer:producer mediaStreamTrack:mediaTrack listenerAdapter:listenerAdapter];

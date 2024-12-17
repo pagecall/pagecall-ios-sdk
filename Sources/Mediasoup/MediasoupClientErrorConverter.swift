@@ -1,6 +1,7 @@
 import Foundation
 import Mediasoup_Private
 
+
 private func description(_ error: MediasoupClientError) -> String {
 	let description = error.errorUserInfo[NSLocalizedDescriptionKey] as? String
 	return description ?? String()
