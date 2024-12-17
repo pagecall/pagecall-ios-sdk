@@ -14,6 +14,7 @@ struct TransportPayload: Codable {
     let iceCandidates: String
     let dtlsParameters: String
     let sctpParameters: String?
+    let iceServers: String?
 }
 
 struct MiInitialPayload: Codable {
@@ -125,6 +126,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
             iceCandidates: initialPayload.send.iceCandidates,
             dtlsParameters: initialPayload.send.dtlsParameters,
             sctpParameters: initialPayload.send.sctpParameters,
+            iceServers: initialPayload.send.iceServers,
             appData: nil
         )
         recvTransport = try device.createReceiveTransport(
@@ -133,6 +135,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
             iceCandidates: initialPayload.recv.iceCandidates,
             dtlsParameters: initialPayload.recv.dtlsParameters,
             sctpParameters: initialPayload.recv.sctpParameters,
+            iceServers: initialPayload.send.iceServers,
             appData: nil
         )
 
