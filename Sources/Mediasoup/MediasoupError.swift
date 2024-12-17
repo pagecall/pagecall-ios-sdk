@@ -1,5 +1,6 @@
 import Foundation
 
+
 public enum MediasoupError: Error {
 	case unsupported(String)
 	case invalidState(String)

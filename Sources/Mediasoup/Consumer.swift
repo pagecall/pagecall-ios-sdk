@@ -1,5 +1,7 @@
 import Foundation
+import Mediasoup_Private
 import WebRTC
+
 
 public class Consumer {
 	public weak var delegate: ConsumerDelegate?
@@ -66,6 +68,7 @@ public class Consumer {
 		return try consumer.getStats()
 	}
 }
+
 
 extension Consumer: ConsumerWrapperDelegate {
 	public func onTransportClose(_ consumer: ConsumerWrapper) {

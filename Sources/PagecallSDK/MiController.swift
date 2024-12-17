@@ -178,7 +178,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         DispatchQueue.global(qos: .userInitiated).async {
             self.producer?.close()
             do {
-                self.producer = try self.sendTransport.createProducer(for: audioTrack, encodings: nil, codecOptions: nil, appData: nil)
+                self.producer = try self.sendTransport.createProducer(for: audioTrack, encodings: nil, codecOptions: nil, codec: nil, appData: nil)
                 self.startVolumeScheduler()
                 callback(nil)
             } catch {
