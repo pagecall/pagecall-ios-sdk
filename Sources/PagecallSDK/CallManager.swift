@@ -1,12 +1,13 @@
 import CallKit
 import AVFoundation
 
-class CallManager: NSObject, CXProviderDelegate {
-    static let shared = CallManager()
+public class CallManager: NSObject, CXProviderDelegate {
+    static public let shared = CallManager()
     static var disabled = false
 
     let provider: CXProvider
     let callController: CXCallController
+    public var delegate: CXProviderDelegate?
 
     private override init() {
         let configuration = CXProviderConfiguration()
@@ -73,50 +74,59 @@ class CallManager: NSObject, CXProviderDelegate {
     }
 
     // MARK: CXProviderDelegate
-    func providerDidReset(_ provider: CXProvider) {
+    public func providerDidReset(_ provider: CXProvider) {
         print("[CallManager] providerDidReset")
+        self.delegate?.providerDidReset(provider)
     }
 
-    func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
+    public func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         print("[CallManager] providerPerformStartCall", action)
         action.fulfill()
+        self.delegate?.provider?(provider, perform: action)
     }
 
-    func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+    public func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         print("[CallManager] providerPerformAnswerCall", action)
         action.fulfill()
+        self.delegate?.provider?(provider, perform: action)
     }
 
-    func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
+    public func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         print("[CallManager] providerPerformEndCall", action)
         action.fulfill()
+        self.delegate?.provider?(provider, perform: action)
     }
 
-    func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
+    public func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
         print("[CallManager] providerPerformSetHeldCall", action)
         action.fulfill()
+        self.delegate?.provider?(provider, perform: action)
     }
 
-    func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
+    public func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
         print("[CallManager] providerPerformSetMutedCall", action)
         action.fulfill()
+        self.delegate?.provider?(provider, perform: action)
     }
 
-    func provider(_ provider: CXProvider, perform action: CXSetGroupCallAction) {
+    public func provider(_ provider: CXProvider, perform action: CXSetGroupCallAction) {
         print("[CallManager] providerPerformSetGroupCall", action)
         action.fulfill()
+        self.delegate?.provider?(provider, perform: action)
     }
 
-    func provider(_ provider: CXProvider, timedOutPerforming action: CXAction) {
+    public func provider(_ provider: CXProvider, timedOutPerforming action: CXAction) {
         print("[CallManager] providerTimedOutPerforming", action)
+        self.delegate?.provider?(provider, timedOutPerforming: action)
     }
 
-    func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
+    public func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
         print("[CallManager] providerDidActivate")
+        self.delegate?.provider?(provider, didActivate: audioSession)
     }
 
-    func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
+    public func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
         print("[CallManager] providerDidDeactivate")
+        self.delegate?.provider?(provider, didDeactivate: audioSession)
     }
-
 }
