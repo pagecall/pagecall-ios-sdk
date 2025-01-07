@@ -54,7 +54,7 @@ class NativeBridge: Equatable {
 
             if let mediaController = mediaController {
                 synchronizePauseState()
-                
+
                 // MI에서는 default일 경우 에어팟 연결이 해제된다.
                 AudioSessionManager.shared.desiredMode = .videoChat
                 AudioSessionManager.shared.emitter = emitter
