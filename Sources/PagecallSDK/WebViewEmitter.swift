@@ -123,9 +123,13 @@ class WebViewEmitter {
         runScript("window.PagecallNative.throw('\(requestId)','\(errorMessage.javaScriptString)')")
     }
 
-    let runScript: (String) -> Void
-
-    init(runScript: @escaping (String) -> Void) {
-        self.runScript = runScript
+    func runScript(_ script: String) {
+        delegate?.runScript(script)
     }
+
+    var delegate: ScriptDelegate?
+}
+
+public protocol ScriptDelegate: AnyObject {
+    func runScript(_ script: String)
 }

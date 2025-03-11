@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum PagecallError: LocalizedError {
+public enum PagecallError: LocalizedError {
     case other(message: String)
     case audioRecorderBroken
     case audioRecorderPowerOutOfRange
@@ -24,6 +24,6 @@ enum PagecallError: LocalizedError {
     }
     var errorDescription: String { message }
     var failureReason: String { message }
-    var recoverySuggestion: String? { "" }
-    var helpAnchor: String? { "" }
+    public var recoverySuggestion: String? { "" }
+    public var helpAnchor: String? { "" }
 }
