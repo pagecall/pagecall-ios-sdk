@@ -25,14 +25,6 @@ extension String {
 }
 
 class WebViewEmitter {
-    let webview: WKWebView
-
-    private func runScript(script: String) {
-        DispatchQueue.main.async {
-            self.webview.evaluateJavascriptWithLog(script: script)
-        }
-    }
-
     private func rawEmit(eventName: String) {
         self.rawEmit(eventName: eventName, message: nil)
     }
@@ -44,7 +36,7 @@ class WebViewEmitter {
     private func rawEmit(eventName: String, message: String?, eventId: String?) {
         let args = [eventName, message, eventId].compactMap { $0 }
         let script = "window.PagecallNative.emit(\(args.map { arg in "'\(arg)'" }.joined(separator: ",")))"
-        runScript(script: script)
+        runScript(script)
     }
 
     func emit(eventName: BridgeEvent) {
@@ -124,14 +116,16 @@ class WebViewEmitter {
                 return "window.PagecallNative.response('\(requestId)')"
             }
         }()
-        runScript(script: script)
+        runScript(script)
     }
 
     func response(requestId: String, errorMessage: String) {
-        runScript(script: "window.PagecallNative.throw('\(requestId)','\(errorMessage.javaScriptString)')")
+        runScript("window.PagecallNative.throw('\(requestId)','\(errorMessage.javaScriptString)')")
     }
 
-    init(webView: WKWebView) {
-        self.webview = webView
+    let runScript: (String) -> Void
+
+    init(runScript: @escaping (String) -> Void) {
+        self.runScript = runScript
     }
 }

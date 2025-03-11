@@ -45,9 +45,6 @@ class NativeBridge: Equatable {
         return lhs.id == rhs.id
     }
 
-    private let webview: PagecallWebView
-    private let emitter: WebViewEmitter
-
     private var mediaController: MediaController? {
         didSet {
             AudioSessionManager.shared.stopHandlingInterruption()
@@ -82,11 +79,33 @@ class NativeBridge: Equatable {
     static private var count = 0
     public let id: Int
 
-    init(webview: PagecallWebView) {
+    private let webview: PagecallWebView
+    private let frame: WKFrameInfo
+
+    private let emitter: WebViewEmitter
+
+    init(webview: PagecallWebView, frame: WKFrameInfo) {
         NativeBridge.count += 1
         id = NativeBridge.count
         self.webview = webview
-        self.emitter = .init(webView: self.webview)
+        self.emitter = .init(runScript: { [weak webview, weak frame] script in
+            DispatchQueue.main.async {
+                guard let webview = webview, let frame = frame else { return }
+                 webview.evaluateJavaScript(script, in: frame, in: .page, completionHandler: { result in
+                    switch result {
+                    case .success(let value as Any?):
+                        if let value = value {
+                            print("[PagecallWebView] Script result", value)
+                        }
+                    case .failure(let error):
+                        print("[PagecallWebView] runScript error", error.localizedDescription)
+                        print("[PagecallWebView] original script", script)
+                    }
+                })
+            }
+        })
+
+        self.frame = frame
     }
 
     func messageHandler(message: String) {

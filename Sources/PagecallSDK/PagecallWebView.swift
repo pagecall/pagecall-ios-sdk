@@ -423,10 +423,19 @@ extension PagecallWebView: WKNavigationDelegate {
                 return
             }
         }
-        if let url = navigationAction.request.url, url.absoluteString.starts(with: "http") {
+
+        if let urlString = navigationAction.request.url?.absoluteString, urlString.starts(with: "http") {
             decisionHandler(.allow)
+
+            cleanup()
+            if urlString.contains(PagecallMode.meet.baseURLString()), let frame = navigationAction.targetFrame {
+                initializePageContext(frame: frame)
+            } else if urlString.contains(PagecallMode.replay.baseURLString()) {
+                listenJavascriptMessages()
+            }
             return
         }
+
         // 사진촬영 시 about:blank 로 이동해버리는 문제가 있음
         decisionHandler(.cancel)
     }
@@ -453,7 +462,7 @@ extension PagecallWebView: WKNavigationDelegate {
         _ = CallManager.shared
     }
 
-    private func initializePageContext() {
+    private func initializePageContext(frame: WKFrameInfo) {
         listenJavascriptMessages()
 
         // Enable call
@@ -477,7 +486,7 @@ extension PagecallWebView: WKNavigationDelegate {
         })
 
         // Build native bridge
-        let nativeBridge = NativeBridge(webview: self)
+        let nativeBridge = NativeBridge(webview: self, frame: frame)
         self.nativeBridge = nativeBridge
         cleanups.append({
             nativeBridge.disconnect()
@@ -489,18 +498,6 @@ extension PagecallWebView: WKNavigationDelegate {
 
     open func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         PagecallLogger.shared.addBreadcrumb(message: "Navigated to \(webView.url?.absoluteString ?? "(blank)")")
-
-        if let isPagecallMeeting = webView.url?.absoluteString.contains(PagecallMode.meet.baseURLString()), isPagecallMeeting {
-            cleanup()
-            initializePageContext()
-        } else if let isPagecallReplay = webView.url?.absoluteString.contains(PagecallMode.replay.baseURLString()), isPagecallReplay {
-            cleanup()
-            listenJavascriptMessages()
-        }
-    }
-
-    open func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        cleanup()
     }
 
     private func handleFatalError(_ error: Error) {
