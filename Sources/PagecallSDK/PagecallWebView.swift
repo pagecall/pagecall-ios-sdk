@@ -130,6 +130,10 @@ open class PagecallWebView: WKWebView {
         let interaction = UIPencilInteraction()
         interaction.delegate = self
         addInteraction(interaction)
+
+        if #available(iOS 16.4, *) {
+            isInspectable = true
+        }
     }
 
     public override var customUserAgent: String? {
