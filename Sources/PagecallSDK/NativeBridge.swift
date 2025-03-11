@@ -141,6 +141,8 @@ class NativeBridge: Equatable {
                     print("[NativeBridge] error creating miController", error)
                     respond(PagecallError.other(message: error.localizedDescription), nil)
                 }
+            } else {
+                respond(PagecallError.other(message: "Unexpected payload"), nil)
             }
 
         case .getPermissions:
