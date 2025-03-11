@@ -45,28 +45,6 @@ public enum PagecallMode {
     }
 }
 
-extension WKWebView {
-    func evaluateJavascriptWithLog(script: String) {
-        evaluateJavascriptWithLog(script: script, completionHandler: nil)
-    }
-
-    func evaluateJavascriptWithLog(script: String, completionHandler: ((Any?, Error?) -> Void)?) {
-        evaluateJavaScript("""
-(function userScript() {
-\(script)
-})()
-""") { result, error in
-            if let error = error {
-                print("[PagecallWebView] runScript error", error.localizedDescription)
-                print("[PagecallWebView] original script", script)
-            } else if let result = result {
-                print("[PagecallWebView] Script result", result)
-            }
-            completionHandler?(result, error)
-        }
-    }
-}
-
 open class PagecallWebView: WKWebView {
     static let version = "0.0.27"
 
@@ -176,8 +154,13 @@ open class PagecallWebView: WKWebView {
         }
     }
 
-    private var callbacks = [String: (Any?) -> Void]()
-    public func getReturnValue(script: String, completion: @escaping (Any?) -> Void) {
+    private var callbacks = [String: (Result<Any?, PagecallError>) -> Void]()
+    public func getReturnValue(script: String, completion: @escaping (Result<Any?, PagecallError>) -> Void) {
+        guard let nativeBridge = nativeBridge else {
+            completion(.failure(PagecallError.other(message: "Not initialized yet")))
+            return
+        }
+
         let id = UUID().uuidString
         callbacks[id] = completion
         let returningScript =
@@ -199,12 +182,16 @@ if (result.then) {
   callback(result);
 }
 """
-        evaluateJavascriptWithLog(script: returningScript)
+        nativeBridge.runScript(returningScript)
     }
 
     private var subscribers = [String: (Any?) -> Void]()
     private let subscriptionsStorageName = "__pagecallNativeSubscriptions"
-    public func subscribe(target: String, subscriber: @escaping (Any?) -> Void) -> () -> Void {
+    public func subscribe(target: String, subscriber: @escaping (Any?) -> Void, onError: ((PagecallError) -> Void)?) -> () -> Void {
+        guard let nativeBridge = nativeBridge else {
+            onError?(.other(message: "Not initialized yet"))
+            return {}
+        }
         let id = UUID().uuidString
         subscribers[id] = subscriber
         let returningScript =
@@ -222,10 +209,10 @@ const subscription = \(target).subscribe(callback);
 if (!window["\(subscriptionsStorageName)"]) window["\(subscriptionsStorageName)"] = {};
 window["\(subscriptionsStorageName)"]["\(id)"] = subscription;
 """
-        evaluateJavascriptWithLog(script: returningScript)
+        nativeBridge.runScript(returningScript)
 
         let unsubscriber = {
-            self.evaluateJavascriptWithLog(script: """
+            nativeBridge.runScript("""
 window["\(self.subscriptionsStorageName)"]["\(id)"]?.unsubscribe();
 """)
             self.subscribers.removeValue(forKey: id)
@@ -236,10 +223,10 @@ window["\(self.subscriptionsStorageName)"]["\(id)"]?.unsubscribe();
 
     private var cleanups: [() -> Void] = []
     public func cleanup() {
+        nativeBridge?.runScript("window.Pagecall?.terminate()")
         cleanups.forEach { cleanup in
             cleanup()
         }
-        evaluateJavascriptWithLog(script: "window.Pagecall?.terminate()")
         cleanups = []
     }
 
@@ -248,21 +235,26 @@ window["\(self.subscriptionsStorageName)"]["\(id)"]?.unsubscribe();
     }
 
     public func sendMessage(message: String, completionHandler: ((Error?) -> Void)?) {
-        evaluateJavascriptWithLog(script:
-"""
+        guard let nativeBridge = nativeBridge else {
+            completionHandler?(PagecallError.other(message: "Not initialized yet"))
+            return
+        }
+        nativeBridge.runScript("""
 if (!window.Pagecall) return false;
 window.Pagecall.sendMessage("\(message.javaScriptString)");
 return true;
-"""
-        ) { result, error in
-            if let error {
+""", completion: { result in
+            switch result {
+            case .success(let value):
+                if let success = value as? Bool, success {
+                    completionHandler?(nil)
+                } else {
+                    completionHandler?(PagecallError.other(message: "Not loaded"))
+                }
+            case .failure(let error):
                 completionHandler?(error)
-            } else if let success = result as? Bool, success {
-                completionHandler?(nil)
-            } else {
-                completionHandler?(PagecallError.other(message: "Not initialized"))
             }
-        }
+        })
     }
 
     private func listenMessage(subscriber: @escaping (String) -> Void) -> () -> Void {
@@ -272,11 +264,13 @@ return true;
             } else {
                 print("[PagecallWebView] Invalid or unsupported message")
             }
+        } onError: { error in
+            print("[PagecallWebView] Failed to listenMessage", error)
         }
     }
 
     private func setValueRaw(key: String, value: Any) {
-        evaluateJavascriptWithLog(script: """
+        nativeBridge?.runScript("""
 if (PagecallUI) {
   PagecallUI.set("\(key)", \(value));
 }
@@ -370,7 +364,7 @@ extension PagecallWebView: WKScriptMessageHandler {
             case "return":
                 guard let payload = body["payload"] as? [String: Any], let id = payload["id"] as? String, let callback = callbacks[id] else { return }
                 callbacks.removeValue(forKey: id)
-                callback(payload["value"])
+                callback(.success(payload["value"]))
             case "subscription":
                 guard let payload = body["payload"] as? [String: Any], let id = payload["id"] as? String, let subscriber = subscribers[id] else { return }
                 subscriber(payload["value"])
@@ -569,13 +563,19 @@ extension PagecallWebView: UIPencilInteractionDelegate {
       subscription.unsubscribe()
       return toolMode
     })()
-    """) { mode in
-            guard let mode = mode as? String else { return }
-            if mode == "draw" {
-                self.evaluateJavascriptWithLog(script: "Pagecall.setMode('remove-line')")
-            } else {
-                self.evaluateJavascriptWithLog(script: "Pagecall.setMode('draw')")
+    """) { result in
+            switch result {
+            case .success(let value):
+                guard let mode = value as? String, let nativeBridge = self.nativeBridge else { return }
+                if mode == "draw" {
+                    nativeBridge.runScript("Pagecall.setMode('remove-line')")
+                } else {
+                    nativeBridge.runScript("Pagecall.setMode('draw')")
+                }
+            case .failure(let error):
+                print("[PagecallWebView] Failed to get current toolMode", error)
             }
+
         }
     }
 

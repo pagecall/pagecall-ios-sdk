@@ -40,7 +40,7 @@ func parseMediaStats(jsonString: String) -> Result<Stat, Error> {
     return .success(Stat(roundTripTime: roundTripTime * 1000.0, packetsLost: packetsLost))
 }
 
-class NativeBridge: Equatable {
+class NativeBridge: Equatable, ScriptDelegate {
     static func == (lhs: NativeBridge, rhs: NativeBridge) -> Bool {
         return lhs.id == rhs.id
     }
@@ -82,30 +82,42 @@ class NativeBridge: Equatable {
     private let webview: PagecallWebView
     private let frame: WKFrameInfo
 
-    private let emitter: WebViewEmitter
+    private let emitter = WebViewEmitter()
 
     init(webview: PagecallWebView, frame: WKFrameInfo) {
         NativeBridge.count += 1
         id = NativeBridge.count
         self.webview = webview
-        self.emitter = .init(runScript: { [weak webview, weak frame] script in
-            DispatchQueue.main.async {
-                guard let webview = webview, let frame = frame else { return }
-                 webview.evaluateJavaScript(script, in: frame, in: .page, completionHandler: { result in
-                    switch result {
-                    case .success(let value as Any?):
-                        if let value = value {
-                            print("[PagecallWebView] Script result", value)
-                        }
-                    case .failure(let error):
-                        print("[PagecallWebView] runScript error", error.localizedDescription)
-                        print("[PagecallWebView] original script", script)
-                    }
-                })
-            }
-        })
-
         self.frame = frame
+        emitter.delegate = self
+    }
+
+    func runScript(_ script: String) {
+        runScript(script, completion: nil)
+    }
+
+    func runScript(_ script: String, completion: ((Result<Any, Error>) -> Void)?) {
+        DispatchQueue.main.async {
+            self.webview.evaluateJavaScript("""
+(function userScript() {
+\(script)
+})()
+""", in: self.frame, in: .page, completionHandler: { result in
+                if let completion = completion {
+                    completion(result)
+                    return
+                }
+                switch result {
+                case .success(let value as Any?):
+                    if let value = value {
+                        print("[PagecallWebView] Script result", value)
+                    }
+                case .failure(let error):
+                    print("[PagecallWebView] runScript error", error.localizedDescription)
+                    print("[PagecallWebView] original script", script)
+                }
+            })
+        }
     }
 
     func messageHandler(message: String) {
