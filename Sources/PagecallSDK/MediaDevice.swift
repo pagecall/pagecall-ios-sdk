@@ -15,12 +15,5 @@ struct MediaDeviceInfo: Codable {
     let kind: MediaDeviceKind
     let label: String
 
-    init(deviceId: String, groupId: String, kind: MediaDeviceKind, label: String) {
-        self.deviceId = deviceId
-        self.groupId = groupId
-        self.kind = kind
-        self.label = label
-    }
-
     static let audioDefault = MediaDeviceInfo(deviceId: "audio0", groupId: "", kind: .audioinput, label: "Default")
 }
