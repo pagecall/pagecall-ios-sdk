@@ -8,7 +8,7 @@ struct Stat: Encodable {
 
 enum BridgeEvent: String, Codable {
     case audioDevice, audioDevices, audioVolume, audioStatus, audioSessionRouteChanged, audioSessionInterrupted, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, log, error
-    case connectTransport
+    case connectTransport, penTouch
 }
 
 enum BridgeRequest: String, Codable {
@@ -90,6 +90,16 @@ class NativeBridge: Equatable, ScriptDelegate {
         self.webview = webview
         self.frame = frame
         emitter.delegate = self
+    }
+
+    func emitPenTouch(points: [CGPoint], phase: TouchPhase) {
+        let pointsData = points.map { point in
+            ["x": point.x, "y": point.y]
+        }
+        emitter.emit(eventName: .penTouch, json: [
+            "points": pointsData,
+            "phase": phase.rawValue
+        ])
     }
 
     func runScript(_ script: String) {

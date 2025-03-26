@@ -53,6 +53,9 @@ open class PagecallWebView: WKWebView {
     public weak var delegate: PagecallDelegate?
 
     public var isPenInteractionEnabled = false
+    public var useNativePenEvent = false
+
+    private var gestureRecognizer: PenGestureRecognizer?
 
     @available(*, unavailable)
     required public init?(coder: NSCoder) {
@@ -108,6 +111,11 @@ open class PagecallWebView: WKWebView {
         let interaction = UIPencilInteraction()
         interaction.delegate = self
         addInteraction(interaction)
+
+        let gesture = PenGestureRecognizer(target: self, action: nil)
+        gesture.eventDelegate = self
+        gestureRecognizer = gesture
+        addGestureRecognizer(gesture)
 
         if #available(iOS 16.4, *) {
             isInspectable = true
@@ -582,5 +590,17 @@ extension PagecallWebView: UIPencilInteractionDelegate {
     public func pencilInteractionDidTap(_ interaction: UIPencilInteraction) {
         if !isPenInteractionEnabled { return }
         toggleToolMode()
+    }
+}
+
+// MARK: - PenGestureRecognizerDelegate
+extension PagecallWebView: PenGestureRecognizerDelegate {
+    func didTouchesChange(_ touches: [UITouch], phase: TouchPhase) {
+        guard useNativePenEvent else { return }
+        
+        let locations = touches.map { touch in
+            touch.preciseLocation(in: self)
+        }
+        nativeBridge?.emitPenTouch(points: locations, phase: phase)
     }
 }
