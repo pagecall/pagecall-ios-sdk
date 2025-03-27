@@ -21,6 +21,10 @@ public protocol PagecallDelegate: AnyObject {
      */
     func pagecallDidReceive(_ view: PagecallWebView, event: [String: Any])
     func pagecall(_ view: PagecallWebView, requestDownloadFor url: URL)
+    /**
+     Called before navigation occurs in the web view
+     */
+    func pagecallWillNavigate(_ view: PagecallWebView, url: String)
 }
 
 // Optional delegates
@@ -30,6 +34,7 @@ public extension PagecallDelegate {
     func pagecallDidReceive(_ view: PagecallWebView, message: String) {}
     func pagecallDidReceive(_ view: PagecallWebView, event: [String: Any]) {}
     func pagecall(_ view: PagecallWebView, requestDownloadFor url: URL) {}
+    func pagecallWillNavigate(_ view: PagecallWebView, url: String) {}
 }
 
 public enum PagecallMode {
@@ -445,6 +450,9 @@ extension PagecallWebView: WKNavigationDelegate {
         }
 
         if let urlString = navigationAction.request.url?.absoluteString, urlString.starts(with: "http") {
+            if navigationAction.targetFrame?.isMainFrame == true {
+                delegate?.pagecallWillNavigate(self, url: urlString)
+            }
             decisionHandler(.allow)
 
             cleanup()
