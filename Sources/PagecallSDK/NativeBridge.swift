@@ -80,7 +80,7 @@ class NativeBridge: Equatable, ScriptDelegate {
     public let id: Int
 
     private let webview: PagecallWebView
-    private let frame: WKFrameInfo
+    let frame: WKFrameInfo
 
     private let emitter = WebViewEmitter()
 

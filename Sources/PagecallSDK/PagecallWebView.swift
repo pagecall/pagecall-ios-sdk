@@ -37,15 +37,17 @@ public extension PagecallDelegate {
     func pagecallWillNavigate(_ view: PagecallWebView, url: String) {}
 }
 
+let baseURL = "https://app.pagecall.com"
+
 public enum PagecallMode {
     case meet, replay
 
     func baseURLString() -> String {
         switch self {
         case .meet:
-            return "https://app.pagecall.com/meet"
+            return "\(baseURL)/meet"
         case .replay:
-            return "https://app.pagecall.com/replay"
+            return "\(baseURL)/replay"
         }
     }
 }
@@ -450,15 +452,20 @@ extension PagecallWebView: WKNavigationDelegate {
         }
 
         if let urlString = navigationAction.request.url?.absoluteString, urlString.starts(with: "http") {
-            if navigationAction.targetFrame?.isMainFrame == true {
+            guard let frame = navigationAction.targetFrame else { return }
+            if frame.isMainFrame {
                 delegate?.pagecallWillNavigate(self, url: urlString)
             }
             decisionHandler(.allow)
 
-            guard let frame = navigationAction.targetFrame else { return }
+            let isPagecallUrl = urlString.contains(baseURL)
+            if isPagecallUrl {
+                if let nativeBridge = nativeBridge {
+                    if nativeBridge.frame == frame { return }
+                    print("[PagecallWebView] disposing previous nativeBridge as new one loaded")
+                    cleanup()
+                }
 
-            cleanup()
-            if urlString.contains(PagecallMode.meet.baseURLString()) {
                 // Build native bridge
                 let nativeBridge = NativeBridge(webview: self, frame: frame)
                 self.nativeBridge = nativeBridge
@@ -468,6 +475,8 @@ extension PagecallWebView: WKNavigationDelegate {
                         self.nativeBridge = nil
                     }
                 })
+            } else if let nativeBridge = nativeBridge, nativeBridge.frame == frame {
+                cleanup()
             }
             return
         }
