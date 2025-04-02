@@ -81,8 +81,6 @@ open class PagecallWebView: WKWebView {
         }
     }
 
-
-
     @available(*, unavailable)
     required public init?(coder: NSCoder) {
         fatalError("PagecallWebView cannot be instantiated from a storyboard")
@@ -623,7 +621,7 @@ extension PagecallWebView: UIPencilInteractionDelegate {
 extension PagecallWebView: PenGestureRecognizerDelegate {
     func didTouchesChange(_ touches: [UITouch], phase: TouchPhase) {
         guard useNativePenEvent else { return }
-        
+
         let locations = touches.map { touch in
             touch.preciseLocation(in: self)
         }
