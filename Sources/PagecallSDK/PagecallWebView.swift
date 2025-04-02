@@ -132,6 +132,8 @@ open class PagecallWebView: WKWebView {
         customUserAgent = nil // Trigger setting default value
         scrollView.contentInsetAdjustmentBehavior = .never
 
+        configuration.userContentController.add(LeakAvoider(delegate: self), name: self.controllerName)
+
         let interaction = UIPencilInteraction()
         interaction.delegate = self
         addInteraction(interaction)
@@ -453,11 +455,19 @@ extension PagecallWebView: WKNavigationDelegate {
             }
             decisionHandler(.allow)
 
+            guard let frame = navigationAction.targetFrame else { return }
+
             cleanup()
-            if urlString.contains(PagecallMode.meet.baseURLString()), let frame = navigationAction.targetFrame {
-                initializePageContext(frame: frame)
-            } else if urlString.contains(PagecallMode.replay.baseURLString()) {
-                listenJavascriptMessages()
+            if urlString.contains(PagecallMode.meet.baseURLString()) {
+                // Build native bridge
+                let nativeBridge = NativeBridge(webview: self, frame: frame)
+                self.nativeBridge = nativeBridge
+                cleanups.append({
+                    nativeBridge.disconnect()
+                    if self.nativeBridge == nativeBridge {
+                        self.nativeBridge = nil
+                    }
+                })
             }
             return
         }
@@ -476,50 +486,9 @@ extension PagecallWebView: WKNavigationDelegate {
         decisionHandler(.allow)
     }
 
-    private func listenJavascriptMessages() {
-        configuration.userContentController.add(LeakAvoider(delegate: self), name: self.controllerName)
-        cleanups.append({
-            self.configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
-        })
-    }
-
     public static func configure() {
         // Trigger instantiation
         _ = CallManager.shared
-    }
-
-    private func initializePageContext(frame: WKFrameInfo) {
-        listenJavascriptMessages()
-
-        // Enable call
-        CallManager.shared.startCall { error in
-            if let error = error {
-                print("[PagecallWebView] Failed to start call")
-                PagecallLogger.shared.capture(error: error)
-            } else {
-                PagecallLogger.shared.addBreadcrumb(message: "Call started")
-            }
-        }
-        cleanups.append({
-            CallManager.shared.endCall { error in
-                if let error = error {
-                    print("[PagecallWebView] Failed to end call")
-                    PagecallLogger.shared.capture(error: error)
-                } else {
-                    PagecallLogger.shared.addBreadcrumb(message: "Call ended")
-                }
-            }
-        })
-
-        // Build native bridge
-        let nativeBridge = NativeBridge(webview: self, frame: frame)
-        self.nativeBridge = nativeBridge
-        cleanups.append({
-            nativeBridge.disconnect()
-            if self.nativeBridge == nativeBridge {
-                self.nativeBridge = nil
-            }
-        })
     }
 
     open func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {

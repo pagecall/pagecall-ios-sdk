@@ -130,6 +130,8 @@ class NativeBridge: Equatable, ScriptDelegate {
         }
     }
 
+    private var isCallStarted = false
+
     func messageHandler(message: String) {
         let data = message.data(using: .utf8)!
         guard let jsonArray = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else {
@@ -174,14 +176,25 @@ class NativeBridge: Equatable, ScriptDelegate {
                 return
             }
             if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
-                do {
-                    let miController = try MiController(emitter: self.emitter, initialPayload: initialPayload)
-                    self.mediaController = miController
-                    respond(nil, nil)
-                } catch {
-                    print("[NativeBridge] error creating miController", error)
-                    respond(PagecallError.other(message: error.localizedDescription), nil)
-                }
+                CallManager.shared.startCall(completion: { error in
+                    if let error = error {
+                        print("[NativeBridge] startCall failure")
+                        self.emitter.error(name: "StartCallError", message: error.localizedDescription)
+                        PagecallLogger.shared.capture(error: error)
+                    } else {
+                        print("[NativeBridge] startCall success")
+                        self.isCallStarted = true
+                    }
+                    // Continue anyway
+                    do {
+                        let miController = try MiController(emitter: self.emitter, initialPayload: initialPayload)
+                        self.mediaController = miController
+                        respond(nil, nil)
+                    } catch {
+                        print("[NativeBridge] error creating miController", error)
+                        respond(PagecallError.other(message: error.localizedDescription), nil)
+                    }
+                })
             } else {
                 respond(PagecallError.other(message: "Unexpected payload"), nil)
             }
@@ -316,6 +329,18 @@ class NativeBridge: Equatable, ScriptDelegate {
     public func disconnect() {
         mediaController?.dispose()
         mediaController = nil
+        if isCallStarted {
+            CallManager.shared.endCall { error in
+                self.isCallStarted = false
+                if let error = error {
+                    print("[PagecallWebView] endCall failure")
+                    self.emitter.error(name: "EndCallError", message: error.localizedDescription)
+                    PagecallLogger.shared.capture(error: error)
+                } else {
+                    print("[PagecallWebView] endCall success")
+                }
+            }
+        }
     }
 
     deinit {
