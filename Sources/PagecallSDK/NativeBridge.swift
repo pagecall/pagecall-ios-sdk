@@ -49,7 +49,7 @@ class NativeBridge: Equatable, ScriptDelegate {
         didSet {
             AudioSessionManager.shared.stopHandlingInterruption()
 
-            if let mediaController = mediaController {
+            if let _ = mediaController {
                 synchronizePauseState()
 
                 // MI에서는 default일 경우 에어팟 연결이 해제된다.
@@ -287,17 +287,8 @@ class NativeBridge: Equatable, ScriptDelegate {
             self.disconnect()
             respond(nil, nil)
         case .setAudioDevice:
-            guard let mediaController = mediaController else {
-                respond(PagecallError.other(message: "Missing mediaController, initialize first"), nil)
-                return
-            }
-            struct DeviceId: Codable {
-                var deviceId: String
-            }
-            guard let payloadData = payloadData, let deviceId = try? JSONDecoder().decode(DeviceId.self, from: payloadData) else {
-                respond(PagecallError.other(message: "Invalid payload"), nil)
-                return
-            }
+            // Deprecated
+            respond(nil, nil)
         case .consume:
             guard let mediaController = mediaController else {
                 respond(PagecallError.other(message: "Missing mediaController, initialize first"), nil)
