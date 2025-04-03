@@ -142,7 +142,9 @@ class NativeBridge: Equatable, ScriptDelegate {
             return
         }
 
-        print("[NativeBridge] Bridge Action: \(bridgeAction)")
+        if bridgeAction != .requestAudioVolume { // requestAudioVolume gets called too frequently
+            print("[NativeBridge] Bridge Action: \(bridgeAction)")
+        }
 
         let respond: (PagecallError?, Data?) -> Void = { error, data in
             if let error = error {
