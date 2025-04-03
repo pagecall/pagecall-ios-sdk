@@ -11,7 +11,7 @@ protocol PenGestureRecognizerDelegate: AnyObject {
     func didTouchesChange(_ touches: [UITouch], phase: TouchPhase)
 }
 
-class PenGestureRecognizer: UIGestureRecognizer, UIGestureRecognizerDelegate {
+class PenGestureRecognizer: UIGestureRecognizer {
     weak var eventDelegate: PenGestureRecognizerDelegate?
 
     override init(target: Any?, action: Selector?) {
@@ -21,7 +21,6 @@ class PenGestureRecognizer: UIGestureRecognizer, UIGestureRecognizerDelegate {
         delaysTouchesEnded = false
         allowedTouchTypes = [NSNumber(integerLiteral: UITouch.TouchType.pencil.rawValue)]
         allowedPressTypes = []
-        delegate = self
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
@@ -37,18 +36,14 @@ class PenGestureRecognizer: UIGestureRecognizer, UIGestureRecognizerDelegate {
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesEnded(touches, with: event)
         eventDelegate?.didTouchesChange(Array(touches), phase: .ended)
+        // Some gesture recognizers are waiting for this one to fail.
+        // To avoid blocking other gestures, we intentionally set the state to `.failed`.
+        state = .failed
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesCancelled(touches, with: event)
         eventDelegate?.didTouchesChange(Array(touches), phase: .cancelled)
-    }
-
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRequireFailureOf otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return true
-    }
-
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return true
+        state = .failed
     }
 }
