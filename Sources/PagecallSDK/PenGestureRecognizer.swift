@@ -1,10 +1,10 @@
 import UIKit
 
-enum TouchPhase: Int {
-    case began = 0
-    case moved = 1
-    case ended = 2
-    case cancelled = 3
+enum TouchPhase: String {
+    case began = "began"
+    case moved = "moved"
+    case ended = "ended"
+    case cancelled = "cancelled"
 }
 
 protocol PenGestureRecognizerDelegate: AnyObject {
