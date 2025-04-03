@@ -16,6 +16,11 @@ class PenGestureRecognizer: UIGestureRecognizer, UIGestureRecognizerDelegate {
 
     override init(target: Any?, action: Selector?) {
         super.init(target: target, action: action)
+        cancelsTouchesInView = false
+        delaysTouchesBegan = false
+        delaysTouchesEnded = false
+        allowedTouchTypes = [NSNumber(integerLiteral: UITouch.TouchType.pencil.rawValue)]
+        allowedPressTypes = []
         delegate = self
     }
 
