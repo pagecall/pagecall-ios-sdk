@@ -52,6 +52,8 @@ public enum PagecallMode {
     }
 }
 
+let debugPencil = false
+
 open class PagecallWebView: WKWebView {
     static let version = "0.0.28"
 
@@ -106,6 +108,8 @@ open class PagecallWebView: WKWebView {
         return [systemFragment, webkitFragment, versionFragment, browserFragment].joined(separator: " ")
     }()
 
+    var pencilDebugOverlay: PencilDebugOverlay?
+
     override public init(frame: CGRect, configuration: WKWebViewConfiguration) {
         configuration.mediaTypesRequiringUserActionForPlayback = []
         configuration.allowsInlineMediaPlayback = true
@@ -144,6 +148,12 @@ open class PagecallWebView: WKWebView {
 
         if #available(iOS 16.4, *) {
             isInspectable = true
+        }
+
+        if debugPencil, let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+            let pencilDebugOverlay = PencilDebugOverlay(frame: UIScreen.main.bounds)
+            self.pencilDebugOverlay = pencilDebugOverlay
+            window.addSubview(pencilDebugOverlay)
         }
     }
 
@@ -265,6 +275,8 @@ window["\(self.subscriptionsStorageName)"]["\(id)"]?.unsubscribe();
 
     deinit {
         cleanup()
+        pencilDebugOverlay?.removeFromSuperview()
+        pencilDebugOverlay = nil
     }
 
     public func sendMessage(message: String, completionHandler: ((Error?) -> Void)?) {
@@ -600,6 +612,12 @@ extension PagecallWebView: PenGestureRecognizerDelegate {
     func didTouchesChange(_ touches: [UITouch], phase: TouchPhase) {
         guard useNativePenEvent else { return }
 
+        if let pencilDebugOverlay = pencilDebugOverlay, let overlayContainer = pencilDebugOverlay.superview {
+            let locations = touches.map { touch in
+                touch.preciseLocation(in: overlayContainer)
+            }
+            pencilDebugOverlay.addEvent(locations: locations, phase: phase)
+        }
         let locations = touches.map { touch in
             touch.preciseLocation(in: self)
         }
