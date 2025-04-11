@@ -202,7 +202,7 @@ extension PagecallViewController: PagecallDelegate {
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1) {
             self.loading.isHidden = true
         }
-        
+
     }
 
     func pagecallWillNavigate(_ view: PagecallWebView, url: String) {
