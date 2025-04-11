@@ -255,15 +255,14 @@ extension HomeViewController {
 
     private func openPagecall(mode: PagecallMode) {
         let queryItems = parseQueryItems()
-        var vc: PagecallViewController?
-        vc = PagecallViewController(roomId: roomSubview.text, accessToken: tokenSubview.text, mode: mode, queryItems: queryItems) { error in
+        let vc = PagecallViewController(roomId: roomSubview.text, accessToken: tokenSubview.text, mode: mode, queryItems: queryItems) { error in
             let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
             alert.addAction(.init(title: "OK", style: .default, handler: { _ in
                 self.navigationController?.popViewController(animated: true)
             }))
             self.present(alert, animated: true, completion: nil)
         }
-        self.navigationController?.pushViewController(vc!, animated: true)
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 
     @objc func onReplayButtonTap() {
