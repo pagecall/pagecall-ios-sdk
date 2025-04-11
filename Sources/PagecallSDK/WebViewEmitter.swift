@@ -127,7 +127,7 @@ class WebViewEmitter {
         delegate?.runScript(script)
     }
 
-    var delegate: ScriptDelegate?
+    weak var delegate: ScriptDelegate?
 }
 
 public protocol ScriptDelegate: AnyObject {

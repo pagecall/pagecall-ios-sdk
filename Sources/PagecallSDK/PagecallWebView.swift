@@ -277,6 +277,7 @@ window["\(self.subscriptionsStorageName)"]["\(id)"]?.unsubscribe();
         cleanup()
         pencilDebugOverlay?.removeFromSuperview()
         pencilDebugOverlay = nil
+        configuration.userContentController.removeScriptMessageHandler(forName: self.controllerName)
     }
 
     public func sendMessage(message: String, completionHandler: ((Error?) -> Void)?) {
