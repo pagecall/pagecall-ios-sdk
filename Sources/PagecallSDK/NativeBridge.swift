@@ -7,7 +7,7 @@ struct Stat: Encodable {
 }
 
 enum BridgeEvent: String, Codable {
-    case audioDevice, audioDevices, audioVolume, audioStatus, audioSessionRouteChanged, audioSessionInterrupted, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, log, error
+    case audioDevice, audioDevices, audioStatus, audioSessionRouteChanged, audioSessionInterrupted, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, log, error
     case connectTransport, penTouch
 }
 
@@ -131,6 +131,8 @@ class NativeBridge: Equatable, ScriptDelegate {
     }
 
     private var isCallStarted = false
+
+    private var volumeRecorder: VolumeRecorder?
 
     func messageHandler(message: String) {
         let data = message.data(using: .utf8)!
@@ -262,10 +264,18 @@ class NativeBridge: Equatable, ScriptDelegate {
                     respond(PagecallError.other(message: "Failed to encode volume"), nil)
                 }
             }
-            if let mediaController = mediaController {
-                respondVolume(mediaController.getAudioVolume())
-            } else {
-                respondVolume(0)
+            do {
+                if let volumeRecorder = volumeRecorder {
+                    respondVolume(try volumeRecorder.requestAudioVolume())
+                } else {
+                    let volumeRecorder = try VolumeRecorder()
+                    self.volumeRecorder = volumeRecorder
+                    respondVolume(try volumeRecorder.requestAudioVolume())
+                }
+            } catch let error as PagecallError {
+                respond(error, nil)
+            } catch {
+                respond(PagecallError.other(message: error.localizedDescription), nil)
             }
         case .pauseAudio:
             isAudioPaused = true
@@ -329,8 +339,12 @@ class NativeBridge: Equatable, ScriptDelegate {
     }
 
     public func disconnect() {
+        volumeRecorder?.stop()
+        volumeRecorder = nil
+
         mediaController?.dispose()
         mediaController = nil
+
         if isCallStarted {
             CallManager.shared.endCall { error in
                 self.isCallStarted = false

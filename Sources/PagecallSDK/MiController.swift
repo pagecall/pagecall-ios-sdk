@@ -182,7 +182,6 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
             self.producer?.close()
             do {
                 self.producer = try self.sendTransport.createProducer(for: audioTrack, encodings: nil, codecOptions: nil, codec: nil, appData: nil)
-                self.startVolumeScheduler()
                 callback(nil)
             } catch {
                 callback(error)
@@ -209,71 +208,9 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
     func dispose() {
         sendTransport.close()
         recvTransport.close()
-        self.stopVolumeScheduler()
     }
+
     deinit {
         self.dispose()
-    }
-    private var volumeRecorder: VolumeRecorder?
-
-    private func initializeVolumeRecorder() {
-        self.volumeRecorder?.stop()
-        do {
-            let volumeRecorder = try VolumeRecorder(emitter: emitter)
-            volumeRecorder.highest = -10
-            volumeRecorder.lowest = -50
-            self.volumeRecorder = volumeRecorder
-        } catch {
-            self.emitter.error(error)
-        }
-    }
-
-    func getAudioVolume() -> Float {
-        if let volumeRecorder = volumeRecorder {
-            do {
-                let volume = try volumeRecorder.requestAudioVolume()
-                return volume
-            } catch let error as PagecallError {
-                switch error {
-                case .audioRecorderBroken:
-                    initializeVolumeRecorder()
-                case .audioRecorderPowerOutOfRange: break
-                    // do nothing yet
-                case .other: break
-                }
-                self.emitter.error(error)
-                return 0
-            } catch {
-                self.emitter.error(PagecallError.other(message: "Unexpected VolumeRecorder error"))
-                return 0
-            }
-        } else {
-            initializeVolumeRecorder()
-            return 0
-        }
-    }
-
-    private var timer: Timer?
-    private func startVolumeScheduler() {
-        DispatchQueue.main.async {
-            self.timer?.invalidate()
-            self.timer = Timer.scheduledTimer(
-                timeInterval: 0.5,
-                target: self,
-                selector: #selector(self.emitVolume),
-                userInfo: nil,
-                repeats: true
-            )
-        }
-    }
-
-    private func stopVolumeScheduler() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    @objc func emitVolume() {
-        let volume = getAudioVolume()
-        self.emitter.emit(eventName: .audioVolume, message: String(volume))
     }
 }
