@@ -2,13 +2,11 @@ import AVFoundation
 
 class VolumeRecorder {
     private let audioRecorder: AVAudioRecorder
-    let emitter: WebViewEmitter
 
-    var lowest: Float = -40 // -50 in MI
-    var highest: Float = -10 // -10 in MI
+    private let lowest: Float = -50
+    private let highest: Float = -10
 
-    init(emitter: WebViewEmitter) throws {
-        self.emitter = emitter
+    init() throws {
         let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let audioFilename = documentPath.appendingPathComponent("nothing.m4a")
         let settings = [

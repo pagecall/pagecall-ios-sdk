@@ -7,7 +7,7 @@ struct Stat: Encodable {
 }
 
 enum BridgeEvent: String, Codable {
-    case audioDevice, audioDevices, audioVolume, audioStatus, audioSessionRouteChanged, audioSessionInterrupted, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, log, error
+    case audioDevice, audioDevices, audioStatus, audioSessionRouteChanged, audioSessionInterrupted, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, log, error
     case connectTransport, penTouch
 }
 
@@ -132,6 +132,8 @@ class NativeBridge: Equatable, ScriptDelegate {
 
     private var isCallStarted = false
 
+    private var volumeRecorder: VolumeRecorder?
+
     func messageHandler(message: String) {
         let data = message.data(using: .utf8)!
         guard let jsonArray = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else {
@@ -146,12 +148,19 @@ class NativeBridge: Equatable, ScriptDelegate {
             print("[NativeBridge] Bridge Action: \(bridgeAction)")
         }
 
-        let respond: (PagecallError?, Data?) -> Void = { error, data in
+        let respond: (Error?, Data?) -> Void = { error, data in
             if let error = error {
+                let pagecallError = {
+                    if let error = error as? PagecallError {
+                        return error
+                    } else {
+                        return PagecallError.other(message: error.localizedDescription)
+                    }
+                }()
                 if let requestId = requestId {
-                    self.emitter.response(requestId: requestId, errorMessage: error.message)
+                    self.emitter.response(requestId: requestId, errorMessage: pagecallError.message)
                 } else {
-                    self.emitter.error(error)
+                    self.emitter.error(pagecallError)
                 }
             } else {
                 if let requestId = requestId {
@@ -194,7 +203,7 @@ class NativeBridge: Equatable, ScriptDelegate {
                         respond(nil, nil)
                     } catch {
                         print("[NativeBridge] error creating miController", error)
-                        respond(PagecallError.other(message: error.localizedDescription), nil)
+                        respond(error, nil)
                     }
                 })
             } else {
@@ -224,7 +233,7 @@ class NativeBridge: Equatable, ScriptDelegate {
                     case .success(let stat):
                         respond(nil, try? JSONEncoder().encode(stat))
                     case .failure(let error):
-                        respond(PagecallError.other(message: error.localizedDescription), nil)
+                        respond(error, nil)
                 }
             } else {
                 respond(PagecallError.other(message: "Not supported in Chime yet"), nil)
@@ -252,7 +261,7 @@ class NativeBridge: Equatable, ScriptDelegate {
                 respond(nil, data)
             } catch {
                 print("[NativeBridge] error encoding result of getAudioDevices", error)
-                respond(PagecallError.other(message: error.localizedDescription), nil)
+                respond(error, nil)
             }
         case .requestAudioVolume:
             let respondVolume: (Float) -> Void = { volume in
@@ -262,10 +271,33 @@ class NativeBridge: Equatable, ScriptDelegate {
                     respond(PagecallError.other(message: "Failed to encode volume"), nil)
                 }
             }
-            if let mediaController = mediaController {
-                respondVolume(mediaController.getAudioVolume())
-            } else {
-                respondVolume(0)
+            do {
+                if let volumeRecorder = volumeRecorder {
+                    respondVolume(try volumeRecorder.requestAudioVolume())
+                } else {
+                    let volumeRecorder = try VolumeRecorder()
+                    self.volumeRecorder = volumeRecorder
+                    respondVolume(try volumeRecorder.requestAudioVolume())
+                }
+            } catch {
+                if let error = error as? PagecallError {
+                    switch error {
+                    case .audioRecorderBroken:
+                        self.volumeRecorder?.stop()
+                        self.volumeRecorder = nil
+                        do {
+                            let volumeRecorder = try VolumeRecorder()
+                            self.volumeRecorder = volumeRecorder
+                            respondVolume(try volumeRecorder.requestAudioVolume())
+                        } catch {
+                            respond(error, nil)
+                            return
+                        }
+                    default:
+                        break
+                    }
+                }
+                respond(error, nil)
             }
         case .pauseAudio:
             isAudioPaused = true
@@ -293,7 +325,7 @@ class NativeBridge: Equatable, ScriptDelegate {
                 self.synchronizePauseState()
                 if let error = error {
                     print("[NativeBridge] Failed to start controller", error)
-                    respond(PagecallError.other(message: error.localizedDescription), nil)
+                    respond(error, nil)
                 } else {
                     respond(nil, nil)
                 }
@@ -314,7 +346,7 @@ class NativeBridge: Equatable, ScriptDelegate {
                     miController.consume(data: payloadData) { error in
                         if let error = error {
                             print("[NativeBridge] Failed to consume", error)
-                            respond(PagecallError.other(message: error.localizedDescription), nil)
+                            respond(error, nil)
                         } else {
                             respond(nil, nil)
                         }
@@ -329,8 +361,12 @@ class NativeBridge: Equatable, ScriptDelegate {
     }
 
     public func disconnect() {
+        volumeRecorder?.stop()
+        volumeRecorder = nil
+
         mediaController?.dispose()
         mediaController = nil
+
         if isCallStarted {
             CallManager.shared.endCall { error in
                 self.isCallStarted = false
