@@ -265,7 +265,8 @@ class NativeBridge: Equatable, ScriptDelegate {
             }
         case .requestAudioVolume:
             let respondVolume: (Float) -> Void = { volume in
-                if let volumeData = try? JSONEncoder().encode(volume) {
+                let rounded = (volume * 100).rounded() / 100
+                if let volumeData = try? JSONEncoder().encode(rounded) {
                     respond(nil, volumeData)
                 } else {
                     respond(PagecallError.other(message: "Failed to encode volume"), nil)
