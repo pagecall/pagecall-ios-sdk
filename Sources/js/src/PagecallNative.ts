@@ -43,6 +43,12 @@ function registerGlobals() {
     },
   };
 
+  const pagecallNativePrivateAlias = {
+    e: pagecallNativePrivate.emit,
+    r: pagecallNativePrivate.response,
+    t: pagecallNativePrivate.throw,
+  }
+
   const pagecallNativePublicStatic = {
     getPlatform: () => 'ios',
     useNativeMediaStore: () => true,
@@ -56,6 +62,7 @@ function registerGlobals() {
   };
   const pagecallNative = new Proxy({
     ...pagecallNativePrivate,
+    ...pagecallNativePrivateAlias,
     ...pagecallNativePublicStatic
   }, {
     get(staticMethods, action) {
@@ -72,6 +79,7 @@ function registerGlobals() {
   });
 
   window.PagecallNative = pagecallNative
+  window.PN = pagecallNative;
 }
 
 registerGlobals();

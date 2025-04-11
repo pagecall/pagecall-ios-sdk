@@ -35,7 +35,7 @@ class WebViewEmitter {
 
     private func rawEmit(eventName: String, message: String?, eventId: String?) {
         let args = [eventName, message, eventId].compactMap { $0 }
-        let script = "window.PagecallNative.emit(\(args.map { arg in "'\(arg)'" }.joined(separator: ",")))"
+        let script = "PN.e(\(args.map { arg in "'\(arg)'" }.joined(separator: ",")))"
         runScript(script)
     }
 
@@ -111,16 +111,16 @@ class WebViewEmitter {
     func response(requestId: String, data: Data?) {
         let script: String = {
             if let data = data, let string = String(data: data, encoding: .utf8) {
-                return "window.PagecallNative.response('\(requestId)', '\(string)')"
+                return "PN.r('\(requestId)', '\(string)')"
             } else {
-                return "window.PagecallNative.response('\(requestId)')"
+                return "PN.r('\(requestId)')"
             }
         }()
         runScript(script)
     }
 
     func response(requestId: String, errorMessage: String) {
-        runScript("window.PagecallNative.throw('\(requestId)','\(errorMessage.javaScriptString)')")
+        runScript("PN.t('\(requestId)','\(errorMessage.javaScriptString)')")
     }
 
     func runScript(_ script: String) {
