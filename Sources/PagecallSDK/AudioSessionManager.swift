@@ -9,6 +9,23 @@ class AudioSessionManager {
 
     func setAudioSessionCategory() {
         let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+
+        if let builtin = audioSession.availableInputs?.first(where: { port in
+            return port.portType == .builtInMic
+        }), let front = builtin.dataSources?.first(where: { source in
+            return source.orientation == .front
+        }) {
+            /**
+             Once `MiController.start` is called and transmission begins, the microphone is arbitrarily selected.
+             We explicitly set the front-facing microphone as it's most suited for calls while looking at the screen together.
+             */
+            do {
+                try builtin.setPreferredDataSource(front)
+            } catch {
+                emitter?.error(name: "AVAudioSession", message: "setPreferredDataSource: \(error.localizedDescription)")
+            }
+        }
+
         var options: AVAudioSession.CategoryOptions
         if #available(iOS 14.5, *) {
             options = [.mixWithOthers,
@@ -26,11 +43,23 @@ class AudioSessionManager {
                     .defaultToSpeaker]
         }
         if audioSession.category != .playAndRecord {
-            try? audioSession.setCategory(.playAndRecord, options: options)
-            try? audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            do {
+                try audioSession.setCategory(.playAndRecord, options: options)
+            } catch {
+                emitter?.error(name: "AVAudioSession", message: "setCategory: \(error.localizedDescription)")
+            }
+            do {
+                try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            } catch {
+                emitter?.error(name: "AVAudioSession", message: "setActive: \(error.localizedDescription)")
+            }
         }
         if let desiredMode = desiredMode, desiredMode != audioSession.mode {
-            try? audioSession.setMode(desiredMode)
+            do {
+                try audioSession.setMode(desiredMode)
+            } catch {
+                emitter?.error(name: "AVAudioSession", message: "setMode: \(error.localizedDescription)")
+            }
         }
     }
 
