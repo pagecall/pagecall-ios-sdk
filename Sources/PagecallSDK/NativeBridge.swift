@@ -144,7 +144,7 @@ class NativeBridge: Equatable, ScriptDelegate {
             return
         }
 
-        if bridgeAction != .requestAudioVolume { // requestAudioVolume gets called too frequently
+        if bridgeAction != .requestAudioVolume && bridgeAction != .getMediaStats { // those get called too frequently
             print("[NativeBridge] Bridge Action: \(bridgeAction)")
         }
 
