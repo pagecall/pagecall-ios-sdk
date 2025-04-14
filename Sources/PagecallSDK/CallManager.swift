@@ -20,6 +20,8 @@ public class CallManager: NSObject, CXProviderDelegate {
 
     private var callId: UUID?
 
+    static weak var emitter: WebViewEmitter?
+
     func startCall(completion: @escaping (Error?) -> Void) {
         PagecallLogger.shared.addBreadcrumb(message: "startCall")
 
@@ -50,6 +52,7 @@ public class CallManager: NSObject, CXProviderDelegate {
                 return
             }
             self.provider.reportOutgoingCall(with: callId, connectedAt: Date())
+
             completion(nil)
         }
     }
@@ -81,6 +84,11 @@ public class CallManager: NSObject, CXProviderDelegate {
 
     public func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         print("[CallManager] providerPerformStartCall", action)
+
+        // MI에서는 default일 경우 에어팟 연결이 해제된다.
+        AudioSessionManager.shared().emitter = CallManager.emitter
+        AudioSessionManager.shared().desiredMode = .videoChat
+
         action.fulfill()
         self.delegate?.provider?(provider, perform: action)
     }
@@ -93,6 +101,9 @@ public class CallManager: NSObject, CXProviderDelegate {
 
     public func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         print("[CallManager] providerPerformEndCall", action)
+
+        AudioSessionManager.clear()
+
         action.fulfill()
         self.delegate?.provider?(provider, perform: action)
     }

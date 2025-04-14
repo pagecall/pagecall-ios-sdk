@@ -47,15 +47,7 @@ class NativeBridge: Equatable, ScriptDelegate {
 
     private var miController: MiController? {
         didSet {
-            if let _ = miController {
-                synchronizePauseState()
-
-                // MI에서는 default일 경우 에어팟 연결이 해제된다.
-                AudioSessionManager.shared().desiredMode = .videoChat
-                AudioSessionManager.shared().emitter = emitter
-            } else {
-                AudioSessionManager.clear()
-            }
+            synchronizePauseState()
         }
     }
 
@@ -184,6 +176,7 @@ class NativeBridge: Equatable, ScriptDelegate {
                 return
             }
             if let initialPayload = try? JSONDecoder().decode(MiInitialPayload.self, from: payloadData) {
+                CallManager.emitter = emitter
                 CallManager.shared.startCall(completion: { error in
                     if let error = error {
                         print("[NativeBridge] startCall failure")
