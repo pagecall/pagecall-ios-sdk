@@ -45,11 +45,11 @@ class NativeBridge: Equatable, ScriptDelegate {
         return lhs.id == rhs.id
     }
 
-    private var mediaController: MediaController? {
+    private var miController: MiController? {
         didSet {
             AudioSessionManager.shared.stopHandlingInterruption()
 
-            if let _ = mediaController {
+            if let _ = miController {
                 synchronizePauseState()
 
                 // MI에서는 default일 경우 에어팟 연결이 해제된다.
@@ -67,8 +67,8 @@ class NativeBridge: Equatable, ScriptDelegate {
     }
 
     func synchronizePauseState() {
-        guard let mediaController = mediaController else { return }
-        let success = isAudioPaused ? mediaController.pauseAudio() : mediaController.resumeAudio()
+        guard let miController = miController else { return }
+        let success = isAudioPaused ? miController.pauseAudio() : miController.resumeAudio()
         if success {
             emitter.log(name: "AudioStateChange", message: isAudioPaused ? "Paused" : "Resumed")
         } else {
@@ -182,7 +182,7 @@ class NativeBridge: Equatable, ScriptDelegate {
             struct MiPayload: Codable {
                 let plugin: String
             }
-            if let _ = self.mediaController {
+            if let _ = self.miController {
                 respond(PagecallError.other(message: "Must be disposed first"), nil)
                 return
             }
@@ -199,7 +199,7 @@ class NativeBridge: Equatable, ScriptDelegate {
                     // Continue anyway
                     do {
                         let miController = try MiController(emitter: self.emitter, initialPayload: initialPayload)
-                        self.mediaController = miController
+                        self.miController = miController
                         respond(nil, nil)
                     } catch {
                         print("[NativeBridge] error creating miController", error)
@@ -227,7 +227,7 @@ class NativeBridge: Equatable, ScriptDelegate {
                 respond(PagecallError.other(message: "Failed to getPermissions"), nil)
             }
         case .getMediaStats:
-            if let miController = mediaController as? MiController {
+            if let miController = miController {
                 let jsonString = miController.getMediaStats()
                 switch parseMediaStats(jsonString: jsonString) {
                     case .success(let stat):
@@ -318,11 +318,11 @@ class NativeBridge: Equatable, ScriptDelegate {
                 print("[NativeBridge] Invalid response data")
             }
         case .start:
-            guard let mediaController = mediaController else {
-                respond(PagecallError.other(message: "Missing mediaController, initialize first"), nil)
+            guard let miController = miController else {
+                respond(PagecallError.other(message: "Missing miController, initialize first"), nil)
                 return
             }
-            mediaController.start { (error: Error?) in
+            miController.start { (error: Error?) in
                 self.synchronizePauseState()
                 if let error = error {
                     print("[NativeBridge] Failed to start controller", error)
@@ -338,25 +338,21 @@ class NativeBridge: Equatable, ScriptDelegate {
             // Deprecated
             respond(nil, nil)
         case .consume:
-            guard let mediaController = mediaController else {
-                respond(PagecallError.other(message: "Missing mediaController, initialize first"), nil)
+            guard let miController = miController else {
+                respond(PagecallError.other(message: "Missing miController, initialize first"), nil)
                 return
             }
-            if let miController = mediaController as? MiController {
-                if let payloadData = payloadData {
-                    miController.consume(data: payloadData) { error in
-                        if let error = error {
-                            print("[NativeBridge] Failed to consume", error)
-                            respond(error, nil)
-                        } else {
-                            respond(nil, nil)
-                        }
+            if let payloadData = payloadData {
+                miController.consume(data: payloadData) { error in
+                    if let error = error {
+                        print("[NativeBridge] Failed to consume", error)
+                        respond(error, nil)
+                    } else {
+                        respond(nil, nil)
                     }
-                } else {
-                    respond(PagecallError.other(message: "Invalid payload"), nil)
                 }
             } else {
-                respond(PagecallError.other(message: "consume is only effective for MI"), nil)
+                respond(PagecallError.other(message: "Invalid payload"), nil)
             }
         }
     }
@@ -365,8 +361,8 @@ class NativeBridge: Equatable, ScriptDelegate {
         volumeRecorder?.stop()
         volumeRecorder = nil
 
-        mediaController?.dispose()
-        mediaController = nil
+        miController?.dispose()
+        miController = nil
 
         if isCallStarted {
             CallManager.shared.endCall { error in
