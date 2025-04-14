@@ -34,6 +34,7 @@ class AudioSessionManager {
     }
 
     private func setAudioSessionCategory() {
+        guard let desiredMode = desiredMode else { return }
         let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
 
         if let builtin = audioSession.availableInputs?.first(where: { port in
@@ -80,7 +81,7 @@ class AudioSessionManager {
                 emitter?.error(name: "AVAudioSession", message: "setActive: \(error.localizedDescription)")
             }
         }
-        if let desiredMode = desiredMode, desiredMode != audioSession.mode {
+        if desiredMode != audioSession.mode {
             do {
                 try audioSession.setMode(desiredMode)
             } catch {
