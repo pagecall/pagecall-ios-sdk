@@ -277,33 +277,13 @@ class NativeBridge: Equatable, ScriptDelegate {
             }
             do {
                 let volumeRecorder = try VolumeRecorder.shared()
-                respondVolumeWithPower(try volumeRecorder.averagePower())
+                respondVolumeWithPower(volumeRecorder.averagePower())
             } catch {
                 if let error = error as? PagecallError {
                     switch error {
                     case .missingAudioPermission:
                         respondVolumeWithPower(-160)
                         return
-                    case .audioRecorderBroken:
-                        VolumeRecorder.clear()
-                        /**
-                         It was observed to be broken when `CallManager.startCall` succeeds (with `providerDidActivate`),
-                         and could be restored by recreating one
-                         */
-                        do {
-                            let volumeRecorder = try VolumeRecorder.shared()
-                            do {
-                                let averagePower = try volumeRecorder.averagePower(strict: true)
-                                respondVolumeWithPower(averagePower)
-                            } catch {
-                                VolumeRecorder.clear()
-                                respond(error, nil)
-                            }
-                            return
-                        } catch {
-                            respond(error, nil)
-                            return
-                        }
                     default:
                         break
                     }
