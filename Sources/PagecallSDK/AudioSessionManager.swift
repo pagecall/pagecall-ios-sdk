@@ -114,11 +114,6 @@ class AudioSessionManager {
             self.emitter?.error(name: "AVAudioSession", message: "AudioSessionRouteChange | requires connection to device")
         }
         self.setAudioSessionCategory()
-
-        /**
-         * TODO: setIdiomPhoneOutputAudioPort()
-         * Ref: https://github.com/pplink/pagecall-ios-sdk/blob/main/PageCallSDK/PageCallSDK/Classes/PCMainViewController.m#L673-L841
-         */
     }
 
     @objc private func handleInterruption(notification: Notification) {
