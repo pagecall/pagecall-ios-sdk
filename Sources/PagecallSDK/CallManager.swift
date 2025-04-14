@@ -133,6 +133,11 @@ public class CallManager: NSObject, CXProviderDelegate {
 
     public func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
         print("[CallManager] providerDidActivate")
+        /**
+         If there is an existing `VolumeRecorder` at this point, it may be stuck in a broken state and keep reporting a power of -120.
+         Destroy the instance to allow creating a new one.
+         */
+        VolumeRecorder.clear()
         self.delegate?.provider?(provider, didActivate: audioSession)
     }
 

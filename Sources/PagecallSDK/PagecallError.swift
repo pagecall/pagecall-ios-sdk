@@ -9,15 +9,12 @@ import Foundation
 
 public enum PagecallError: LocalizedError {
     case other(message: String)
-    case audioRecorderBroken
     case missingAudioPermission
 
     var message: String {
         switch self {
         case .other(let message):
             return message
-        case .audioRecorderBroken:
-            return "AVAudioRecorder seems to be broken"
         case .missingAudioPermission:
             return "Audio permission is not authorized"
         }
