@@ -1,13 +1,39 @@
 import AVFoundation
 
 class AudioSessionManager {
-    static let shared = AudioSessionManager()
-    public var desiredMode: AVAudioSession.Mode?
+    public var desiredMode: AVAudioSession.Mode? {
+        didSet {
+            setAudioSessionCategory()
+        }
+    }
     public weak var emitter: WebViewEmitter?
 
-    private init() {}
+    static var instance: AudioSessionManager?
 
-    func setAudioSessionCategory() {
+    static func shared() -> AudioSessionManager {
+        if let instance = instance {
+            return instance
+        } else {
+            let newInstance = AudioSessionManager()
+            instance = newInstance
+            return newInstance
+        }
+    }
+
+    static func clear() {
+        self.instance = nil
+    }
+
+    private init() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange), name: AVAudioSession.routeChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption), name: AVAudioSession.interruptionNotification, object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    private func setAudioSessionCategory() {
         let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
 
         if let builtin = audioSession.availableInputs?.first(where: { port in
@@ -133,16 +159,6 @@ class AudioSessionManager {
         print("[AudioSessionManager] interrupt", interruptionDetail)
         guard let payload = try? JSONSerialization.data(withJSONObject: interruptionDetail, options: .withoutEscapingSlashes) else { return }
         self.emitter?.emit(eventName: .audioSessionInterrupted, data: payload)
-    }
-
-    func startHandlingInterruption() {
-        self.setAudioSessionCategory()
-        NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange), name: AVAudioSession.routeChangeNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption), name: AVAudioSession.interruptionNotification, object: nil)
-    }
-
-    func stopHandlingInterruption() {
-        NotificationCenter.default.removeObserver(self)
     }
 }
 
