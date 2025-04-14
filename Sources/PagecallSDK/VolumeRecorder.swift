@@ -3,7 +3,28 @@ import AVFoundation
 class VolumeRecorder {
     private let audioRecorder: AVAudioRecorder
 
-    init() throws {
+    private static var instance: VolumeRecorder?
+
+    static func shared() throws -> VolumeRecorder {
+        if let instance = instance {
+            return instance
+        } else if let isAudioAuthorized = DeviceManager.getAuthorizationStatusAsBool(for: .audio), isAudioAuthorized {
+            let newInstance = try VolumeRecorder()
+            instance = newInstance
+            return newInstance
+        } else {
+            throw PagecallError.missingAudioPermission
+        }
+    }
+
+    static func clear() {
+        if let instance = instance {
+            instance.audioRecorder.stop()
+            self.instance = nil
+        }
+    }
+
+    private init() throws {
         let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let audioFilename = documentPath.appendingPathComponent("nothing.m4a")
         let settings = [
@@ -53,13 +74,5 @@ class VolumeRecorder {
             throw PagecallError.audioRecorderBroken
         }
         return averagePower
-    }
-
-    func stop() {
-        audioRecorder.stop()
-    }
-
-    deinit {
-        stop()
     }
 }

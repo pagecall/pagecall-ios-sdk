@@ -132,8 +132,6 @@ class NativeBridge: Equatable, ScriptDelegate {
 
     private var isCallStarted = false
 
-    private var volumeRecorder: VolumeRecorder?
-
     func messageHandler(message: String) {
         let data = message.data(using: .utf8)!
         guard let jsonArray = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else {
@@ -286,34 +284,27 @@ class NativeBridge: Equatable, ScriptDelegate {
                 }
             }
             do {
-                if let volumeRecorder = volumeRecorder {
-                    respondVolumeWithPower(try volumeRecorder.averagePower())
-                } else if let isAudioAuthorized = DeviceManager.getAuthorizationStatusAsBool(for: .audio), isAudioAuthorized {
-                    let volumeRecorder = try VolumeRecorder()
-                    self.volumeRecorder = volumeRecorder
-                    respondVolumeWithPower(try volumeRecorder.averagePower())
-                } else {
-                    // No permission
-                    respondVolumeWithPower(-160 /* lowest power */)
-                }
+                let volumeRecorder = try VolumeRecorder.shared()
+                respondVolumeWithPower(try volumeRecorder.averagePower())
             } catch {
                 if let error = error as? PagecallError {
                     switch error {
+                    case .missingAudioPermission:
+                        respondVolumeWithPower(-160)
+                        return
                     case .audioRecorderBroken:
+                        VolumeRecorder.clear()
                         /**
                          It was observed to be broken when `CallManager.startCall` succeeds (with `providerDidActivate`),
                          and could be restored by recreating one
                          */
-                        self.volumeRecorder?.stop()
-                        self.volumeRecorder = nil
                         do {
-                            let volumeRecorder = try VolumeRecorder()
+                            let volumeRecorder = try VolumeRecorder.shared()
                             do {
                                 let averagePower = try volumeRecorder.averagePower(strict: true)
-                                self.volumeRecorder = volumeRecorder
                                 respondVolumeWithPower(averagePower)
                             } catch {
-                                volumeRecorder.stop()
+                                VolumeRecorder.clear()
                                 respond(error, nil)
                             }
                             return
@@ -385,9 +376,6 @@ class NativeBridge: Equatable, ScriptDelegate {
     }
 
     public func disconnect() {
-        volumeRecorder?.stop()
-        volumeRecorder = nil
-
         miController?.dispose()
         miController = nil
 
@@ -407,6 +395,7 @@ class NativeBridge: Equatable, ScriptDelegate {
 
     deinit {
         disconnect()
+        VolumeRecorder.clear()
     }
 }
 
