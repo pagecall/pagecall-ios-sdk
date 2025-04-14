@@ -116,3 +116,61 @@ class AudioSessionManager {
         NotificationCenter.default.removeObserver(self)
     }
 }
+
+extension AVAudioSession.RouteChangeReason {
+    var description: String {
+        switch self {
+        case .newDeviceAvailable:
+            return "NewDeviceAvailable"
+        case .oldDeviceUnavailable:
+            return "OldDeviceUnavailable"
+        case .categoryChange:
+            return "CategoryChange"
+        case .override:
+            return "Override"
+        case .wakeFromSleep:
+            return "WakeFromSleep"
+        case .noSuitableRouteForCategory:
+            return "NoSuitableRouteForCategory"
+        case .routeConfigurationChange:
+            return "RouteConfigurationChange"
+        default:
+            return "Unknown"
+        }
+    }
+}
+extension AVAudioSession.InterruptionType {
+    var description: String {
+        switch self {
+        case .began:
+            return "Began"
+        case .ended:
+            return "Ended"
+        default:
+            return "Unknown"
+        }
+    }
+}
+extension AVAudioSession.InterruptionReason {
+    var description: String {
+        switch self {
+        case .default:
+            return "Default"
+        case .builtInMicMuted:
+            return "BuiltInMicMuted"
+        default:
+            return "Unknown"
+        }
+    }
+}
+
+extension AVAudioSession.InterruptionOptions {
+    var description: String {
+        switch self {
+        case .shouldResume:
+            return "ShouldResume"
+        default:
+            return "Unknown"
+        }
+    }
+}

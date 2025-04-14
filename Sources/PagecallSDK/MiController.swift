@@ -45,7 +45,7 @@ extension String {
     }
 }
 
-class MiController: MediaController, SendTransportDelegate, ReceiveTransportDelegate {
+class MiController: SendTransportDelegate, ReceiveTransportDelegate {
     func onProduce(transport: Transport, kind: MediaKind, rtpParameters: String, appData: String, callback: @escaping (String?) -> Void) {
         if let parsedRtpParams = rtpParameters.jsonObject(), let parsedAppData = appData.jsonObject() {
             emitter.request(eventName: .produce, json: [
@@ -173,8 +173,9 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
         }
     }
 
-    func start(callback: @escaping (Error?) -> Void) {
+    private(set) var started = false
 
+    func start(callback: @escaping (Error?) -> Void) {
         let audioSource = factory.audioSource(with: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
         let audioTrack = factory.audioTrack(with: audioSource, trackId: "audio0")
 
@@ -182,6 +183,7 @@ class MiController: MediaController, SendTransportDelegate, ReceiveTransportDele
             self.producer?.close()
             do {
                 self.producer = try self.sendTransport.createProducer(for: audioTrack, encodings: nil, codecOptions: nil, codec: nil, appData: nil)
+                self.started = true
                 callback(nil)
             } catch {
                 callback(error)
