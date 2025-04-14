@@ -264,7 +264,20 @@ class NativeBridge: Equatable, ScriptDelegate {
                 respond(error, nil)
             }
         case .requestAudioVolume:
-            let respondVolume: (Float) -> Void = { volume in
+            let respondVolumeWithPower: (Float) -> Void = { power in
+                let volume = ({
+                    if let miController = self.miController, miController.started {
+                        // fallthrough
+                    } else if let _ = AVAudioSession.sharedInstance().currentRoute.inputs.first(where: { port in
+                        port.portType == .builtInMic
+                    }), UIDevice.current.userInterfaceIdiom == .pad {
+                        /**
+                         The reported power range has been observed to be narrower than expected when the built-in microphone is selected on an iPad and `MiController.start` has not been called yet.
+                         */
+                        return VolumeRecorder.normalize(power: power, lowest: -20, highest: 0)
+                    }
+                    return VolumeRecorder.normalize(power: power, lowest: -50, highest: -20)
+                })()
                 let rounded = (volume * 100).rounded() / 100
                 if let volumeData = try? JSONEncoder().encode(rounded) {
                     respond(nil, volumeData)
@@ -274,22 +287,36 @@ class NativeBridge: Equatable, ScriptDelegate {
             }
             do {
                 if let volumeRecorder = volumeRecorder {
-                    respondVolume(try volumeRecorder.requestAudioVolume())
-                } else {
+                    respondVolumeWithPower(try volumeRecorder.averagePower())
+                } else if let isAudioAuthorized = DeviceManager.getAuthorizationStatusAsBool(for: .audio), isAudioAuthorized {
                     let volumeRecorder = try VolumeRecorder()
                     self.volumeRecorder = volumeRecorder
-                    respondVolume(try volumeRecorder.requestAudioVolume())
+                    respondVolumeWithPower(try volumeRecorder.averagePower())
+                } else {
+                    // No permission
+                    respondVolumeWithPower(-160 /* lowest power */)
                 }
             } catch {
                 if let error = error as? PagecallError {
                     switch error {
                     case .audioRecorderBroken:
+                        /**
+                         It was observed to be broken when `CallManager.startCall` succeeds (with `providerDidActivate`),
+                         and could be restored by recreating one
+                         */
                         self.volumeRecorder?.stop()
                         self.volumeRecorder = nil
                         do {
                             let volumeRecorder = try VolumeRecorder()
-                            self.volumeRecorder = volumeRecorder
-                            respondVolume(try volumeRecorder.requestAudioVolume())
+                            do {
+                                let averagePower = try volumeRecorder.averagePower(strict: true)
+                                self.volumeRecorder = volumeRecorder
+                                respondVolumeWithPower(averagePower)
+                            } catch {
+                                volumeRecorder.stop()
+                                respond(error, nil)
+                            }
+                            return
                         } catch {
                             respond(error, nil)
                             return
