@@ -10,6 +10,7 @@ public class CallManager: NSObject, CXProviderDelegate {
     public var delegate: CXProviderDelegate?
 
     private override init() {
+        print("[CallManager] init")
         let configuration = CXProviderConfiguration()
         configuration.supportedHandleTypes = [.generic]
         provider = CXProvider(configuration: configuration)
