@@ -121,8 +121,6 @@ class NativeBridge: Equatable, ScriptDelegate {
         }
     }
 
-    private var isCallStarted = false
-
     func messageHandler(message: String) {
         let data = message.data(using: .utf8)!
         guard let jsonArray = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else {
@@ -184,7 +182,6 @@ class NativeBridge: Equatable, ScriptDelegate {
                         PagecallLogger.shared.capture(error: error)
                     } else {
                         print("[NativeBridge] startCall success")
-                        self.isCallStarted = true
                     }
                     // Continue anyway
                     do {
@@ -351,16 +348,13 @@ class NativeBridge: Equatable, ScriptDelegate {
         miController?.dispose()
         miController = nil
 
-        if isCallStarted {
-            CallManager.shared.endCall { error in
-                self.isCallStarted = false
-                if let error = error {
-                    print("[PagecallWebView] endCall failure")
-                    self.emitter.error(name: "EndCallError", message: error.localizedDescription)
-                    PagecallLogger.shared.capture(error: error)
-                } else {
-                    print("[PagecallWebView] endCall success")
-                }
+        CallManager.shared.endCall { error in
+            if let error = error {
+                print("[PagecallWebView] endCall failure")
+                self.emitter.error(name: "EndCallError", message: error.localizedDescription)
+                PagecallLogger.shared.capture(error: error)
+            } else {
+                print("[PagecallWebView] endCall success")
             }
         }
     }

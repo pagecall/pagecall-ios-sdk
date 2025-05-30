@@ -1,7 +1,10 @@
 PODS:
-  - Pagecall (0.0.28)
-  - Pagecall/Log (0.0.28):
+  - Pagecall (0.0.29):
+    - RxSwift (= 6.9.0)
+  - Pagecall/Log (0.0.29):
+    - RxSwift (= 6.9.0)
     - Sentry (~> 8.41.0)
+  - RxSwift (6.9.0)
   - Sentry (8.41.0):
     - Sentry/Core (= 8.41.0)
   - Sentry/Core (8.41.0)
@@ -12,6 +15,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - RxSwift
     - Sentry
 
 EXTERNAL SOURCES:
@@ -19,7 +23,8 @@ EXTERNAL SOURCES:
     :path: "../../"
 
 SPEC CHECKSUMS:
-  Pagecall: 9289cdbd522e03f273a598f051516bcf27feef82
+  Pagecall: 34a00bf7042cfc94ca7bb0f2f085aa5fb1305f3d
+  RxSwift: 31649ace6aceeb422e16ff71c60804f9c3281ed9
   Sentry: 54d0fe6c0df448497c8ed4cce66ccf7027e1823e
 
 PODFILE CHECKSUM: 2c5df6556b2906df5c2e3bf0debd55c824a18815
