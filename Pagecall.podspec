@@ -11,12 +11,6 @@ Pod::Spec.new do |s|
   s.version          = '0.0.29' # Update `version` field of PagecallWebView as you change this
   s.summary          = 'Pagecall WebView: Enhanced Voice Communication via Custom WebView based on WKWebView'
 
-# This description is used to generate tags and improve search results.
-#   * Think: What does it do? Why did you write it? What is the focus?
-#   * Try to keep it short, snappy and to the point.
-#   * Write the description between the DESC delimiters below.
-#   * Finally, don't worry about the indent, CocoaPods strips it!
-
   s.description      = 'Pagecall-ios-sdk provides PagecallWebView, a custom WebView based on WKWebView that extends its functionality by adding a proprietary JavaScript Bridge to improve voice communication features. This enables customers to offer an enhanced voice communication experience. By utilizing PagecallWebView, powerful voice communication features can be easily integrated in place of the existing WKWebView.'
 
   s.homepage         = 'https://github.com/pagecall/pagecall-ios-sdk'
@@ -36,6 +30,7 @@ Pod::Spec.new do |s|
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
 
+  s.dependency 'RxSwift', '6.9.0'
   s.default_subspec = :none
 
   s.subspec 'Log' do |subspec|
