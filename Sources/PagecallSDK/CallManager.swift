@@ -28,7 +28,7 @@ public class CallManager: NSObject, CXProviderDelegate {
         provider.setDelegate(self, queue: nil)
 
         callState
-            .filter({ callState in callState.shouldBeInCall != callState.isInCall })
+            .filter({ callState in callState.shouldBeInCall != callState.isInCall && callState.error == nil })
             .flatMap(maxPublishers: .max(1)) { callState -> AnyPublisher<CallState, Never> in
                 let shouldBeInCall = callState.shouldBeInCall
             return Future<CallState, Never> { [weak self] promise in
@@ -84,6 +84,16 @@ public class CallManager: NSObject, CXProviderDelegate {
             self?.callState.send(value)
           }
           .store(in: &cancellables)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(handleBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+
+    @objc private func handleBecomeActive(notification: Notification) {
+        print("[CallManager] becomeActive")
+        let current = callState.value
+        if current.shouldBeInCall == current.isInCall || current.error == nil { return }
+        // Trigger retry
+        callState.send(.init(shouldBeInCall: current.shouldBeInCall, isInCall: current.isInCall, error: nil))
     }
 
     static weak var emitter: WebViewEmitter?
