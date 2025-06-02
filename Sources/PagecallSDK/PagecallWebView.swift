@@ -7,6 +7,7 @@ public enum TerminationReason {
 
 public protocol PagecallDelegate: AnyObject {
     func pagecallDidTerminate(_ view: PagecallWebView, reason: TerminationReason)
+    func pagecallDidLoseAudioSession()
     func pagecallDidEncounter(_ view: PagecallWebView, error: Error)
     func pagecallDidLoad(_ view: PagecallWebView)
     /**
@@ -155,6 +156,8 @@ open class PagecallWebView: WKWebView {
             self.pencilDebugOverlay = pencilDebugOverlay
             window.addSubview(pencilDebugOverlay)
         }
+
+        CallManager.shared.callDelegate = self
     }
 
     public override var customUserAgent: String? {
@@ -623,5 +626,11 @@ extension PagecallWebView: PenGestureRecognizerDelegate {
             touch.preciseLocation(in: self)
         }
         nativeBridge?.emitPenTouch(points: locations, phase: phase)
+    }
+}
+
+extension PagecallWebView: PagecallCallDelegate {
+    public func didDeactivate() {
+        self.delegate?.pagecallDidLoseAudioSession()
     }
 }

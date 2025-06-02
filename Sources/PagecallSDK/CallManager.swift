@@ -9,6 +9,7 @@ public class CallManager: NSObject, CXProviderDelegate {
     private let provider: CXProvider
     private let callController: CXCallController
     public var delegate: CXProviderDelegate?
+    public var callDelegate: PagecallCallDelegate?
 
     private let callState = CurrentValueSubject<CallState, Never>(
         CallState(shouldBeInCall: false, isInCall: false, error: nil)
@@ -222,11 +223,13 @@ public class CallManager: NSObject, CXProviderDelegate {
     public func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
         print("[CallManager] providerDidDeactivate")
         CallManager.emitter?.log(name: "CallManager", message: "didDeactivateAudioSession")
+        CallManager.emitter?.error(name: "CallError", message: "audioSession deactivated")
 
         audioSessionManager?.dispose()
         audioSessionManager = nil
 
         self.delegate?.provider?(provider, didDeactivate: audioSession)
+        self.callDelegate?.didDeactivate()
     }
 }
 
@@ -234,4 +237,8 @@ struct CallState {
     let shouldBeInCall: Bool
     let isInCall: Bool
     let error: Error?
+}
+
+public protocol PagecallCallDelegate: AnyObject {
+    func didDeactivate()
 }
