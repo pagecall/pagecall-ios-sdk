@@ -27,6 +27,7 @@ class AudioSessionManager {
     private init() {
         NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange), name: AVAudioSession.routeChangeNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption), name: AVAudioSession.interruptionNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleMediaServicesReset), name: AVAudioSession.mediaServicesWereResetNotification, object: nil)
     }
 
     deinit {
@@ -155,6 +156,15 @@ class AudioSessionManager {
         print("[AudioSessionManager] interrupt", interruptionDetail)
         guard let payload = try? JSONSerialization.data(withJSONObject: interruptionDetail, options: .withoutEscapingSlashes) else { return }
         self.emitter?.emit(eventName: .audioSessionInterrupted, data: payload)
+    }
+
+    @objc private func handleMediaServicesReset(notification: Notification) {
+        self.emitter?.log(name: "AVAudioSession", message: "MediaServicesReset notification name=\(notification.name)")
+
+        let detail = notification.userInfo as? [String: Any] ?? [String: Any]()
+        print("[AudioSessionManager] mediaServicesWereReset", detail)
+        guard let payload = try? JSONSerialization.data(withJSONObject: detail, options: .withoutEscapingSlashes) else { return }
+        self.emitter?.emit(eventName: .mediaServicesReset, data: payload)
     }
 }
 

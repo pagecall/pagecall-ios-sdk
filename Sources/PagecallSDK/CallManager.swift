@@ -136,6 +136,7 @@ public class CallManager: NSObject, CXProviderDelegate {
 
     public func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         print("[CallManager] providerPerformStartCall", action)
+        CallManager.emitter?.log(name: "CallManager", message: "performStartCall")
 
         if let _ = self.callId {
             print("[CallManager] providerPerformStartCall: unexpected callId")
@@ -158,6 +159,7 @@ public class CallManager: NSObject, CXProviderDelegate {
 
     public func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         print("[CallManager] providerPerformEndCall", action)
+        CallManager.emitter?.log(name: "CallManager", message: "performEndCall")
 
         if self.callId != action.callUUID {
             print("[CallManager] providerPerformStartCall: unexpected callId")
@@ -177,29 +179,34 @@ public class CallManager: NSObject, CXProviderDelegate {
 
     public func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
         print("[CallManager] providerPerformSetHeldCall", action)
+        CallManager.emitter?.log(name: "CallManager", message: "performSetHeldCall")
         action.fulfill()
         self.delegate?.provider?(provider, perform: action)
     }
 
     public func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
         print("[CallManager] providerPerformSetMutedCall", action)
+        CallManager.emitter?.log(name: "CallManager", message: "performSetMutedCall")
         action.fulfill()
         self.delegate?.provider?(provider, perform: action)
     }
 
     public func provider(_ provider: CXProvider, perform action: CXSetGroupCallAction) {
         print("[CallManager] providerPerformSetGroupCall", action)
+        CallManager.emitter?.log(name: "CallManager", message: "performSetGroupCall")
         action.fulfill()
         self.delegate?.provider?(provider, perform: action)
     }
 
     public func provider(_ provider: CXProvider, timedOutPerforming action: CXAction) {
         print("[CallManager] providerTimedOutPerforming", action)
+        CallManager.emitter?.log(name: "CallManager", message: "timedOutPerforming: \(action.description)")
         self.delegate?.provider?(provider, timedOutPerforming: action)
     }
 
     public func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
         print("[CallManager] providerDidActivate")
+        CallManager.emitter?.log(name: "CallManager", message: "didActivateAudioSession")
         /**
          If there is an existing `VolumeRecorder` at this point, it may be stuck in a broken state and keep reporting a power of -120.
          Destroy the instance to allow creating a new one.
@@ -210,6 +217,7 @@ public class CallManager: NSObject, CXProviderDelegate {
 
     public func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
         print("[CallManager] providerDidDeactivate")
+        CallManager.emitter?.log(name: "CallManager", message: "didDeactivateAudioSession")
         self.delegate?.provider?(provider, didDeactivate: audioSession)
     }
 }
