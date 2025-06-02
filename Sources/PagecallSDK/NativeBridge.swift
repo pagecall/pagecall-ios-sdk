@@ -7,7 +7,8 @@ struct Stat: Encodable {
 }
 
 enum BridgeEvent: String, Codable {
-    case audioDevice, audioDevices, audioStatus, audioSessionRouteChanged, audioSessionInterrupted, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, log, error
+    case audioDevice, audioDevices, audioStatus, mediaStat, audioEnded, videoEnded, screenshareEnded, connected, disconnected, log, error
+    case audioSessionRouteChanged, audioSessionInterrupted, mediaServicesReset
     case connectTransport, penTouch
 }
 
