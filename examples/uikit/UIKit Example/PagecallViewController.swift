@@ -178,6 +178,12 @@ class PagecallViewController: UIViewController {
 }
 
 extension PagecallViewController: PagecallDelegate {
+    func pagecallDidLoseAudioSession() {
+        onFatalError?(
+            PagecallError.other(message: "Call interrupted")
+        )
+    }
+
     func pagecallDidTerminate(_ view: Pagecall.PagecallWebView, reason: Pagecall.TerminationReason) {
         loading.setProgress(progress: 1.0)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1) {
