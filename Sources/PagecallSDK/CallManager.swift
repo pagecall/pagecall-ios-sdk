@@ -6,8 +6,8 @@ public class CallManager: NSObject, CXProviderDelegate {
     static public let shared = CallManager()
     static var disabled = false
 
-    let provider: CXProvider
-    let callController: CXCallController
+    private let provider: CXProvider
+    private let callController: CXCallController
     public var delegate: CXProviderDelegate?
 
     private let callState = CurrentValueSubject<CallState, Never>(
@@ -88,6 +88,10 @@ public class CallManager: NSObject, CXProviderDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(handleBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
 
+    func averagePower() -> Float? {
+        return self.audioSessionManager?.averagePower()
+    }
+
     @objc private func handleBecomeActive(notification: Notification) {
         print("[CallManager] becomeActive")
         let current = callState.value
@@ -97,6 +101,10 @@ public class CallManager: NSObject, CXProviderDelegate {
     }
 
     static weak var emitter: WebViewEmitter?
+
+    func getEmitter() -> WebViewEmitter? {
+        return CallManager.emitter
+    }
 
     func startCall(completion: @escaping (Error?) -> Void) {
         if CallManager.disabled {
@@ -134,6 +142,8 @@ public class CallManager: NSObject, CXProviderDelegate {
         self.delegate?.providerDidReset(provider)
     }
 
+    private var audioSessionManager: AudioSessionManager?
+
     public func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         print("[CallManager] providerPerformStartCall", action)
         CallManager.emitter?.log(name: "CallManager", message: "performStartCall")
@@ -142,10 +152,6 @@ public class CallManager: NSObject, CXProviderDelegate {
             print("[CallManager] providerPerformStartCall: unexpected callId")
         }
         self.callId = action.callUUID
-
-        // MI에서는 default일 경우 에어팟 연결이 해제된다.
-        AudioSessionManager.shared().emitter = CallManager.emitter
-        AudioSessionManager.shared().desiredMode = .videoChat
 
         action.fulfill()
         self.delegate?.provider?(provider, perform: action)
@@ -165,8 +171,6 @@ public class CallManager: NSObject, CXProviderDelegate {
             print("[CallManager] providerPerformStartCall: unexpected callId")
         }
         self.callId = nil
-
-        AudioSessionManager.clear()
 
         action.fulfill()
         self.delegate?.provider?(provider, perform: action)
@@ -207,17 +211,21 @@ public class CallManager: NSObject, CXProviderDelegate {
     public func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
         print("[CallManager] providerDidActivate")
         CallManager.emitter?.log(name: "CallManager", message: "didActivateAudioSession")
-        /**
-         If there is an existing `VolumeRecorder` at this point, it may be stuck in a broken state and keep reporting a power of -120.
-         Destroy the instance to allow creating a new one.
-         */
-        VolumeRecorder.clear()
+
+        if audioSessionManager == nil {
+            audioSessionManager = .init(self)
+        }
+
         self.delegate?.provider?(provider, didActivate: audioSession)
     }
 
     public func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
         print("[CallManager] providerDidDeactivate")
         CallManager.emitter?.log(name: "CallManager", message: "didDeactivateAudioSession")
+
+        audioSessionManager?.dispose()
+        audioSessionManager = nil
+
         self.delegate?.provider?(provider, didDeactivate: audioSession)
     }
 }

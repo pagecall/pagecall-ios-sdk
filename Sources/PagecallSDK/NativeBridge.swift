@@ -273,20 +273,11 @@ class NativeBridge: Equatable, ScriptDelegate {
                     respond(PagecallError.other(message: "Failed to encode volume"), nil)
                 }
             }
-            do {
-                let volumeRecorder = try VolumeRecorder.shared()
-                respondVolumeWithPower(volumeRecorder.averagePower())
-            } catch {
-                if let error = error as? PagecallError {
-                    switch error {
-                    case .missingAudioPermission:
-                        respondVolumeWithPower(-160)
-                        return
-                    default:
-                        break
-                    }
-                }
-                respond(error, nil)
+            if let averagePower = CallManager.shared.averagePower() {
+                respondVolumeWithPower(averagePower)
+            } else {
+                respondVolumeWithPower(-160)
+
             }
         case .pauseAudio:
             isAudioPaused = true
@@ -362,7 +353,6 @@ class NativeBridge: Equatable, ScriptDelegate {
 
     deinit {
         disconnect()
-        VolumeRecorder.clear()
     }
 }
 

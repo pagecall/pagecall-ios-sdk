@@ -1,30 +1,18 @@
 import AVFoundation
+import Combine
 
 class AudioSessionManager {
-    public var desiredMode: AVAudioSession.Mode? {
-        didSet {
-            setAudioSessionCategory()
-        }
-    }
-    public weak var emitter: WebViewEmitter?
+    private weak var emitter: WebViewEmitter?
 
-    static var instance: AudioSessionManager?
+    private var cancellables = Set<AnyCancellable>()
 
-    static func shared() -> AudioSessionManager {
-        if let instance = instance {
-            return instance
-        } else {
-            let newInstance = AudioSessionManager()
-            instance = newInstance
-            return newInstance
-        }
-    }
+    private let activationTrigger = PassthroughSubject<Void, Never>()
 
-    static func clear() {
-        self.instance = nil
-    }
+    private var volumeRecorder: VolumeRecorder?
 
-    private init() {
+    init(_ callManager: CallManager) {
+        self.emitter = callManager.getEmitter()
+
         if #available(iOS 14.5, *) {
             try? AVAudioSession().setPrefersNoInterruptionsFromSystemAlerts(true)
         }
@@ -32,67 +20,91 @@ class AudioSessionManager {
         NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange), name: AVAudioSession.routeChangeNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption), name: AVAudioSession.interruptionNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleMediaServicesReset), name: AVAudioSession.mediaServicesWereResetNotification, object: nil)
+
+        var retryTimer: Timer?
+        var retryDelay: TimeInterval = 0.5
+
+        activationTrigger.prepend(())
+            .flatMap(maxPublishers: .max(1)) { _ in
+                Future<Void, Never> { [weak self] promise in
+                    DispatchQueue.global().async {
+                        guard let self = self else { return }
+                        let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+                        do {
+                            if let builtin = audioSession.availableInputs?.first(where: { port in
+                                return port.portType == .builtInMic
+                            }), let front = builtin.dataSources?.first(where: { source in
+                                return source.orientation == .front
+                            }) {
+                                /**
+                                 Once `MiController.start` is called and transmission begins, the microphone is arbitrarily selected.
+                                 We explicitly set the front-facing microphone as it's most suited for calls while looking at the screen together.
+                                 */
+                                do {
+                                    try builtin.setPreferredDataSource(front)
+                                } catch {
+                                    self.emitter?.error(name: "AVAudioSession", message: "setPreferredDataSource: \(error.localizedDescription)")
+                                }
+                            }
+
+                            var options: AVAudioSession.CategoryOptions
+                            if #available(iOS 14.5, *) {
+                                options = [.mixWithOthers,
+                                           .allowBluetooth,
+                                           .allowAirPlay,
+                                           .allowBluetoothA2DP,
+                                           .overrideMutedMicrophoneInterruption,
+                                           .interruptSpokenAudioAndMixWithOthers,
+                                           .defaultToSpeaker]
+                            } else {
+                                options = [.mixWithOthers,
+                                           .allowBluetooth,
+                                           .allowAirPlay,
+                                           .allowBluetoothA2DP,
+                                           .defaultToSpeaker]
+                            }
+
+                            try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: options) // MI에서는 default일 경우 에어팟 연결이 해제된다.
+                            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+
+                            retryTimer?.invalidate()
+                            retryTimer = nil
+                            retryDelay = 0.5
+
+                            do {
+                                self.volumeRecorder = try VolumeRecorder(self)
+                            } catch {
+                                self.emitter?.error(name: "AVAudioSession", message: "Failed to initialize volumeRecorder: \(error.localizedDescription)")
+                            }
+
+                            promise(.success(()))
+                        } catch {
+                            self.emitter?.error(name: "AVAudioSession", message: "activationError: \(error.localizedDescription), nextRetryDelay: \(retryDelay)")
+
+                            DispatchQueue.main.async {
+                                retryTimer = Timer.scheduledTimer(withTimeInterval: retryDelay, repeats: false) { [weak self] _ in
+                                    retryDelay *= 2
+                                    self?.activationTrigger.send()
+                                }
+                            }
+
+                            promise(.success(()))
+                        }
+                    }
+                }
+            }
+            .sink { _ in }
+            .store(in: &cancellables)
     }
 
-    deinit {
+    func averagePower() -> Float? {
+        return self.volumeRecorder?.averagePower()
+    }
+
+    func dispose() {
         NotificationCenter.default.removeObserver(self)
-    }
-
-    private func setAudioSessionCategory() {
-        guard let desiredMode = desiredMode else { return }
-        let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
-
-        if let builtin = audioSession.availableInputs?.first(where: { port in
-            return port.portType == .builtInMic
-        }), let front = builtin.dataSources?.first(where: { source in
-            return source.orientation == .front
-        }) {
-            /**
-             Once `MiController.start` is called and transmission begins, the microphone is arbitrarily selected.
-             We explicitly set the front-facing microphone as it's most suited for calls while looking at the screen together.
-             */
-            do {
-                try builtin.setPreferredDataSource(front)
-            } catch {
-                emitter?.error(name: "AVAudioSession", message: "setPreferredDataSource: \(error.localizedDescription)")
-            }
-        }
-
-        var options: AVAudioSession.CategoryOptions
-        if #available(iOS 14.5, *) {
-            options = [.mixWithOthers,
-                    .allowBluetooth,
-                    .allowAirPlay,
-                    .allowBluetoothA2DP,
-                    .overrideMutedMicrophoneInterruption,
-                    .interruptSpokenAudioAndMixWithOthers,
-                    .defaultToSpeaker]
-        } else {
-            options = [.mixWithOthers,
-                    .allowBluetooth,
-                    .allowAirPlay,
-                    .allowBluetoothA2DP,
-                    .defaultToSpeaker]
-        }
-        if audioSession.category != .playAndRecord {
-            do {
-                try audioSession.setCategory(.playAndRecord, options: options)
-            } catch {
-                emitter?.error(name: "AVAudioSession", message: "setCategory: \(error.localizedDescription)")
-            }
-            do {
-                try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-            } catch {
-                emitter?.error(name: "AVAudioSession", message: "setActive: \(error.localizedDescription)")
-            }
-        }
-        if desiredMode != audioSession.mode {
-            do {
-                try audioSession.setMode(desiredMode)
-            } catch {
-                emitter?.error(name: "AVAudioSession", message: "setMode: \(error.localizedDescription)")
-            }
-        }
+        cancellables.forEach { $0.cancel() }
+        volumeRecorder?.destroy()
     }
 
     @objc private func handleRouteChange(notification: Notification) {
@@ -119,7 +131,7 @@ class AudioSessionManager {
         if audioSession.currentRoute.outputs.isEmpty {
             self.emitter?.error(name: "AVAudioSession", message: "AudioSessionRouteChange | requires connection to device")
         }
-        self.setAudioSessionCategory()
+        activationTrigger.send()
     }
 
     @objc private func handleInterruption(notification: Notification) {
@@ -170,6 +182,7 @@ class AudioSessionManager {
         guard let payload = try? JSONSerialization.data(withJSONObject: detail, options: .withoutEscapingSlashes) else { return }
         self.emitter?.emit(eventName: .mediaServicesReset, data: payload)
     }
+
 }
 
 extension AVAudioSession.RouteChangeReason {
