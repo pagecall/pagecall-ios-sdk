@@ -24,77 +24,68 @@ class AudioSessionManager {
         var retryTimer: Timer?
         var retryDelay: TimeInterval = 0.5
 
-        activationTrigger.prepend(())
-            .flatMap(maxPublishers: .max(1)) { _ in
-                Future<Void, Never> { [weak self] promise in
-                    DispatchQueue.global().async {
-                        guard let self = self else { return }
-                        let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
-                        do {
-                            if let builtin = audioSession.availableInputs?.first(where: { port in
-                                return port.portType == .builtInMic
-                            }), let front = builtin.dataSources?.first(where: { source in
-                                return source.orientation == .front
-                            }) {
-                                /**
-                                 Once `MiController.start` is called and transmission begins, the microphone is arbitrarily selected.
-                                 We explicitly set the front-facing microphone as it's most suited for calls while looking at the screen together.
-                                 */
-                                do {
-                                    try builtin.setPreferredDataSource(front)
-                                } catch {
-                                    self.emitter?.error(name: "AVAudioSession", message: "setPreferredDataSource: \(error.localizedDescription)")
-                                }
-                            }
+        activationTrigger.prepend(()).sink { [weak self] _ in
+            guard let strongSelf = self else { return }
+            let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+            do {
+                if let builtin = audioSession.availableInputs?.first(where: { port in
+                    return port.portType == .builtInMic
+                }), let front = builtin.dataSources?.first(where: { source in
+                    return source.orientation == .front
+                }) {
+                    /**
+                     Once `MiController.start` is called and transmission begins, the microphone is arbitrarily selected.
+                     We explicitly set the front-facing microphone as it's most suited for calls while looking at the screen together.
+                     */
+                    do {
+                        try builtin.setPreferredDataSource(front)
+                    } catch {
+                        strongSelf.emitter?.error(name: "AVAudioSession", message: "setPreferredDataSource: \(error.localizedDescription)")
+                    }
+                }
 
-                            var options: AVAudioSession.CategoryOptions
-                            if #available(iOS 14.5, *) {
-                                options = [.mixWithOthers,
-                                           .allowBluetooth,
-                                           .allowAirPlay,
-                                           .allowBluetoothA2DP,
-                                           .overrideMutedMicrophoneInterruption,
-                                           .interruptSpokenAudioAndMixWithOthers,
-                                           .defaultToSpeaker]
-                            } else {
-                                options = [.mixWithOthers,
-                                           .allowBluetooth,
-                                           .allowAirPlay,
-                                           .allowBluetoothA2DP,
-                                           .defaultToSpeaker]
-                            }
+                var options: AVAudioSession.CategoryOptions
+                if #available(iOS 14.5, *) {
+                    options = [.mixWithOthers,
+                               .allowBluetooth,
+                               .allowAirPlay,
+                               .allowBluetoothA2DP,
+                               .overrideMutedMicrophoneInterruption,
+                               .interruptSpokenAudioAndMixWithOthers,
+                               .defaultToSpeaker]
+                } else {
+                    options = [.mixWithOthers,
+                               .allowBluetooth,
+                               .allowAirPlay,
+                               .allowBluetoothA2DP,
+                               .defaultToSpeaker]
+                }
 
-                            try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: options) // MI에서는 default일 경우 에어팟 연결이 해제된다.
-                            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+                try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: options) // MI에서는 default일 경우 에어팟 연결이 해제된다.
+                try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
 
-                            retryTimer?.invalidate()
-                            retryTimer = nil
-                            retryDelay = 0.5
+                retryTimer?.invalidate()
+                retryTimer = nil
+                retryDelay = 0.5
 
-                            do {
-                                self.volumeRecorder = try VolumeRecorder(self)
-                            } catch {
-                                self.emitter?.error(name: "AVAudioSession", message: "Failed to initialize volumeRecorder: \(error.localizedDescription)")
-                            }
+                do {
+                    strongSelf.volumeRecorder?.destroy()
+                    strongSelf.volumeRecorder = try VolumeRecorder(strongSelf)
+                } catch {
+                    strongSelf.emitter?.error(name: "AVAudioSession", message: "Failed to initialize volumeRecorder: \(error.localizedDescription)")
+                }
+            } catch {
+                strongSelf.emitter?.error(name: "AVAudioSession", message: "activationError: \(error.localizedDescription), nextRetryDelay: \(retryDelay)")
 
-                            promise(.success(()))
-                        } catch {
-                            self.emitter?.error(name: "AVAudioSession", message: "activationError: \(error.localizedDescription), nextRetryDelay: \(retryDelay)")
-
-                            DispatchQueue.main.async {
-                                retryTimer = Timer.scheduledTimer(withTimeInterval: retryDelay, repeats: false) { [weak self] _ in
-                                    retryDelay *= 2
-                                    self?.activationTrigger.send()
-                                }
-                            }
-
-                            promise(.success(()))
-                        }
+                DispatchQueue.main.async {
+                    retryTimer = Timer.scheduledTimer(withTimeInterval: retryDelay, repeats: false) { [weak self] _ in
+                        retryDelay *= 2
+                        self?.activationTrigger.send()
                     }
                 }
             }
-            .sink { _ in }
-            .store(in: &cancellables)
+        }
+        .store(in: &cancellables)
     }
 
     func averagePower() -> Float? {
