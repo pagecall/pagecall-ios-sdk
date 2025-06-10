@@ -34,6 +34,6 @@ Pod::Spec.new do |s|
   s.default_subspec = :none
 
   s.subspec 'Log' do |subspec|
-    subspec.dependency 'Sentry', '~> 8.41.0'
+    subspec.dependency 'Sentry', '~> 8.46.0'
   end
 end
