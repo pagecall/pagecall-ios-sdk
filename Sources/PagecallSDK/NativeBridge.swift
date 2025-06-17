@@ -339,20 +339,19 @@ class NativeBridge: Equatable, ScriptDelegate {
     public func disconnect() {
         miController?.dispose()
         miController = nil
+    }
 
+    deinit {
+        disconnect()
         CallManager.shared.endCall { error in
             if let error = error {
                 print("[PagecallWebView] endCall failure")
-                self.emitter.error(name: "EndCallError", message: error.localizedDescription)
                 PagecallLogger.shared.capture(error: error)
             } else {
                 print("[PagecallWebView] endCall success")
             }
         }
-    }
 
-    deinit {
-        disconnect()
     }
 }
 

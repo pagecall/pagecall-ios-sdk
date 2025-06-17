@@ -179,9 +179,11 @@ class PagecallViewController: UIViewController {
 
 extension PagecallViewController: PagecallDelegate {
     func pagecallDidLoseAudioSession() {
-        onFatalError?(
-            PagecallError.other(message: "Call interrupted")
-        )
+        messageBox.setText(message: "Call interrupted")
+        messageBox.isHidden = false
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3) {
+            self.messageBox.isHidden = true
+        }
     }
 
     func pagecallDidTerminate(_ view: Pagecall.PagecallWebView, reason: Pagecall.TerminationReason) {
