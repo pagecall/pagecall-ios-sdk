@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Pagecall'
-  s.version          = '0.0.29' # Update `version` field of PagecallWebView as you change this
+  s.version          = '0.0.29-dev.7' # Update `version` field of PagecallWebView as you change this
   s.summary          = 'Pagecall WebView: Enhanced Voice Communication via Custom WebView based on WKWebView'
 
   s.description      = 'Pagecall-ios-sdk provides PagecallWebView, a custom WebView based on WKWebView that extends its functionality by adding a proprietary JavaScript Bridge to improve voice communication features. This enables customers to offer an enhanced voice communication experience. By utilizing PagecallWebView, powerful voice communication features can be easily integrated in place of the existing WKWebView.'
