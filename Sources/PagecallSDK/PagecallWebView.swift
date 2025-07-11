@@ -56,7 +56,7 @@ public enum PagecallMode {
 let debugPencil = false
 
 open class PagecallWebView: WKWebView {
-    static let version = "0.0.29"
+    static let version = "0.0.30"
 
     var nativeBridge: NativeBridge?
     var controllerName = "pagecall"
