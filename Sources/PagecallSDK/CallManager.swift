@@ -62,6 +62,7 @@ public class CallManager: NSObject, CXProviderDelegate {
                         self?.callController.requestTransaction(with: [CXStartCallAction(call: newCallId, handle: CXHandle(type: .generic, value: "Pagecall"))]) { error in
                             if let error = error {
                                 self?.provider.reportCall(with: newCallId, endedAt: Date(), reason: .failed)
+                                CallManager.emitter?.error(name: "CallManager", message: "Start call error: \(error.localizedDescription)")
                                 promise(
                                     .success(.init(shouldBeInCall: true, isInCall: false, error: error))
                                 )
