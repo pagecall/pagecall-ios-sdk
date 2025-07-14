@@ -63,8 +63,10 @@ class NativeBridge: Equatable, ScriptDelegate {
         let success = isAudioPaused ? miController.pauseAudio() : miController.resumeAudio()
         if success {
             emitter.log(name: "AudioStateChange", message: isAudioPaused ? "Paused" : "Resumed")
-        } else {
+        } else if miController.started {
             emitter.error(name: "AudioStateChangeError", message: isAudioPaused ? "Failed to pause" : "Failed to resume")
+        } else {
+            // Not producing yet
         }
     }
 
