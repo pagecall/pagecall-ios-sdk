@@ -9,7 +9,7 @@ public class CallManager: NSObject, CXProviderDelegate {
     private let provider: CXProvider
     private let callController: CXCallController
     public var delegate: CXProviderDelegate?
-    public var callDelegate: PagecallCallDelegate?
+    public weak var callDelegate: PagecallCallDelegate?
 
     private let callState = CurrentValueSubject<CallState, Never>(
         CallState(shouldBeInCall: false, isInCall: false, error: nil)
