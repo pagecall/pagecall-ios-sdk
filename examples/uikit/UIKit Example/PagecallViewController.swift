@@ -92,6 +92,9 @@ class PagecallViewController: UIViewController {
 
     override func viewDidDisappear(_ animated: Bool) {
         loading.removeFromSuperview()
+    }
+
+    deinit {
         pagecallWebView.cleanup()
     }
 
